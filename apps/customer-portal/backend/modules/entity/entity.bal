@@ -410,3 +410,14 @@ public isolated function getProjectTimeCardStats(string idToken, string projectI
 
     return csEntityClient->/projects/[projectId]/time\-cards/stats.get(generateHeaders(idToken));
 }
+
+# Search change requests of a project.
+# 
+# + idToken - ID token for authorization
+# + payload - Change request search payload containing search criteria for change requests
+# + return - Change request search response containing matching change requests or error
+public isolated function searchChangeRequests(string idToken, ChangeRequestSearchPayload payload)
+    returns ChangeRequestSearchResponse|error {
+
+    return csEntityClient->/change\-requests/search.post(payload, generateHeaders(idToken));
+}

@@ -630,3 +630,46 @@ public isolated function getConversationStats(entity:ProjectConversationStatsRes
         sessionCount: ()
     };
 }
+
+# Map change request search response to the desired structure.
+#
+# + response - Change request search response from the entity service
+# + return - Mapped change request search response
+public isolated function mapChangeRequestSearchResponse(entity:ChangeRequestSearchResponse response)
+    returns types:ChangeRequestSearchResponse {
+
+    types:ChangeRequest[] changeRequests = from entity:ChangeRequest changeRequest in response.changeRequests
+        let entity:ReferenceTableItem? project = changeRequest.project
+        let entity:ReferenceTableItem? case = changeRequest.case
+        let entity:ReferenceTableItem? deployment = changeRequest.deployment
+        let entity:ReferenceTableItem? deployedProduct = changeRequest.deployedProduct
+        let entity:ChoiceListItem? state = changeRequest.state
+        let entity:ChoiceListItem? impact = changeRequest.impact
+        let entity:ChoiceListItem? 'type = changeRequest.'type
+        select {
+            id: changeRequest.id,
+            number: changeRequest.number,
+            title: changeRequest.title,
+            startDate: changeRequest.startDate,
+            endDate: changeRequest.endDate,
+            duration: changeRequest.duration,
+            hasServiceOutage: changeRequest.hasServiceOutage,
+            createdOn: changeRequest.createdOn,
+            updatedOn: changeRequest.updatedOn,
+            project: project != () ? {id: project.id, label: project.name, number: project?.number} : (),
+            case: case != () ? {id: case.id, label: case.name, number: case?.number} : (),
+            deployment: deployment != () ? {id: deployment.id, label: deployment.name, number: deployment?.number} : (),
+            deployedProduct: deployedProduct != () ?
+                {id: deployedProduct.id, label: deployedProduct.name, number: deployedProduct?.number} : (),
+            state: state != () ? {id: state.id.toString(), label: state.label} : (),
+            impact: impact != () ? {id: impact.id.toString(), label: impact.label} : (),
+            'type: 'type != () ? {id: 'type.id.toString(), label: 'type.label} : ()
+        };
+
+    return {
+        changeRequests,
+        totalRecords: response.totalRecords,
+        'limit: response.'limit,
+        offset: response.offset
+    };
+}

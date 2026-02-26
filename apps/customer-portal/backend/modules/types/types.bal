@@ -139,6 +139,8 @@ public type ReferenceItem record {|
     string label;
     # Count
     int count?;
+    # Number
+    string? number?;
 |};
 
 # Case metadata information.
@@ -1024,4 +1026,65 @@ public type ConversationStats record {|
     int abandonedCount?;
     # Active chats count
     int activeCount?;
+|};
+
+# Change request data.
+public type ChangeRequest record {|
+    # ID
+    entity:IdString id;
+    # Change request number
+    string number;
+    # Change request title
+    string? title;
+    # Project
+    ReferenceItem? project;
+    # Service request information (case)
+    ReferenceItem? case;
+    # Deployment information
+    ReferenceItem? deployment;
+    # Deployed product information
+    ReferenceItem? deployedProduct;
+    # Planned start date and time
+    string? startDate;
+    # Planned end date and time
+    string? endDate;
+    # Duration
+    string? duration;
+    # Indicates if the change request has a service outage
+    boolean hasServiceOutage = false;
+    # Impact information
+    ReferenceItem? impact;
+    # State information
+    ReferenceItem? state;
+    # Type information
+    ReferenceItem? 'type;
+    # Created date and time
+    string createdOn;
+    # Updated date and time
+    string updatedOn;
+    json...;
+|};
+
+# Change requests response.
+public type ChangeRequestSearchResponse record {|
+    # List of change requests
+    ChangeRequest[] changeRequests;
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
+|};
+
+# Request payload for searching change requests.
+public type ChangeRequestSearchPayload record {|
+    # Filter criteria
+    record {|
+        # Search query for change request number and title
+        string searchQuery?;
+        # List of change request state keys
+        int[] stateKeys?;
+        # Change request impact key
+        int impactKey?;
+    |} filters?;
+    # Pagination details
+    entity:Pagination pagination?;
 |};
