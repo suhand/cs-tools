@@ -1399,6 +1399,9 @@ public type ChangeRequest record {|
 public type ChangeRequestSearchResponse record {|
     # List of change requests
     ChangeRequest[] changeRequests;
+    # Total records count
+    int totalRecords;
+    *Pagination;
 |};
 
 # Request payload for searching catalogs.

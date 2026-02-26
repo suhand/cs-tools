@@ -1867,6 +1867,108 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         return response.deployedProduct;
     }
 
+    # Search catalogs for a specific deployed product with filters and pagination.
+    # 
+    # + id - ID of the deployed product
+    # + payload - Catalog search request body
+    # + return - Paginated catalogs or error
+    resource function post deployments/products/[entity:IdString id]/catalogs/search(http:RequestContext ctx,
+            types:CatalogSearchPayload payload)
+        returns http:Ok|http:Unauthorized|http:Forbidden|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:CatalogSearchResponse|error searchResponse = entity:searchCatalogs(userInfo.idToken,
+                {
+                    deployedProductId: id,
+                    pagination: payload.pagination
+                });
+        if searchResponse is error {
+            if getStatusCode(searchResponse) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `User: ${userInfo.userId} is forbidden to search catalogs for deployed product with ID: ${
+                        id}!`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "You're not authorized to search catalogs for the deployed product. " +
+                        "Please check your access permissions or contact support."
+                    }
+                };
+            }
+            if getStatusCode(searchResponse) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            string customError = "Failed to search catalogs for the deployed product.";
+            log:printError(customError, searchResponse);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return <http:Ok>{body: mapCatalogSearchResponse(searchResponse)};
+    }
+
+    # Get catalog item details by catalog ID and item ID.
+    # 
+    # + catalogId - ID of the catalog
+    # + itemId - ID of the catalog item
+    # + return - Catalog item details or error
+    resource function get catalogs/[entity:IdString catalogId]/items/[entity:IdString itemId](http:RequestContext ctx) 
+        returns http:Ok|http:Unauthorized|http:Forbidden|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:CatalogItemVariablesResponse|error itemResponse =
+            entity:getCatalogItemVariable(userInfo.idToken, catalogId, itemId);
+        if itemResponse is error {
+            if getStatusCode(itemResponse) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `User: ${userInfo.userId} is forbidden to access catalog item with ID: ${
+                        itemId} in catalog with ID: ${catalogId}!`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "You're not authorized to access the catalog item. " +
+                        "Please check your access permissions or contact support."
+                    }
+                };
+            }
+            if getStatusCode(itemResponse) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            string customError = "Failed to retrieve catalog item details.";
+            log:printError(customError, itemResponse);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return <http:Ok>{body: itemResponse};
+    }
+
     # Get recommended update levels.
     #
     # + return - List of recommended update levels or an error

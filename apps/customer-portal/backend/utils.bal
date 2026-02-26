@@ -673,3 +673,22 @@ public isolated function mapChangeRequestSearchResponse(entity:ChangeRequestSear
         offset: response.offset
     };
 }
+
+# Map catalog search response to the desired structure.
+#
+# + response - Catalog search response from the entity service
+# + return - Mapped catalog search response
+public isolated function mapCatalogSearchResponse(entity:CatalogSearchResponse response)
+    returns types:CatalogSearchResponse {
+
+    types:Catalog[] catalogs = from entity:Catalog item in response.catalogs
+        let entity:ReferenceTableItem[] catalogItems = item.catalogItems
+        select {
+            id: item.id,
+            name: item.name,
+            catalogItems: from entity:ReferenceTableItem catalogItem in catalogItems
+                select {id: catalogItem.id, label: catalogItem.name}
+        };
+
+    return {catalogs, totalRecords: response.totalRecords, 'limit: response.'limit, offset: response.offset};
+}

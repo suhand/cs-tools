@@ -1069,6 +1069,9 @@ public type ChangeRequest record {|
 public type ChangeRequestSearchResponse record {|
     # List of change requests
     ChangeRequest[] changeRequests;
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
 |};
 
 # Catalog data.
@@ -1102,6 +1105,12 @@ public type ChangeRequestSearchPayload record {|
         # Change request impact key
         int impactKey?;
     |} filters?;
+    # Pagination details
+    entity:Pagination pagination?;
+|};
+
+# Request payload for searching catalogs.
+public type CatalogSearchPayload record {|
     # Pagination details
     entity:Pagination pagination?;
 |};
