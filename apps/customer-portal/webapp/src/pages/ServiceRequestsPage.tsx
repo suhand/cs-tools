@@ -242,7 +242,7 @@ export default function ServiceRequestsPage(): JSX.Element {
         serviceRequests={paginatedServiceRequests}
         isLoading={isCasesAreaLoading}
         onServiceRequestClick={(sr) =>
-          navigate(`/${projectId}/support/cases/${sr.id}`)
+          navigate(`/${projectId}/support/service-requests/${sr.id}`)
         }
       />
 
