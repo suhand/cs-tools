@@ -83,14 +83,16 @@ describe("projectDetails utils", () => {
   });
 
   describe("getSLAStatusColor", () => {
-    it("should return 'success' for 'All Good' or 'Good'", () => {
-      expect(getSLAStatusColor("All Good")).toBe("success");
+    it("should return 'success' for 'All good' or 'Good'", () => {
+      expect(getSLAStatusColor("All good")).toBe("success");
       expect(getSLAStatusColor("all good")).toBe("success");
       expect(getSLAStatusColor("Good")).toBe("success");
       expect(getSLAStatusColor("good")).toBe("success");
     });
 
-    it("should return 'error' for 'Bad'", () => {
+    it("should return 'error' for 'Needs attention' or 'Bad'", () => {
+      expect(getSLAStatusColor("Needs attention")).toBe("error");
+      expect(getSLAStatusColor("needs attention")).toBe("error");
       expect(getSLAStatusColor("Bad")).toBe("error");
       expect(getSLAStatusColor("bad")).toBe("error");
     });

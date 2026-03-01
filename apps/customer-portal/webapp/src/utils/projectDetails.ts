@@ -17,7 +17,6 @@
 import {
   SUBSCRIPTION_STATUS,
   type SubscriptionStatus,
-  SLA_STATUS,
   SUPPORT_TIER,
   PROJECT_TYPE,
   SYSTEM_HEALTH,
@@ -175,22 +174,23 @@ export const convertMinutesToHours = (minutes: number): number => {
 /**
  * Determines the color of the SLA status chip based on the status string.
  *
- * @param {string} status - The SLA status string (e.g., "Good", "Bad", "Met", "Breached").
+ * @param {string} status - The SLA status string (e.g., "All good", "Needs attention").
  * @returns {"success" | "error" | "default" | "warning"} The color for the Chip component.
  */
 export const getSLAStatusColor = (status: string): ProjectStatusChipColor => {
   const normalizedStatus = status?.toLowerCase();
-  const goodValue = SLA_STATUS.GOOD.toLowerCase();
 
-  switch (normalizedStatus) {
-    case goodValue:
-    case "good":
-      return "success";
-    case SLA_STATUS.BAD.toLowerCase():
-      return "error";
-    default:
-      return "default";
+  // Handle "All good" (case-insensitive)
+  if (normalizedStatus === "all good" || normalizedStatus === "good") {
+    return "success";
   }
+
+  // Handle "Needs attention" (case-insensitive)
+  if (normalizedStatus === "needs attention" || normalizedStatus === "bad") {
+    return "error";
+  }
+
+  return "default";
 };
 
 /**
