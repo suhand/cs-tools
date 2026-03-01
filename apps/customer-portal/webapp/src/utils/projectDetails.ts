@@ -174,13 +174,13 @@ export const convertMinutesToHours = (minutes: number): number => {
 /**
  * Determines the color of the SLA status chip based on the status string.
  *
- * @param {string} status - The SLA status string (e.g., "All good", "Needs attention").
+ * @param {string} status - The SLA status string (e.g., "All Good", "Needs attention").
  * @returns {"success" | "error" | "default" | "warning"} The color for the Chip component.
  */
 export const getSLAStatusColor = (status: string): ProjectStatusChipColor => {
   const normalizedStatus = status?.toLowerCase();
 
-  // Handle "All good" (case-insensitive)
+  // Handle "All Good" (case-insensitive)
   if (normalizedStatus === "all good" || normalizedStatus === "good") {
     return "success";
   }

@@ -185,7 +185,7 @@ export const SYSTEM_HEALTH = {
 export type SystemHealth = (typeof SYSTEM_HEALTH)[keyof typeof SYSTEM_HEALTH];
 
 export const SLA_STATUS = {
-  GOOD: "All good",
+  GOOD: "All Good",
   NEEDS_ATTENTION: "Needs attention",
 } as const;
 
