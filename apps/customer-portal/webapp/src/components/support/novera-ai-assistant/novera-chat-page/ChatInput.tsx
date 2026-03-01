@@ -49,7 +49,9 @@ export default function ChatInput({
 
   // Calculate max height for 5 lines (line-height is ~24px in body2)
   const singleLineHeight = 40;
-  const maxLinesHeight = 120; // Approximately 5 lines
+  const maxLinesHeight = 120;
+  const BUTTON_TOP_WITHOUT_TOOLBAR = 8;
+  const BUTTON_TOP_WITH_TOOLBAR = 56;
 
   return (
     <Box sx={{ p: 2, bgcolor: "background.paper", flexShrink: 0 }}>
@@ -60,7 +62,9 @@ export default function ChatInput({
             sx={{
               position: "absolute",
               left: 8,
-              top: showToolbar ? 56 : 8,
+              top: showToolbar
+                ? BUTTON_TOP_WITH_TOOLBAR
+                : BUTTON_TOP_WITHOUT_TOOLBAR,
               zIndex: 10,
               transition: "top 0.2s ease",
             }}

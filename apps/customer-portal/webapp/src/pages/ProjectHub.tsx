@@ -69,7 +69,8 @@ export default function ProjectHub(): JSX.Element {
       debouncedSearchQuery &&
       hasNextPage &&
       !isFetchingNextPage &&
-      !isLoading
+      !isLoading &&
+      !isError
     ) {
       fetchNextPage();
     }
@@ -78,6 +79,7 @@ export default function ProjectHub(): JSX.Element {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    isError,
     fetchNextPage,
   ]);
 
@@ -257,7 +259,11 @@ export default function ProjectHub(): JSX.Element {
   // Determine whether to show the search bar
   const showSearchBar = totalRecords > 4 || searchQuery;
   const showOnlySearchBar =
-    totalRecords > 4 && !searchQuery && !isLoading && !isAuthLoading;
+    totalRecords > 4 &&
+    !searchQuery &&
+    !isLoading &&
+    !isAuthLoading &&
+    !isError;
 
   // Center content when displaying projects (not search-only view) or loading
   const shouldCenterContent =

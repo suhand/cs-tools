@@ -73,11 +73,8 @@ export default function AnnouncementList({
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {cases.map((caseItem) => {
         const statusLabel = caseItem.status?.label;
-        const statusColorPath = getStatusColor(statusLabel ?? undefined);
-        const resolvedStatusColor = resolveColorFromTheme(
-          statusColorPath,
-          theme,
-        );
+        const statusColor = getStatusColor(statusLabel);
+        const resolvedStatusColor = resolveColorFromTheme(statusColor, theme);
         const statusChipIcon = getStatusIconElement(statusLabel, 12);
 
         const cardContent = (
@@ -105,7 +102,7 @@ export default function AnnouncementList({
                       size="small"
                       variant="outlined"
                       label={statusLabel}
-                      icon={statusChipIcon as ReactElement}
+                      icon={statusChipIcon}
                       sx={{
                         bgcolor: alpha(resolvedStatusColor, 0.1),
                         color: resolvedStatusColor,

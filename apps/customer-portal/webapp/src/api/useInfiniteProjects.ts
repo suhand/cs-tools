@@ -51,11 +51,18 @@ export default function useInfiniteProjects({
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
   const fetchFn = useAuthApiClient();
 
+  const normalizedSearchQuery = searchQuery?.trim() || undefined;
+
   return useInfiniteQuery<SearchProjectsResponse, Error>({
-    queryKey: [ApiQueryKeys.PROJECTS, "infinite", searchQuery, pageSize],
+    queryKey: [
+      ApiQueryKeys.PROJECTS,
+      "infinite",
+      normalizedSearchQuery,
+      pageSize,
+    ],
     queryFn: async ({ pageParam = 0 }): Promise<SearchProjectsResponse> => {
       logger.debug(
-        `[useInfiniteProjects] Fetching projects... offset: ${pageParam}, limit: ${pageSize}, searchQuery: ${searchQuery || "none"}`,
+        `[useInfiniteProjects] Fetching projects... offset: ${pageParam}, limit: ${pageSize}, searchQuery: ${normalizedSearchQuery || "none"}`,
       );
 
       try {
@@ -70,8 +77,8 @@ export default function useInfiniteProjects({
           pagination: { offset: pageParam as number, limit: pageSize },
         };
 
-        if (searchQuery) {
-          body.filters = { searchQuery };
+        if (normalizedSearchQuery) {
+          body.filters = { searchQuery: normalizedSearchQuery };
         }
 
         const response = await fetchFn(requestUrl, {
