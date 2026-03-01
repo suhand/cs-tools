@@ -109,6 +109,12 @@ public type ProjectResponse record {|
     string 'type;
     # Salesforce ID
     string sfId;
+    # Indicates if the project has service requests
+    boolean hasSr;
+    # Project start date
+    Date? startDate;
+    # Project end date 
+    Date? endDate;
     # Account information
     record {|
         # ID of the account
