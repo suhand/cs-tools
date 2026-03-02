@@ -611,7 +611,7 @@ export interface TimeCard {
   totalTime: number;
   createdOn: string;
   hasBillable: boolean;
-  state: string;
+  state: { id: string; label: string } | null;
   approvedBy: { id: string; label: string } | null;
   project: { id: string; label: string };
   case: {

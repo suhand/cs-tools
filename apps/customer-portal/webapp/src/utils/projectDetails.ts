@@ -32,13 +32,13 @@ import {
  * Get the theme color path for a time card state chip (e.g. Approved, Submitted).
  * Use with resolveColorFromTheme for SupportOverviewCard-style chips.
  *
- * @param {string} state - The time card state.
+ * @param {Object | null | undefined} state - The time card state object with id and label.
  * @returns {string} Theme palette path (e.g. "success.main", "info.main").
  */
 export const getTimeCardStateColorPath = (
-  state: string | null | undefined,
+  state: { id: string; label: string } | null | undefined,
 ): string => {
-  const normalized = state?.toLowerCase();
+  const normalized = state?.label?.toLowerCase();
   if (normalized === "approved") return "success.main";
   if (normalized === "submitted") return "info.main";
   if (normalized === "rejected" || normalized === "draft")
