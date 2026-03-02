@@ -27,6 +27,7 @@ import type { SelectChangeEvent } from "@wso2/oxygen-ui";
 import type {
   CaseMetadataResponse,
   AllCasesFilterValues,
+  ProjectDeploymentItem,
 } from "@models/responses";
 import { ALL_CASES_FILTER_DEFINITIONS } from "@constants/supportConstants";
 import { deriveFilterLabels, mapSeverityToDisplay } from "@utils/support";
@@ -34,6 +35,7 @@ import { deriveFilterLabels, mapSeverityToDisplay } from "@utils/support";
 export interface AllCasesFiltersProps {
   filters: AllCasesFilterValues;
   filterMetadata: CaseMetadataResponse | undefined;
+  deployments?: ProjectDeploymentItem[];
   onFilterChange: (field: string, value: string) => void;
 }
 
@@ -46,6 +48,7 @@ export interface AllCasesFiltersProps {
 export default function AllCasesFilters({
   filters,
   filterMetadata,
+  deployments,
   onFilterChange,
 }: AllCasesFiltersProps): JSX.Element {
   const handleSelectChange =
@@ -58,16 +61,25 @@ export default function AllCasesFilters({
     <Grid container spacing={2} sx={{ mt: 1 }}>
       {ALL_CASES_FILTER_DEFINITIONS.map((def) => {
         const { label, allLabel } = deriveFilterLabels(def.id);
-        const metadataOptions = filterMetadata?.[def.metadataKey];
-        const options = Array.isArray(metadataOptions)
-          ? metadataOptions.map((item: { label: string; id: string }) => ({
-              label:
-                def.metadataKey === "severities"
-                  ? mapSeverityToDisplay(item.label)
-                  : item.label,
-              value: def.useLabelAsValue ? item.label : item.id,
+
+        const isDeploymentFilter = def.id === "deployment";
+        const options = isDeploymentFilter && deployments
+          ? deployments.map((deployment) => ({
+              label: deployment.type?.label || deployment.name,
+              value: deployment.id,
             }))
-          : [];
+          : (() => {
+              const metadataOptions = filterMetadata?.[def.metadataKey];
+              return Array.isArray(metadataOptions)
+                ? metadataOptions.map((item: { label: string; id: string }) => ({
+                    label:
+                      def.metadataKey === "severities"
+                        ? mapSeverityToDisplay(item.label)
+                        : item.label,
+                    value: def.useLabelAsValue ? item.label : item.id,
+                  }))
+                : [];
+            })();
 
         return (
           <Grid key={def.id} size={{ xs: 12, sm: 6, md: 3 }}>
