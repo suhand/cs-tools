@@ -377,7 +377,7 @@ export function formatDateOnly(dateStr: string | null | undefined): string {
     }
   }
 
-  return "--";
+  return "Not Available";
 }
 
 /**

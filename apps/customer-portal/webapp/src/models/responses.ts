@@ -321,6 +321,37 @@ export interface ChangeRequestItem {
   updatedOn: string;
 }
 
+// Change Request Details
+export interface ChangeRequestDetails extends ChangeRequestItem {
+  description: string | null;
+  createdBy: string;
+  justification: string | null;
+  impactDescription: string | null;
+  serviceOutage: string | null;
+  communicationPlan: string | null;
+  rollbackPlan: string | null;
+  testPlan: string | null;
+  hasCustomerApproved: boolean;
+  hasCustomerReviewed: boolean;
+  approvedBy: {
+    id: string;
+    label: string;
+  } | null;
+  approvedOn: string | null;
+  product: {
+    id: string;
+    label: string;
+  } | null;
+  assignedEngineer: {
+    id: string;
+    label: string;
+  } | null;
+  assignedTeam: {
+    id: string;
+    label: string;
+  } | null;
+}
+
 // Change Request Search Response
 export interface ChangeRequestSearchResponse {
   changeRequests: ChangeRequestItem[];
@@ -336,14 +367,6 @@ export interface ChangeRequestStats {
   inProgress: number;
   completed: number;
 }
-
-// Mock Change Request Stats
-export const MOCK_CHANGE_REQUEST_STATS: ChangeRequestStats = {
-  totalRequests: 6,
-  scheduled: 4,
-  inProgress: 1,
-  completed: 1,
-};
 
 // Case Search Response
 export interface CaseSearchResponse {

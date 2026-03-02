@@ -15,16 +15,69 @@
 // under the License.
 
 import { useParams, useNavigate } from "react-router";
-import { type JSX } from "react";
+import { type JSX, useMemo } from "react";
 import {
+  Box,
   Button,
   Stack,
   Typography,
   Paper,
+  Chip,
+  Divider,
+  alpha,
+  colors,
+  Skeleton,
 } from "@wso2/oxygen-ui";
 import {
   ArrowLeft,
+  TriangleAlert,
+  ChevronRight,
+  CircleCheckBig,
+  Circle,
+  Server,
+  Package,
+  FileText,
+  Users,
+  RotateCcw,
+  Shield,
+  MessageSquare,
+  Download,
+  ExternalLink,
 } from "@wso2/oxygen-ui-icons-react";
+import useGetChangeRequestDetails from "@api/useGetChangeRequestDetails";
+import {
+  formatImpactLabel,
+  getChangeRequestStateIcon,
+  getChangeRequestImpactColorShades,
+  getChangeRequestStateColorShades,
+  ChangeRequestStates,
+  type ChangeRequestState,
+} from "@constants/supportConstants";
+
+/**
+ * State order for change request workflow
+ */
+const STATE_ORDER = [
+  ChangeRequestStates.NEW,
+  ChangeRequestStates.ASSESS,
+  ChangeRequestStates.AUTHORIZE,
+  ChangeRequestStates.CUSTOMER_APPROVAL,
+  ChangeRequestStates.SCHEDULED,
+  ChangeRequestStates.IMPLEMENT,
+  ChangeRequestStates.REVIEW,
+  ChangeRequestStates.CUSTOMER_REVIEW,
+  ChangeRequestStates.ROLLBACK,
+  ChangeRequestStates.CLOSED,
+  ChangeRequestStates.CANCELED,
+];
+
+/**
+ * Strip HTML tags from a string
+ */
+function stripHtmlTags(html: string | null | undefined): string {
+  if (!html) return "No description available";
+  return html.replace(/<[^>]*>/g, "").trim() || "No description available";
+}
 
 /**
  * ChangeRequestDetailsPage component to display detailed information about a change request.
@@ -33,13 +86,229 @@ import {
  */
 export default function ChangeRequestDetailsPage(): JSX.Element {
   const navigate = useNavigate();
-  const { projectId } = useParams<{
+  const { projectId, changeRequestId } = useParams<{
     projectId: string;
     changeRequestId: string;
   }>();
 
+  const {
+    data: changeRequest,
+    isLoading,
+    error,
+  } = useGetChangeRequestDetails(changeRequestId || "");
+
+  const currentStateIndex = STATE_ORDER.indexOf(
+    (changeRequest?.state?.label as ChangeRequestState) ||
+      ChangeRequestStates.NEW,
+  );
+
+  // Workflow stages with dynamic state
+  const workflowStages = useMemo(() => {
+    if (!changeRequest) return [];
+
+    const currentState =
+      (changeRequest.state?.label as ChangeRequestState) ||
+      ChangeRequestStates.NEW;
+    const { hasCustomerApproved, hasCustomerReviewed } = changeRequest;
+
+    const currentIndex = STATE_ORDER.indexOf(currentState);
+
+    return [
+      {
+        name: ChangeRequestStates.NEW,
+        description: "Change request created",
+        completed: currentIndex > 0,
+        current: currentState === ChangeRequestStates.NEW,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.ASSESS,
+        description: "Technical assessment completed",
+        completed: currentIndex > 1,
+        current: currentState === ChangeRequestStates.ASSESS,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.AUTHORIZE,
+        description: "Internal authorization obtained",
+        completed: currentIndex > 2,
+        current: currentState === ChangeRequestStates.AUTHORIZE,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.CUSTOMER_APPROVAL,
+        description: "Customer approval received",
+        completed: currentIndex > 3 && hasCustomerApproved,
+        current: currentState === ChangeRequestStates.CUSTOMER_APPROVAL,
+        disabled:
+          (currentState === ChangeRequestStates.IMPLEMENT ||
+            currentState === ChangeRequestStates.REVIEW) &&
+          !hasCustomerApproved,
+      },
+      {
+        name: ChangeRequestStates.SCHEDULED,
+        description: "Maintenance window scheduled",
+        completed: currentIndex > 4,
+        current: currentState === ChangeRequestStates.SCHEDULED,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.IMPLEMENT,
+        description: "Change implementation",
+        completed: currentIndex > 5,
+        current: currentState === ChangeRequestStates.IMPLEMENT,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.REVIEW,
+        description: "Internal review",
+        completed: currentIndex > 6,
+        current: currentState === ChangeRequestStates.REVIEW,
+        disabled: false,
+      },
+      {
+        name: ChangeRequestStates.CUSTOMER_REVIEW,
+        description: "Customer validation",
+        completed: currentIndex > 7 && hasCustomerReviewed,
+        current: currentState === ChangeRequestStates.CUSTOMER_REVIEW,
+        disabled:
+          (currentState === ChangeRequestStates.ROLLBACK ||
+            currentState === ChangeRequestStates.CLOSED ||
+            currentState === ChangeRequestStates.CANCELED) &&
+          !hasCustomerReviewed,
+      },
+      {
+        name: ChangeRequestStates.ROLLBACK,
+        description: "Change rollback if needed",
+        completed: false,
+        current: currentState === ChangeRequestStates.ROLLBACK,
+        disabled:
+          currentState === ChangeRequestStates.CLOSED ||
+          currentState === ChangeRequestStates.CANCELED,
+      },
+      {
+        name: ChangeRequestStates.CLOSED,
+        description: "Change request completed",
+        completed: false,
+        current: currentState === ChangeRequestStates.CLOSED,
+        disabled:
+          currentState === ChangeRequestStates.CANCELED ||
+          currentState === ChangeRequestStates.ROLLBACK,
+      },
+      {
+        name: ChangeRequestStates.CANCELED,
+        description: "Change request canceled",
+        completed: false,
+        current: currentState === ChangeRequestStates.CANCELED,
+        disabled:
+          currentState === ChangeRequestStates.CLOSED ||
+          currentState === ChangeRequestStates.ROLLBACK,
+      },
+    ];
+  }, [changeRequest]);
+
+  const impactColor = getChangeRequestImpactColorShades(
+    changeRequest?.impact?.label,
+  );
+  const statusColor = getChangeRequestStateColorShades(
+    changeRequest?.state?.label,
+  );
+
+  // Render state icon based on state label
+  const renderStateIcon = () => {
+    const IconComponent = getChangeRequestStateIcon(
+      changeRequest?.state?.label,
+    );
+    return <IconComponent size={12} />;
+  };
+
+  // Loading state with skeleton
+  if (isLoading) {
+    return (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {/* Header Skeleton */}
+        <Paper variant="outlined" sx={{ p: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Skeleton variant="text" width="60%" height={40} sx={{ mb: 1 }} />
+              <Stack
+                direction="row"
+                spacing={1.5}
+                sx={{ alignItems: "center" }}
+              >
+                <Skeleton variant="text" width={100} />
+                <Skeleton variant="text" width={150} />
+                <Skeleton variant="text" width={200} />
+              </Stack>
+            </Box>
+            <Stack direction="row" spacing={1}>
+              <Skeleton variant="rounded" width={100} height={24} />
+              <Skeleton variant="rounded" width={100} height={24} />
+            </Stack>
+          </Box>
+        </Paper>
+
+        {/* Workflow Skeleton */}
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <Skeleton variant="text" width={250} height={32} sx={{ mb: 2 }} />
+          <Stack spacing={2}>
+            {[1, 2, 3, 4, 5].map((i) => (
+              <Box key={i} sx={{ display: "flex", gap: 2 }}>
+                <Skeleton variant="circular" width={40} height={40} />
+                <Box sx={{ flex: 1 }}>
+                  <Skeleton variant="text" width="30%" />
+                  <Skeleton variant="text" width="60%" />
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        </Paper>
+
+        {/* Content Cards Skeleton */}
+        {[1, 2, 3, 4].map((i) => (
+          <Paper key={i} variant="outlined" sx={{ p: 3 }}>
+            <Skeleton variant="text" width={200} height={32} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="100%" />
+            <Skeleton variant="text" width="90%" />
+            <Skeleton variant="text" width="95%" />
+          </Paper>
+        ))}
+      </Box>
+    );
+  }
+
+  // Error state
+  if (error || !changeRequest) {
+    return (
+      <Stack spacing={3}>
+        <Button
+          startIcon={<ArrowLeft size={16} />}
+          onClick={() => navigate(`/${projectId}/support/change-requests`)}
+          sx={{ alignSelf: "flex-start" }}
+          variant="text"
+        >
+          Back to Change Requests
+        </Button>
+        <Paper variant="outlined" sx={{ p: 6, textAlign: "center" }}>
+          <Typography variant="h5" color="text.primary" sx={{ mb: 2 }}>
+            Error Loading Change Request
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {error?.message || "Change request not found"}
+          </Typography>
+        </Paper>
+      </Stack>
+    );
+  }
+
   return (
-    <Stack spacing={3}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {/* Back Button */}
       <Button
         startIcon={<ArrowLeft size={16} />}
@@ -50,15 +319,528 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
         Back to Change Requests
       </Button>
 
-      {/* Not Available Message */}
-      <Paper variant="outlined" sx={{ p: 6, textAlign: "center" }}>
-        <Typography variant="h5" color="text.primary" sx={{ mb: 2 }}>
-          Change Request Details
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Detailed change request information is not yet available.
-        </Typography>
+      {/* Header Section */}
+      <Paper variant="outlined" sx={{ p: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+              <Typography variant="h5" color="text.primary">
+                {changeRequest.title || "Not Available"}
+              </Typography>
+              {changeRequest.hasServiceOutage && (
+                <Chip
+                  label="Service Outage"
+                  size="small"
+                  sx={{
+                    bgcolor: alpha(colors.red[500], 0.1),
+                    color: colors.red[800],
+                    borderColor: alpha(colors.red[500], 0.2),
+                    border: "1px solid",
+                  }}
+                />
+              )}
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                fontSize: "0.875rem",
+                color: "text.secondary",
+              }}
+            >
+              <Typography variant="body2" fontWeight={600} color="text.primary">
+                {changeRequest.number}
+              </Typography>
+              <Typography variant="body2" color="text.disabled">
+                |
+              </Typography>
+              <Typography variant="body2">
+                Service Request: {changeRequest.case?.number || "Not Available"}
+              </Typography>
+              <Typography variant="body2" color="text.disabled">
+                |
+              </Typography>
+              <Typography variant="body2">
+                Created {changeRequest.createdOn}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", gap: 1 }}>
+            {changeRequest.impact?.label &&
+              typeof changeRequest.impact.label === "string" && (
+                <Chip
+                  label={formatImpactLabel(changeRequest.impact.label)}
+                  size="small"
+                  sx={{
+                    bgcolor: impactColor.bg,
+                    color: impactColor.text,
+                    borderColor: impactColor.border,
+                    border: "1px solid",
+                  }}
+                />
+              )}
+            {changeRequest.state?.label &&
+              typeof changeRequest.state.label === "string" && (
+                <Chip
+                  icon={renderStateIcon()}
+                  label={String(changeRequest.state.label)}
+                  size="small"
+                  sx={{
+                    bgcolor: statusColor.bg,
+                    color: statusColor.text,
+                    borderColor: statusColor.border,
+                    border: "1px solid",
+                    "& .MuiChip-icon": {
+                      color: statusColor.text,
+                    },
+                  }}
+                />
+              )}
+          </Box>
+        </Box>
       </Paper>
-    </Stack>
+
+      {/* Content Section */}
+      {/* Workflow Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+            <ChevronRight size={20} color={colors.purple[600]} />
+            <Typography variant="h6">Change Request Workflow</Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Track the progress of this change request through each stage
+          </Typography>
+        </Box>
+
+        <Box sx={{ px: 3, pb: 3 }}>
+          <Stack spacing={0}>
+            {workflowStages.map((stage, index) => (
+              <Box key={index} sx={{ position: "relative" }}>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        border: "2px solid",
+                        bgcolor: stage.disabled
+                          ? alpha(colors.grey[500], 0.05)
+                          : stage.completed
+                            ? alpha(colors.green[500], 0.1)
+                            : stage.current
+                              ? alpha(colors.blue[500], 0.1)
+                              : alpha(colors.grey[500], 0.1),
+                        borderColor: stage.disabled
+                          ? colors.grey[200]
+                          : stage.completed
+                            ? colors.green[500]
+                            : stage.current
+                              ? colors.blue[500]
+                              : colors.grey[300],
+                        opacity: stage.disabled ? 0.5 : 1,
+                      }}
+                    >
+                      {stage.completed ? (
+                        <CircleCheckBig size={20} color={colors.green[600]} />
+                      ) : (
+                        <Circle
+                          size={20}
+                          color={
+                            stage.current ? colors.blue[600] : colors.grey[400]
+                          }
+                          fill={stage.current ? colors.blue[600] : "none"}
+                        />
+                      )}
+                    </Box>
+                    {index < workflowStages.length - 1 && (
+                      <Box
+                        sx={{
+                          width: 2,
+                          height: 64,
+                          mt: 0.5,
+                          bgcolor:
+                            currentStateIndex > index
+                              ? colors.green[300]
+                              : colors.grey[200],
+                          opacity: 1,
+                        }}
+                      />
+                    )}
+                  </Box>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      pb: index < workflowStages.length - 1 ? 2 : 0,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <Box>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          <Typography
+                            variant="body2"
+                            fontWeight={stage.current ? 600 : 500}
+                            color={
+                              stage.disabled
+                                ? "text.disabled"
+                                : stage.current
+                                  ? colors.blue[900]
+                                  : "text.primary"
+                            }
+                            sx={{ opacity: stage.disabled ? 0.5 : 1 }}
+                          >
+                            {stage.name}
+                          </Typography>
+                          {stage.current && !stage.disabled && (
+                            <Chip
+                              label="Current Stage"
+                              size="small"
+                              sx={{
+                                bgcolor: alpha(colors.blue[500], 0.1),
+                                color: colors.blue[800],
+                                borderColor: alpha(colors.blue[500], 0.2),
+                                border: "1px solid",
+                                height: 20,
+                                fontSize: "0.7rem",
+                              }}
+                            />
+                          )}
+                        </Box>
+                        <Typography
+                          variant="caption"
+                          color={
+                            stage.disabled
+                              ? "text.disabled"
+                              : stage.completed || stage.current
+                                ? "text.primary"
+                                : "text.disabled"
+                          }
+                          sx={{ opacity: stage.disabled ? 0.5 : 1 }}
+                        >
+                          {stage.description}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Deployment & Component Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Server size={20} color={colors.grey[600]} />
+            <Typography variant="h6">Deployment & Component</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Deployment
+              </Typography>
+              <Typography variant="body2">
+                {typeof changeRequest.deployment?.label === "string"
+                  ? changeRequest.deployment.label
+                  : "Not Available"}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Component
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Package size={16} color={colors.grey[400]} />
+                <Typography variant="body2">
+                  {typeof changeRequest.deployedProduct?.label === "string"
+                    ? changeRequest.deployedProduct.label
+                    : "Not Available"}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+
+      {/* Change Description Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <FileText size={20} color={colors.grey[600]} />
+            <Typography variant="h6">Change Description</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography
+                variant="body2"
+                color="text.primary"
+                fontWeight={500}
+                sx={{ mb: 1 }}
+              >
+                Change Description
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {stripHtmlTags(changeRequest.description)}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Impact Analysis Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <TriangleAlert size={20} color={colors.red[600]} />
+            <Typography variant="h6">Impact Analysis</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Stack spacing={3}>
+            <Box>
+              <Typography
+                variant="body2"
+                color="text.primary"
+                fontWeight={500}
+                sx={{ mb: 1 }}
+              >
+                Impact Description
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {changeRequest.impactDescription ||
+                  "No impact description available"}
+              </Typography>
+            </Box>
+
+            {changeRequest.hasServiceOutage && (
+              <>
+                <Divider />
+
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.primary"
+                    fontWeight={500}
+                    sx={{ mb: 2 }}
+                  >
+                    Service Outage Details
+                  </Typography>
+                  <Paper
+                    sx={{
+                      bgcolor: alpha(colors.red[500], 0.05),
+                      border: 1,
+                      borderColor: alpha(colors.red[500], 0.2),
+                      p: 2,
+                    }}
+                  >
+                    <Box sx={{ display: "flex", gap: 1.5 }}>
+                      <TriangleAlert
+                        size={20}
+                        color={colors.red[600]}
+                        style={{ marginTop: 2 }}
+                      />
+                      <Typography variant="body2" color="text.primary">
+                        {changeRequest.serviceOutage ||
+                          "Service outage details not available"}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Box>
+              </>
+            )}
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Communication Plan Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Users size={20} color={colors.grey[600]} />
+            <Typography variant="h6">Communication Plan</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            {changeRequest.communicationPlan ||
+              "No communication plan available"}
+          </Typography>
+        </Box>
+      </Paper>
+
+      {/* Rollback Plan Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <RotateCcw size={20} color={colors.grey[600]} />
+            <Typography variant="h6">Rollback Plan</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            {changeRequest.rollbackPlan || "No rollback plan available"}
+          </Typography>
+        </Box>
+      </Paper>
+
+      {/* Test Plan Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Shield size={20} color={colors.grey[600]} />
+            <Typography variant="h6">Test Plan</Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            {changeRequest.testPlan || "No test plan available"}
+          </Typography>
+        </Box>
+      </Paper>
+
+      {/* Approval Information Card */}
+      <Paper variant="outlined">
+        <Box sx={{ px: 3, pt: 3, pb: 3 }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Approval Information
+          </Typography>
+
+          <Stack spacing={1.5}>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography variant="body2" color="text.secondary">
+                Created By
+              </Typography>
+              <Typography variant="body2">
+                {changeRequest.createdBy || "Not Available"}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography variant="body2" color="text.secondary">
+                Created Date
+              </Typography>
+              <Typography variant="body2">{changeRequest.createdOn}</Typography>
+            </Box>
+
+            <Divider />
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Approved By
+              </Typography>
+              <Typography variant="body2">
+                {changeRequest.approvedBy?.label || "Not available"}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                Approved Date
+              </Typography>
+              <Typography variant="body2">
+                {changeRequest.approvedOn || "Not available"}
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Paper>
+
+      {/* Notes & Comments Card */}
+      <Paper variant="outlined" sx={{ opacity: 0.6, pointerEvents: "none" }}>
+        <Box sx={{ px: 3, pt: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+            <MessageSquare size={20} />
+            <Typography variant="h6">Notes & Comments</Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Track updates and communications related to this change request
+          </Typography>
+        </Box>
+
+        <Box sx={{ px: 3, py: 3 }}>
+          <Typography
+            variant="body2"
+            color="text.disabled"
+            sx={{ textAlign: "center", py: 3 }}
+          >
+            No notes or comments available
+          </Typography>
+        </Box>
+      </Paper>
+      {/* Action Buttons */}
+      <Box sx={{ display: "flex", gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<Download size={18} />}
+          sx={{ flex: 1 }}
+        >
+          Download Change Request PDF
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<ExternalLink size={18} />}
+          sx={{ flex: 1 }}
+          onClick={() => {
+            if (changeRequest.case?.id) {
+              navigate(`/${projectId}/support/cases/${changeRequest.case.id}`);
+            }
+          }}
+          disabled={!changeRequest.case?.id}
+        >
+          View Related Service Request
+        </Button>
+      </Box>
+    </Box>
   );
 }
