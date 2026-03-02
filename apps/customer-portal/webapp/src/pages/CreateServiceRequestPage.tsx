@@ -155,6 +155,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
     setSelectedCatalogId("");
     setSelectedCatalogItemId("");
     setVariableValues({});
+    setAttachments([]);
   }, []);
 
   const handleProductChange = useCallback((value: string) => {
@@ -162,6 +163,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
     setSelectedCatalogId("");
     setSelectedCatalogItemId("");
     setVariableValues({});
+    setAttachments([]);
   }, []);
 
   const handleSelectCatalogItem = useCallback(
@@ -169,6 +171,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
       setSelectedCatalogId(catalogId);
       setSelectedCatalogItemId(catalogItemId);
       setVariableValues({});
+      setAttachments([]);
     },
     [],
   );
@@ -270,11 +273,6 @@ export default function CreateServiceRequestPage(): JSX.Element {
       })
       .filter((v) => v.value !== "");
 
-    if (variablePayload.length === 0) {
-      showError("At least one variable is required. Please fill in the request details.");
-      return;
-    }
-
     let encodedAttachments: Array<{ name: string; file: string }> = [];
     if (attachments.length > 0) {
       try {
@@ -329,7 +327,6 @@ export default function CreateServiceRequestPage(): JSX.Element {
     !!productId &&
     !!selectedCatalogId &&
     !!selectedCatalogItemId &&
-    (variablesData?.variables?.length ?? 0) > 0 &&
     !isCreatePending;
 
   return (
