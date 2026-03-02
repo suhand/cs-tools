@@ -18,7 +18,7 @@ import { Box, Paper, Typography, alpha, useTheme } from "@wso2/oxygen-ui";
 import { useMemo, useState, type JSX } from "react";
 import { useLocation } from "react-router";
 import type { CaseDetails } from "@models/responses";
-import useGetCaseAttachments from "@api/useGetCaseAttachments";
+import { useGetCaseAttachments } from "@api/useGetCaseAttachments";
 import { useGetCallRequests } from "@api/useGetCallRequests";
 import {
   getStatusColor,
@@ -96,7 +96,7 @@ export default function CaseDetailsContent({
   );
 
   const attachmentsQuery = useGetCaseAttachments(caseId);
-  const attachmentCount = attachmentsQuery.data?.totalRecords;
+  const attachmentCount = attachmentsQuery.data?.pages?.[0]?.totalRecords;
 
   const resolvedProjectId = data?.project?.id ?? projectId;
   const callsQuery = useGetCallRequests(resolvedProjectId, caseId);

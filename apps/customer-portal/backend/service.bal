@@ -718,10 +718,10 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        types:OverallConversationStats { openCount, resolvedCount, activeCount, abandonedCount} =
+        types:OverallConversationStats {openCount, resolvedCount, activeCount, abandonedCount} =
             getConversationStats(conversationStats);
 
-        return { openCount, resolvedCount, activeCount, abandonedCount };
+        return {openCount, resolvedCount, activeCount, abandonedCount};
     }
 
     # Get project support statistics by ID.
@@ -1762,7 +1762,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                     projectId: payload.projectId,
                     versionId: payload.versionId,
                     cores: payload?.cores,
-                    tps: payload?.tps
+                    tps: payload?.tps,
+                    description: payload?.description
                 });
         if response is error {
             if getStatusCode(response) == http:STATUS_FORBIDDEN {
@@ -1824,6 +1825,15 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
+        string? validateDeployedProductUpdatePayload = entity:validateDeployedProductUpdatePayload(payload);
+        if validateDeployedProductUpdatePayload is string {
+            return <http:BadRequest>{
+                body: {
+                    message: validateDeployedProductUpdatePayload
+                }
+            };
+        }
+
         entity:DeployedProductUpdateResponse|error response =
             entity:updateDeployedProduct(userInfo.idToken, productId, payload);
         if response is error {
@@ -1869,7 +1879,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     }
 
     # Search catalogs for a specific deployed product with filters and pagination.
-    # 
+    #
     # + id - ID of the deployed product
     # + payload - Catalog search request body
     # + return - Paginated catalogs or error
@@ -1894,7 +1904,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         if searchResponse is error {
             if getStatusCode(searchResponse) == http:STATUS_FORBIDDEN {
                 log:printWarn(string `User: ${
-                    userInfo.userId} is forbidden to search catalogs for deployed product with ID: ${id}!`);
+                        userInfo.userId} is forbidden to search catalogs for deployed product with ID: ${id}!`);
                 return <http:Forbidden>{
                     body: {
                         message: "You're not authorized to search catalogs for the deployed product. " +
@@ -1922,11 +1932,11 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     }
 
     # Get catalog item variables by catalog ID and item ID.
-    # 
+    #
     # + catalogId - ID of the catalog
     # + itemId - ID of the catalog item
     # + return - Catalog item details or error
-    resource function get catalogs/[entity:IdString catalogId]/items/[entity:IdString itemId](http:RequestContext ctx) 
+    resource function get catalogs/[entity:IdString catalogId]/items/[entity:IdString itemId](http:RequestContext ctx)
         returns http:Ok|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -2911,7 +2921,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                     filters: {
                         projectIds: [id],
                         startDate: payload.filters?.startDate,
-                        endDate: payload.filters?.endDate
+                        endDate: payload.filters?.endDate,
+                        state: payload.filters?.state
                     },
                     pagination: payload.pagination
                 });
@@ -3073,5 +3084,106 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         return <http:Ok>{
             body: mapChangeRequestSearchResponse(response)
         };
+    }
+
+    # Get change request details by change request ID.
+    #
+    # + id - ID of the change request
+    # + return - Change request details or an error
+    resource function get change\-requests/[entity:IdString id](http:RequestContext ctx)
+        returns types:ChangeRequestResponse|http:Unauthorized|http:Forbidden|http:NotFound|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:ChangeRequestResponse|error response = entity:getChangeRequestDetails(userInfo.idToken, id);
+        if response is error {
+            if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${
+                        userInfo.userId} is not authorized to access change request information!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `Access to change request information is forbidden for user: ${userInfo.userId}`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "Access to change request information is forbidden for the user!"
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_NOT_FOUND {
+                return <http:NotFound>{
+                    body: {
+                        message: "The requested change request is not found!"
+                    }
+                };
+            }
+
+            string customError = "Failed to retrieve change request details.";
+            log:printError(customError, response);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return mapChangeRequestResponse(response);
+    }
+
+    # Get change request statistics for a project.
+    #
+    # + id - ID of the project
+    # + return - Change request statistics for the project or an error
+    resource function get projects/[entity:IdString id]/stats/change\-requests(http:RequestContext ctx)
+        returns types:ProjectChangeRequestStatsResponse|http:Unauthorized|http:Forbidden|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:ProjectChangeRequestStatsResponse|error response = entity:getProjectChangeRequestStats(userInfo.idToken, id);
+        if response is error {
+            if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${
+                        userInfo.userId} is not authorized to access change request information!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `Access to change request information is forbidden for user: ${userInfo.userId}`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "Access to change request information is forbidden for the user!"
+                    }
+                };
+            }
+
+            string customError = "Failed to retrieve change request stats.";
+            log:printError(customError, response);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return mapProjectChangeRequestStatsResponse(response);
     }
 }

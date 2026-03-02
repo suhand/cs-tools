@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
@@ -132,7 +132,9 @@ describe("useGetCaseAttachments", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.hasNextPage).toBe(true);
 
-    result.current.fetchNextPage();
+    await act(async () => {
+      await result.current.fetchNextPage();
+    });
 
     await waitFor(() => expect(result.current.data?.pages.length).toBe(2));
     expect(result.current.data?.pages[1]?.attachments).toEqual(

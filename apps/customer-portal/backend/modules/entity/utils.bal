@@ -24,7 +24,7 @@ public configurable CaseStateIds & readonly caseStateIds = {
     solutionProposed: 6,
     workInProgress: 10
 };
-public configurable ConverstaionStateIds & readonly conversationStateIds =
+public configurable ConversationStateIds & readonly conversationStateIds =
     {open: 1, active: 2, resolved: 3, converted: 4, abandonded: 5};
 
 # Generate authorization headers.
@@ -222,6 +222,28 @@ public isolated function validateCaseCreatePayload(CaseCreatePayload payload) re
         }
     } else {
         return string `Case type ${caseType} is not supported.`;
+    }
+    return;
+}
+
+# Validate deployed product update payload.
+#
+# + payload - Deployed product update payload
+# + return - Error message if validation fails, () otherwise
+public isolated function validateDeployedProductUpdatePayload(DeployedProductUpdatePayload payload) returns string? {
+    boolean? active = payload.active;
+    int? cores = payload?.cores;
+    decimal? tps = payload?.tps;
+    string? description = payload?.description;
+    if active is boolean {
+        if active {
+            return "Invalid value for active field. When updating cores or tps, active field should be set to false.";  
+        }
+        if cores !is () || tps !is () || description !is () {
+            return "When deactivating, cores, tps and description fields should not be provided.";
+        }
+    } else if cores is () && tps is () && description is () {
+        return "At least one of cores or tps or description should be provided when updating deployed product details.";
     }
     return;
 }

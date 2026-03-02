@@ -58,8 +58,7 @@ export default function AnnouncementsPage(): JSX.Element {
     () => ({
       filters: {
         caseTypes: [CaseType.ANNOUNCEMENT],
-        statusIds: undefined,
-        severityId: undefined,
+        statusIds: filters.statusId ? [Number(filters.statusId)] : undefined,
         searchQuery: searchTerm.trim() || undefined,
       },
       sortBy: {
@@ -67,7 +66,7 @@ export default function AnnouncementsPage(): JSX.Element {
         order: sortOrder,
       },
     }),
-    [searchTerm, sortOrder],
+    [filters, searchTerm, sortOrder],
   );
 
   const offset = (page - 1) * pageSize;
@@ -138,7 +137,6 @@ export default function AnnouncementsPage(): JSX.Element {
         filterMetadata={filterMetadata}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
-        filtersDisabled
       />
 
       <Box

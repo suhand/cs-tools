@@ -18,9 +18,9 @@ import { Box, Button, Pagination, Stack, Typography } from "@wso2/oxygen-ui";
 import { Paperclip } from "@wso2/oxygen-ui-icons-react";
 import { useEffect, useMemo, useState, type JSX } from "react";
 import {
-  useInfiniteCaseAttachments,
+  useGetCaseAttachments,
   flattenCaseAttachments,
-} from "@api/useInfiniteCaseAttachments";
+} from "@api/useGetCaseAttachments";
 import type { CaseAttachment } from "@models/responses";
 import UploadAttachmentModal from "@case-details-attachments/UploadAttachmentModal";
 import AttachmentListItem from "@case-details-attachments/AttachmentListItem";
@@ -54,7 +54,7 @@ export default function CaseDetailsAttachmentsPanel({
     hasNextPage,
     fetchNextPage,
     isFetchNextPageError,
-  } = useInfiniteCaseAttachments(caseId);
+  } = useGetCaseAttachments(caseId);
 
   const allAttachments = useMemo(() => flattenCaseAttachments(data), [data]);
 

@@ -411,6 +411,15 @@ public isolated function getProjectTimeCardStats(string idToken, string projectI
     return csEntityClient->/projects/[projectId]/time\-cards/stats.get(generateHeaders(idToken));
 }
 
+# Get change request by ID.
+# 
+# + idToken - ID token for authorization
+# + changeRequestId - Unique ID of the change request to be retrieved
+# + return - Change request response containing details of the retrieved change request or error
+public isolated function getChangeRequestDetails(string idToken, string changeRequestId) returns ChangeRequestResponse|error {
+    return csEntityClient->/change\-requests/[changeRequestId].get(generateHeaders(idToken));
+}
+
 # Search change requests of a project.
 #
 # + idToken - ID token for authorization
@@ -443,4 +452,15 @@ public isolated function getCatalogItemVariable(string idToken, string catalogId
     returns CatalogItemVariablesResponse|error {
 
     return csEntityClient->/catalogs/[catalogId]/items/[catalogItemId]/variables.get(generateHeaders(idToken));
+}
+
+# Get project change request statistics.
+#
+# + idToken - ID token for authorization
+# + projectId - Unique ID of the project for which change request statistics are to be retrieved
+# + return - Project change request statistics response or error
+public isolated function getProjectChangeRequestStats(string idToken, string projectId)
+    returns ProjectChangeRequestStatsResponse|error {
+
+    return csEntityClient->/projects/[projectId]/change\-requests/stats.get(generateHeaders(idToken));
 }

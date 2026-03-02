@@ -45,6 +45,8 @@ public type CaseSearchFilters record {|
     int severityId?;
     # Deployment ID
     string deploymentId?;
+    # Case created by the logged in user
+    boolean createdByMe?;
 |};
 
 # Payload for case search.
@@ -459,6 +461,8 @@ public type DeployedProductCreatePayload record {|
     int? cores?;
     # TPS allocated for the product
     decimal? tps?;
+    # Description of the deployed product
+    string? description?;
 |};
 
 # Payload for creating a comment.
@@ -885,6 +889,8 @@ public type TimeCardSearchPayload record {|
         entity:Date startDate?;
         # End date for filtering time cards (ISO 8601 format)
         entity:Date endDate?;
+        # State of the time cards to filter (e.g., "Approved", "Submitted", etc.)
+        entity:TimeCardState state?;
     } filters?;
     # Pagination details
     entity:Pagination pagination?;
@@ -1052,10 +1058,12 @@ public type ChangeRequest record {|
     ReferenceItem? deployment;
     # Deployed product information
     ReferenceItem? deployedProduct;
+    # Product information
+    ReferenceItem? product;
     # Planned start date and time
-    string? startDate;
+    entity:Date? startDate;
     # Planned end date and time
-    string? endDate;
+    entity:Date? endDate;
     # Duration
     string? duration;
     # Indicates if the change request has a service outage
@@ -1066,6 +1074,10 @@ public type ChangeRequest record {|
     ReferenceItem? state;
     # Type information
     ReferenceItem? 'type;
+    # Assigned engineer
+    ReferenceItem? assignedEngineer;
+    # Assigned team
+    ReferenceItem? assignedTeam;
     # Created date and time
     string createdOn;
     # Updated date and time
@@ -1121,4 +1133,41 @@ public type ChangeRequestSearchPayload record {|
 public type CatalogSearchPayload record {|
     # Pagination details
     entity:Pagination pagination?;
+|};
+
+# Change request details information.
+public type ChangeRequestResponse record {|
+    *ChangeRequest;
+    # Change request description
+    string? description;
+    # User who created the change request
+    string createdBy;
+    # Justification for the change request
+    string? justification;
+    # Impact description
+    string? impactDescription;
+    # Service outage details
+    string? serviceOutage;
+    # Communication plan
+    string? communicationPlan;
+    # Rollback plan
+    string? rollbackPlan;
+    # Test plan
+    string? testPlan;
+    # Indicates if the customer has approved
+    boolean hasCustomerApproved;
+    # Indicates if the customer has reviewed
+    boolean hasCustomerReviewed;
+    # Internal approval details
+    ReferenceItem? approvedBy;
+    # Internal approval date and time
+    string? approvedOn;
+|};
+
+# Change request statistics.
+public type ProjectChangeRequestStatsResponse record {|
+    # Total change request count
+    int totalCount;
+    # Count of change requests by state
+    ReferenceItem[] stateCount;
 |};

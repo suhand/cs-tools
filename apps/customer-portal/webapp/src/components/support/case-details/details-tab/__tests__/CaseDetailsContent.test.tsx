@@ -69,10 +69,16 @@ vi.mock("@context/error-banner/ErrorBannerContext", () => ({
 }));
 
 vi.mock("@api/useGetCaseAttachments", () => ({
-  default: vi.fn(() => ({
-    data: { totalRecords: 3, attachments: [], limit: 50, offset: 0 },
+  useGetCaseAttachments: vi.fn(() => ({
+    data: {
+      pages: [{ totalRecords: 3, attachments: [], limit: 10, offset: 0 }],
+      pageParams: [0],
+    },
     isLoading: false,
     isError: false,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    fetchNextPage: vi.fn(),
   })),
 }));
 
