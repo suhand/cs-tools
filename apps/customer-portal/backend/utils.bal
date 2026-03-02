@@ -108,6 +108,8 @@ public isolated function getProjectFilters(entity:ProjectMetadataResponse projec
         select {id: item.id.toString(), label: item.label};
     types:ReferenceItem[] changeRequestStates = from entity:ChoiceListItem item in projectMetadata.changeRequestStates
         select {id: item.id.toString(), label: item.label};
+    types:ReferenceItem[] timeCardStates = from entity:ChoiceListItem item in projectMetadata.timeCardStates
+        select {id: item.id.toString(), label: item.label};
     types:ReferenceItem[] changeRequestImpacts = from entity:ChoiceListItem item in projectMetadata.changeRequestImpacts
         select {id: item.id.toString(), label: item.label};
     types:ReferenceItem[] caseTypes = from entity:ReferenceTableItem item in projectMetadata.caseTypes
@@ -125,6 +127,7 @@ public isolated function getProjectFilters(entity:ProjectMetadataResponse projec
         changeRequestImpacts,
         caseTypes,
         conversationStates,
+        timeCardStates,
         severityBasedAllocationTime: projectMetadata.severityBasedAllocationTime
     };
 }
@@ -442,12 +445,13 @@ public isolated function mapTimeCardSearchResponse(entity:TimeCardsResponse resp
         let entity:ReferenceTableItem? approvedBy = timeCard.approvedBy
         let entity:ReferenceTableItem? project = timeCard.project
         let entity:TimeCardCase? case = timeCard.case
+        let entity:ChoiceListItem? state = timeCard.state
         select {
             id: timeCard.id,
             totalTime: timeCard.totalTime,
             createdOn: timeCard.createdOn,
             hasBillable: timeCard.hasBillable,
-            state: timeCard.state,
+            state: state != () ? {id: state.id.toString(), label: state.label} : (),
             approvedBy: approvedBy != () ? {id: approvedBy.id, label: approvedBy.name} : (),
             project: project != () ? {id: project.id, label: project.name} : (),
             case: case != () ? {id: case.id, label: case.name, number: case.number} : ()

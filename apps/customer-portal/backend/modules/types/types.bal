@@ -228,6 +228,8 @@ public type ProjectFilterOptions record {|
     ReferenceItem[] conversationStates;
     # List of available case types
     ReferenceItem[] caseTypes;
+    # List of available time card states
+    ReferenceItem[] timeCardStates;
     # Severity based allocation time mapping (severity ID to allocation time in minutes)
     map<int> severityBasedAllocationTime;
 |};
@@ -826,7 +828,7 @@ public type TimeCard record {|
     # Indicates if the time card has billable hours
     boolean hasBillable;
     # State information (e.g., "Approved", "Submitted")
-    string state;
+    ReferenceItem? state;
     # User who approved the time card
     ReferenceItem? approvedBy;
     # Associated project
@@ -889,8 +891,8 @@ public type TimeCardSearchPayload record {|
         entity:Date startDate?;
         # End date for filtering time cards (ISO 8601 format)
         entity:Date endDate?;
-        # State of the time cards to filter (e.g., "Approved", "Submitted", etc.)
-        entity:TimeCardState state?;
+        # List of time card states to filter (e.g., "Approved", "Submitted", etc.)
+        entity:TimeCardState[] states?;
     } filters?;
     # Pagination details
     entity:Pagination pagination?;

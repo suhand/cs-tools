@@ -2922,7 +2922,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                         projectIds: [id],
                         startDate: payload.filters?.startDate,
                         endDate: payload.filters?.endDate,
-                        state: payload.filters?.state
+                        states: payload.filters?.states
                     },
                     pagination: payload.pagination
                 });
