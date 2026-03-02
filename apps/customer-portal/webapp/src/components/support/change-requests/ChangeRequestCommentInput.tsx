@@ -51,7 +51,7 @@ export default function ChangeRequestCommentInput({
     postComment.mutate(
       {
         caseId: changeRequestId,
-        body: { content: trimmedValue, type: CommentType.CHANGE_REQUEST },
+        body: { content: trimmedValue, type: CommentType.COMMENT },
       },
       {
         onSuccess: () => {
