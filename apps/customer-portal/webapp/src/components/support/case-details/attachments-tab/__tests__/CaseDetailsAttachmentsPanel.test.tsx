@@ -139,7 +139,7 @@ describe("CaseDetailsAttachmentsPanel", () => {
       isFetchingNextPage: false,
       fetchNextPage: vi.fn(),
       isFetchNextPageError: false,
-    });
+    } as any);
     renderPanel("case-1");
     expect(screen.getByText("No attachments found.")).toBeInTheDocument();
     expect(
