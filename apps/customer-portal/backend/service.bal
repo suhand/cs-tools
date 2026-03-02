@@ -3142,7 +3142,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     #
     # + id - ID of the project
     # + return - Change request statistics for the project or an error
-    resource function get projects/[string id]/stats/change\-requests(http:RequestContext ctx)
+    resource function get projects/[entity:IdString id]/stats/change\-requests(http:RequestContext ctx)
         returns types:ProjectChangeRequestStatsResponse|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
