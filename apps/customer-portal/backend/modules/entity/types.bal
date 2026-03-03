@@ -260,6 +260,8 @@ public type Case record {|
     ReferenceTableItem? catalog;
     # Catalog item information (if the case is a service request)
     ReferenceTableItem? catalogItem;
+    # Assigned team
+    ReferenceTableItem? assignedTeam;
     json...;
 |};
 
@@ -395,7 +397,19 @@ public type CaseResponse record {|
     string? closeNotes?;
     # Indicates if the case is auto closed
     boolean? hasAutoClosed?;
+    # Associated change requests (only for service requests)
+    ReferenceTableItem[]? changeRequests?;
+    # Variables for service request (only for service requests)
+    CaseResponseVariable[]? variables?;
     json...;
+|};
+
+# Case response for service request case type with variables.
+public type CaseResponseVariable record {|
+    # Variable name
+    string name;
+    # Variable value
+    string value;
 |};
 
 # Sort configuration.

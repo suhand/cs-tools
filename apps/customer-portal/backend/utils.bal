@@ -59,6 +59,7 @@ public isolated function searchCases(string idToken, string projectId, types:Cas
         let entity:ChoiceListItem? state = case.state
         let entity:ReferenceTableItem? catalog = case.catalog
         let entity:ReferenceTableItem? catalogItem = case.catalogItem
+        let entity:ReferenceTableItem? assignedTeam = case.assignedTeam
         select {
             id: case.id,
             internalId: case.internalId,
@@ -78,7 +79,8 @@ public isolated function searchCases(string idToken, string projectId, types:Cas
             severity: severity != () ? {id: severity.id.toString(), label: severity.label} : (),
             status: state != () ? {id: state.id.toString(), label: state.label} : (),
             catalog: catalog != () ? {id: catalog.id, label: catalog.name} : (),
-            catalogItem: catalogItem != () ? {id: catalogItem.id, label: catalogItem.name} : ()
+            catalogItem: catalogItem != () ? {id: catalogItem.id, label: catalogItem.name} : (),
+            assignedTeam: assignedTeam != () ? {id: assignedTeam.id, label: assignedTeam.name} : ()
         };
 
     return {
@@ -506,6 +508,9 @@ public isolated function mapCaseResponse(entity:CaseResponse response) returns t
     entity:ChoiceListItem? state = response.state;
     entity:ReferenceTableItem? catalog = response.catalog;
     entity:ReferenceTableItem? catalogItem = response.catalogItem;
+    entity:ReferenceTableItem? assignedTeam = response.assignedTeam;
+    entity:ReferenceTableItem[]? changeRequests = response?.changeRequests;
+    entity:CaseResponseVariable[]? variables = response?.variables;
 
     return {
         id: response.id,
@@ -526,6 +531,7 @@ public isolated function mapCaseResponse(entity:CaseResponse response) returns t
         status: state != () ? {id: state.id.toString(), label: state.label} : (),
         catalog: catalog != () ? {id: catalog.id, label: catalog.name} : (),
         catalogItem: catalogItem != () ? {id: catalogItem.id, label: catalogItem.name} : (),
+        assignedTeam: assignedTeam != () ? {id: assignedTeam.id, label: assignedTeam.name} : (),
         updatedOn: response.updatedOn,
         deployedProduct: response.deployedProduct != () ? {
                 id: response.deployedProduct?.id ?: "",
@@ -556,7 +562,10 @@ public isolated function mapCaseResponse(entity:CaseResponse response) returns t
                 label: response?.closedBy?.name ?: "",
                 count: response?.closedBy?.count
             } : (),
-        hasAutoClosed: response?.hasAutoClosed
+        changeRequests: changeRequests != () ? from entity:ReferenceTableItem item in changeRequests
+                select {id: item.id, label: item.name} : (),
+        hasAutoClosed: response?.hasAutoClosed,
+        variables
     };
 }
 
