@@ -15,18 +15,23 @@
 // under the License.
 
 import {
+  Activity,
+  CheckCircle,
   CircleAlert,
   CircleCheck,
   CircleQuestionMark,
   CircleX,
   Clock,
   MessageCircle,
+  PlayCircle,
   RotateCcw,
   TriangleAlert,
+  XCircle,
 } from "@wso2/oxygen-ui-icons-react";
 import {
   ChatAction,
   ChatStatus,
+  ConversationStatus,
   CaseStatus,
   CallRequestStatus,
   CaseType,
@@ -538,10 +543,10 @@ export function getChatStatusAction(status: string): ChatAction {
   const normalized = status?.toLowerCase() || "";
 
   switch (true) {
-    case normalized.includes("open"):
-      return ChatAction.RESUME;
-    default:
+    case normalized.includes("resolved"):
       return ChatAction.VIEW;
+    default:
+      return ChatAction.RESUME;
   }
 }
 
@@ -554,6 +559,8 @@ export function getChatStatusAction(status: string): ChatAction {
 export function getChatActionColor(action: ChatAction): ChatActionState {
   switch (action) {
     case ChatAction.RESUME:
+      return "warning";
+    case ChatAction.VIEW:
       return "info";
     default:
       return "primary";
@@ -578,6 +585,59 @@ export function getChatStatusColor(status: string): string {
       return "error.main";
     default:
       return "secondary.main";
+  }
+}
+
+/**
+ * Returns the color path for a conversation status.
+ *
+ * @param status - Conversation status string.
+ * @returns {string} Palette color path.
+ */
+export function getConversationStatusColor(status: string): string {
+  const normalized = status?.toLowerCase() || "";
+
+  switch (true) {
+    case normalized.includes(ConversationStatus.ABANDONED.toLowerCase()):
+      return "error.main";
+    case normalized.includes(ConversationStatus.ACTIVE.toLowerCase()):
+      return "success.main";
+    case normalized.includes(ConversationStatus.CONVERTED.toLowerCase()):
+      return "info.main";
+    case normalized.includes(ConversationStatus.OPEN.toLowerCase()):
+      return "warning.main";
+    case normalized.includes(ConversationStatus.RESOLVED.toLowerCase()):
+      return "success.main";
+    default:
+      return "secondary.main";
+  }
+}
+
+/**
+ * Returns the icon component for a conversation status.
+ *
+ * @param status - Conversation status string.
+ * @returns {ComponentType} Icon component.
+ */
+export function getConversationStatusIcon(status?: string): ComponentType<{
+  size?: number;
+  color?: string;
+}> {
+  const normalized = status?.toLowerCase() || "";
+
+  switch (true) {
+    case normalized.includes(ConversationStatus.ABANDONED.toLowerCase()):
+      return XCircle;
+    case normalized.includes(ConversationStatus.ACTIVE.toLowerCase()):
+      return Activity;
+    case normalized.includes(ConversationStatus.CONVERTED.toLowerCase()):
+      return CheckCircle;
+    case normalized.includes(ConversationStatus.OPEN.toLowerCase()):
+      return PlayCircle;
+    case normalized.includes(ConversationStatus.RESOLVED.toLowerCase()):
+      return CircleCheck;
+    default:
+      return CircleAlert;
   }
 }
 

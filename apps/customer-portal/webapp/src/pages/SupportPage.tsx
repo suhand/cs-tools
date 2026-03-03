@@ -186,7 +186,7 @@ export default function SupportPage(): JSX.Element {
               isLoading={isChatLoading}
               onItemAction={
                 projectId
-                  ? (chatId) => {
+                  ? (chatId, action) => {
                       const summary = chatItems.find(
                         (item) => item.chatId === chatId,
                       );
@@ -195,12 +195,16 @@ export default function SupportPage(): JSX.Element {
                         return;
                       }
 
-                      navigate(
-                        `/${projectId}/support/conversations/${chatId}`,
-                        {
-                          state: { conversationSummary: summary },
-                        },
-                      );
+                      if (action === "resume") {
+                        navigate(`/${projectId}/support/chat/${chatId}`);
+                      } else {
+                        navigate(
+                          `/${projectId}/support/conversations/${chatId}`,
+                          {
+                            state: { conversationSummary: summary },
+                          },
+                        );
+                      }
                     }
                   : undefined
               }
