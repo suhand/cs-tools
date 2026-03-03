@@ -168,12 +168,13 @@ export default function ChangeRequestsPage(): JSX.Element {
   // Handle export completion when all data is fetched
   useEffect(() => {
     if (isExporting) {
-      if (isInfiniteError) {
+      if (isInfiniteError || isStatsError) {
         // Handle error case
-        console.error("Failed to fetch change requests for export");
+        console.error("Failed to fetch change requests or stats for export");
         setTimeout(() => setIsExporting(false), 0);
       } else if (
         !isInfiniteLoading &&
+        !isStatsLoading &&
         !hasNextPage &&
         !isFetchingNextPage &&
         infiniteData &&
@@ -193,6 +194,8 @@ export default function ChangeRequestsPage(): JSX.Element {
     isExporting,
     isInfiniteLoading,
     isInfiniteError,
+    isStatsLoading,
+    isStatsError,
     hasNextPage,
     isFetchingNextPage,
     infiniteData,

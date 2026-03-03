@@ -236,7 +236,7 @@ export default function CreateCasePage(): JSX.Element {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : undefined;
     } catch (e) {
-      console.error("Failed to parse stored classification data", e);
+      logger.error("Failed to parse stored classification data", e);
       return undefined;
     }
   });
@@ -249,14 +249,14 @@ export default function CreateCasePage(): JSX.Element {
           JSON.stringify(locationState.classificationResponse),
         );
       } catch (e) {
-        console.error(
+        logger.error(
           "Failed to store classification data in sessionStorage",
           e,
         );
       }
       setClassificationResponse(locationState.classificationResponse);
     }
-  }, [locationState?.classificationResponse, STORAGE_KEY]);
+  }, [locationState?.classificationResponse, STORAGE_KEY, logger]);
 
   // Persist conversationId to survive page refresh
   const [conversationId, setConversationId] = useState<string | undefined>(
@@ -293,15 +293,17 @@ export default function CreateCasePage(): JSX.Element {
 
   // Persist conversationId whenever it changes
   useEffect(() => {
-    if (conversationId) {
-      try {
+    try {
+      if (conversationId) {
         sessionStorage.setItem(CONVERSATION_ID_STORAGE_KEY, conversationId);
-      } catch (e) {
-        logger.error(
-          "Failed to persist conversationId to sessionStorage",
-          e,
-        );
+      } else {
+        sessionStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
       }
+    } catch (e) {
+      logger.error(
+        "Failed to persist conversationId to sessionStorage",
+        e,
+      );
     }
   }, [conversationId, CONVERSATION_ID_STORAGE_KEY, logger]);
 
@@ -724,8 +726,14 @@ export default function CreateCasePage(): JSX.Element {
         );
 
         showSuccess("Case created successfully");
-        sessionStorage.removeItem(STORAGE_KEY);
-        sessionStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
+        
+        // Clean up sessionStorage safely
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
+        } catch (e) {
+          logger.error("Failed to cleanup sessionStorage after case creation", e);
+        }
 
         // Refetch security vulnerabilities if this was a security report
         if (isCreatedSecurityReport) {
