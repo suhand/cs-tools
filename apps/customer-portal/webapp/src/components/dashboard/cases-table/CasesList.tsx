@@ -29,7 +29,6 @@ import {
   TablePagination,
   alpha,
 } from "@wso2/oxygen-ui";
-import { ExternalLink } from "@wso2/oxygen-ui-icons-react";
 import { type JSX, type ChangeEvent } from "react";
 import type { CaseSearchResponse, CaseListItem } from "@models/responses";
 import {
@@ -160,7 +159,6 @@ const CasesList = ({
                         }}
                       >
                         {row.title || "--"}
-                        <ExternalLink size={12} style={{ opacity: 0.5 }} />
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         ID: {row.number}

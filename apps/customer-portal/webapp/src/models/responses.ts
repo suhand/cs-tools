@@ -368,6 +368,16 @@ export interface ChangeRequestStats {
   completed: number;
 }
 
+// Change Request Stats API Response
+export interface ChangeRequestStatsResponse {
+  totalCount: number;
+  stateCount: Array<{
+    id: string;
+    label: string;
+    count: number;
+  }>;
+}
+
 // Case Search Response
 export interface CaseSearchResponse {
   cases: CaseListItem[];

@@ -21,12 +21,13 @@ import { useAsgardeo } from "@asgardeo/react";
 import { getNoveraChatEnabled } from "@utils/settingsStorage";
 import { useGetProjectCasesPage } from "@api/useGetProjectCasesPage";
 import useGetProjectFilters from "@api/useGetProjectFilters";
+import { useGetDeployments } from "@api/useGetDeployments";
 import FilterPopover, {
   type FilterField,
 } from "@components/common/filter-panel/FilterPopover";
 import CasesTableHeader from "@components/dashboard/cases-table/CasesTableHeader";
 import CasesList from "@components/dashboard/cases-table/CasesList";
-import { normalizeCaseTypeOptions } from "@utils/support";
+import { normalizeCaseTypeOptions, mapSeverityToDisplay } from "@utils/support";
 
 const OUTSTANDING_STATUS_IDS = [1, 10, 18, 1003, 1006] as const;
 
@@ -48,6 +49,9 @@ const CasesTable = ({ projectId }: CasesTableProps): JSX.Element => {
     isError: isErrorFilters,
   } = useGetProjectFilters(projectId);
 
+  // Fetch deployments for the deployment filter
+  const { data: deploymentsData } = useGetDeployments(projectId);
+
   const dynamicFilterFields: FilterField[] = [
     {
       id: "statusId",
@@ -65,7 +69,7 @@ const CasesTable = ({ projectId }: CasesTableProps): JSX.Element => {
       type: "select",
       options:
         filtersMetadata?.severities?.map((s) => ({
-          label: s.label,
+          label: mapSeverityToDisplay(s.label),
           value: s.id,
         })) || [],
     },
@@ -84,8 +88,8 @@ const CasesTable = ({ projectId }: CasesTableProps): JSX.Element => {
       label: "Deployment",
       type: "select",
       options:
-        filtersMetadata?.deploymentTypes?.map((d) => ({
-          label: d.label,
+        deploymentsData?.deployments?.map((d) => ({
+          label: d.type?.label || d.name,
           value: d.id,
         })) || [],
     },

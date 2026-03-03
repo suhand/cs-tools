@@ -38,6 +38,7 @@ import { ArrowLeft } from "@wso2/oxygen-ui-icons-react";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
+import { useGetDeployments } from "@api/useGetDeployments";
 import { getIncidentAndQueryIds } from "@utils/support";
 import { CaseType } from "@constants/supportConstants";
 import type { AllCasesFilterValues } from "@models/responses";
@@ -65,6 +66,9 @@ export default function AllCasesPage(): JSX.Element {
 
   // Fetch filter metadata first to get Incident and Query IDs for stats API
   const { data: filterMetadata } = useGetProjectFilters(projectId || "");
+
+  // Fetch deployments for the deployment filter
+  const { data: deploymentsData } = useGetDeployments(projectId || "");
 
   const { incidentId, queryId } = useMemo(
     () => getIncidentAndQueryIds(filterMetadata?.caseTypes),
@@ -228,6 +232,7 @@ export default function AllCasesPage(): JSX.Element {
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
         filters={filters}
         filterMetadata={filterMetadata}
+        deployments={deploymentsData?.deployments}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
       />

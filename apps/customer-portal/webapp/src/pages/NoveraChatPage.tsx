@@ -222,23 +222,30 @@ export default function NoveraChatPage(): JSX.Element {
             tier: DEFAULT_CONVERSATION_TIER,
           });
           navigate(`/${projectId}/support/chat/create-case`, {
-            state: { messages, classificationResponse },
+            state: { messages, classificationResponse, conversationId },
           });
         } catch {
           navigate(`/${projectId}/support/chat/create-case`, {
-            state: { messages },
+            state: { messages, conversationId },
           });
         }
       } else {
         navigate(`/${projectId}/support/chat/create-case`, {
-          state: { messages },
+          state: { messages, conversationId },
         });
       }
     } finally {
       setIsCreateCaseLoading(false);
       setIsWaitingForClassification(false);
     }
-  }, [projectId, navigate, messages, envProducts, classifyCase]);
+  }, [
+    projectId,
+    navigate,
+    messages,
+    envProducts,
+    classifyCase,
+    conversationId,
+  ]);
 
   const handleCreateCase = useCallback(() => {
     setIsCreateCaseLoading(true);

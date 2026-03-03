@@ -35,6 +35,7 @@ import { usePostCase } from "@api/usePostCase";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
+import { useLogger } from "@hooks/useLogger";
 import type { CreateCaseRequest } from "@models/requests";
 import { BasicInformationSection } from "@components/support/case-creation-layout/form-sections/basic-information-section/BasicInformationSection";
 import { CaseCreationHeader } from "@components/support/case-creation-layout/header/CaseCreationHeader";
@@ -177,6 +178,7 @@ export default function CreateCasePage(): JSX.Element {
   const { showError } = useErrorBanner();
   const { showSuccess } = useSuccessBanner();
   const { mutate: postCase, isPending: isCreatePending } = usePostCase();
+  const logger = useLogger();
 
   useEffect(() => {
     if (deploymentProductsError) {
@@ -206,9 +208,11 @@ export default function CreateCasePage(): JSX.Element {
         environment?: string;
       };
     };
+    conversationId?: string;
   } | null;
 
   const STORAGE_KEY = `case_classification_data_${projectId}`;
+  const CONVERSATION_ID_STORAGE_KEY = `case_conversation_id_${projectId}`;
 
   const [classificationResponse, setClassificationResponse] = useState<
     | {
@@ -232,7 +236,7 @@ export default function CreateCasePage(): JSX.Element {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       return stored ? JSON.parse(stored) : undefined;
     } catch (e) {
-      console.error("Failed to parse stored classification data", e);
+      logger.error("Failed to parse stored classification data", e);
       return undefined;
     }
   });
@@ -245,14 +249,64 @@ export default function CreateCasePage(): JSX.Element {
           JSON.stringify(locationState.classificationResponse),
         );
       } catch (e) {
-        console.error(
+        logger.error(
           "Failed to store classification data in sessionStorage",
           e,
         );
       }
       setClassificationResponse(locationState.classificationResponse);
     }
-  }, [locationState?.classificationResponse, STORAGE_KEY]);
+  }, [locationState?.classificationResponse, STORAGE_KEY, logger]);
+
+  // Persist conversationId to survive page refresh
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    () => {
+      if (locationState?.conversationId) {
+        return locationState.conversationId;
+      }
+      try {
+        const stored = sessionStorage.getItem(CONVERSATION_ID_STORAGE_KEY);
+        return stored || undefined;
+      } catch (e) {
+        logger.error("Failed to retrieve conversationId from sessionStorage", e);
+        return undefined;
+      }
+    },
+  );
+
+  useEffect(() => {
+    if (locationState?.conversationId) {
+      try {
+        sessionStorage.setItem(
+          CONVERSATION_ID_STORAGE_KEY,
+          locationState.conversationId,
+        );
+      } catch (e) {
+        logger.error(
+          "Failed to store conversationId in sessionStorage",
+          e,
+        );
+      }
+      setConversationId(locationState.conversationId);
+    }
+  }, [locationState?.conversationId, CONVERSATION_ID_STORAGE_KEY, logger]);
+
+  // Persist conversationId whenever it changes
+  useEffect(() => {
+    try {
+      if (conversationId) {
+        sessionStorage.setItem(CONVERSATION_ID_STORAGE_KEY, conversationId);
+      } else {
+        sessionStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
+      }
+    } catch (e) {
+      logger.error(
+        "Failed to persist conversationId to sessionStorage",
+        e,
+      );
+    }
+  }, [conversationId, CONVERSATION_ID_STORAGE_KEY, logger]);
+
   const projectDisplay = projectDetails?.name ?? "";
 
   const issueTypesList = (filters?.issueTypes || []) as {
@@ -653,6 +707,9 @@ export default function CreateCasePage(): JSX.Element {
       ...(relatedCase?.parentCaseId && {
         parentCaseId: relatedCase.parentCaseId,
       }),
+      ...(conversationId && {
+        conversationId,
+      }),
     };
 
     postCase(payload, {
@@ -669,7 +726,14 @@ export default function CreateCasePage(): JSX.Element {
         );
 
         showSuccess("Case created successfully");
-        sessionStorage.removeItem(STORAGE_KEY);
+        
+        // Clean up sessionStorage safely
+        try {
+          sessionStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(CONVERSATION_ID_STORAGE_KEY);
+        } catch (e) {
+          logger.error("Failed to cleanup sessionStorage after case creation", e);
+        }
 
         // Refetch security vulnerabilities if this was a security report
         if (isCreatedSecurityReport) {

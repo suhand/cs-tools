@@ -45,6 +45,7 @@ import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetChangeRequests, {
   useGetChangeRequestsInfinite,
 } from "@api/useGetChangeRequests";
+import { useGetProjectChangeRequestStats } from "@api/useGetProjectChangeRequestStats";
 import ChangeRequestsStatCards from "@components/support/change-requests/ChangeRequestsStatCards";
 import ChangeRequestsSearchBar from "@components/support/change-requests/ChangeRequestsSearchBar";
 import ChangeRequestsList from "@components/support/change-requests/ChangeRequestsList";
@@ -71,6 +72,13 @@ export default function ChangeRequestsPage(): JSX.Element {
 
   // Fetch filter metadata (deployments etc.)
   const { data: filterMetadata } = useGetProjectFilters(projectId || "");
+
+  // Fetch change request stats from API
+  const {
+    data: stats,
+    isLoading: isStatsLoading,
+    isError: isStatsError,
+  } = useGetProjectChangeRequestStats(projectId || "");
 
   // Build API request (following cases listing pattern)
   const changeRequestSearchRequest = useMemo<
@@ -157,17 +165,6 @@ export default function ChangeRequestsPage(): JSX.Element {
       : infiniteData?.pages[0]?.totalRecords || 0;
   const totalPages = Math.ceil(totalRecords / pageSize);
 
-  // Mock stats for now - TODO: implement stats API
-  const stats = useMemo(
-    () => ({
-      totalRequests: totalRecords,
-      scheduled: 0,
-      inProgress: 0,
-      completed: 0,
-    }),
-    [totalRecords],
-  );
-
   // Handle export completion when all data is fetched
   useEffect(() => {
     if (isExporting) {
@@ -176,9 +173,11 @@ export default function ChangeRequestsPage(): JSX.Element {
         setIsExporting(false);
       } else if (
         !isInfiniteLoading &&
+        !isStatsLoading &&
         !hasNextPage &&
         !isFetchingNextPage &&
-        infiniteData
+        infiniteData &&
+        stats
       ) {
         // Success case - all data fetched
         const allChangeRequests =
@@ -187,13 +186,15 @@ export default function ChangeRequestsPage(): JSX.Element {
               page.changeRequests,
           ) || [];
         generateChangeRequestsSchedulePdf(allChangeRequests, stats);
-        setIsExporting(false);
+        setTimeout(() => setIsExporting(false), 0);
       }
     }
   }, [
     isExporting,
     isInfiniteLoading,
     isInfiniteError,
+    isStatsLoading,
+    isStatsError,
     hasNextPage,
     isFetchingNextPage,
     infiniteData,
@@ -292,8 +293,8 @@ export default function ChangeRequestsPage(): JSX.Element {
 
       {/* Stat cards */}
       <ChangeRequestsStatCards
-        isLoading={isLoading}
-        isError={isError}
+        isLoading={isStatsLoading}
+        isError={isStatsError}
         stats={stats}
       />
 

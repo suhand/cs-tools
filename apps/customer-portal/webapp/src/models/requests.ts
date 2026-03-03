@@ -104,8 +104,8 @@ export interface CreateCaseRequest {
   projectId: string;
   severityKey?: number;
   title: string;
-  /** Parent case ID when creating a related case from closed state. */
   parentCaseId?: string;
+  conversationId?: string;
 }
 
 // Request body for creating a service request (POST /cases with type: "service_request").

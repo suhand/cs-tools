@@ -30,7 +30,10 @@ import {
   X,
 } from "@wso2/oxygen-ui-icons-react";
 import type { JSX, ChangeEvent } from "react";
-import type { CaseMetadataResponse } from "@models/responses";
+import type {
+  CaseMetadataResponse,
+  ProjectDeploymentItem,
+} from "@models/responses";
 import AllCasesFilters from "@components/support/all-cases/AllCasesFilters";
 
 export interface AllCasesSearchBarProps {
@@ -45,6 +48,7 @@ export interface AllCasesSearchBarProps {
     deploymentId?: string;
   };
   filterMetadata: CaseMetadataResponse | undefined;
+  deployments?: ProjectDeploymentItem[];
   onFilterChange: (field: string, value: string) => void;
   onClearFilters: () => void;
 }
@@ -62,6 +66,7 @@ export default function AllCasesSearchBar({
   onFiltersToggle,
   filters,
   filterMetadata,
+  deployments,
   onFilterChange,
   onClearFilters,
 }: AllCasesSearchBarProps): JSX.Element {
@@ -118,6 +123,7 @@ export default function AllCasesSearchBar({
           <AllCasesFilters
             filters={filters}
             filterMetadata={filterMetadata}
+            deployments={deployments}
             onFilterChange={onFilterChange}
           />
         </>
