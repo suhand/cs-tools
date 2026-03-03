@@ -85,6 +85,8 @@ public type Case record {|
     ReferenceItem? catalog;
     # Catalog item information (if the case is a service request)
     ReferenceItem? catalogItem;
+    # Assigned team
+    ReferenceItem? assignedTeam;
 |};
 
 # Case information.
@@ -136,7 +138,10 @@ public type CaseResponse record {|
     string? closeNotes?;
     # Indicates if the case is auto closed
     boolean? hasAutoClosed?;
-    json...;
+    # Change requests (only for service requests)
+    ReferenceItem[]? changeRequests?;
+    # Variables for service request
+    entity:ServiceRequestVariable[]? variables?;
 |};
 
 # Reference item.
