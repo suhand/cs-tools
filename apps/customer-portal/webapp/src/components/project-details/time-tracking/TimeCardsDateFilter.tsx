@@ -132,7 +132,7 @@ export default function TimeCardsDateFilter({
         </Box>
 
         {/* State Filter */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, flex: 1, minWidth: "300px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: "300px", marginLeft: "auto" }}>
           <Typography
             id="state-filter-label"
             variant="body2"
