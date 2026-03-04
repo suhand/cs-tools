@@ -17,17 +17,6 @@
 import { vi } from "vitest";
 import "@testing-library/jest-dom";
 
-// Mock useAuthApiClient for API hooks that use authenticated fetch
-vi.mock("@context/AuthApiContext", () => ({
-  useAuthApiClient: () =>
-    vi
-      .fn()
-      .mockImplementation(() =>
-        Promise.resolve(new Response(JSON.stringify({}), { status: 200 })),
-      ),
-  AuthApiProvider: ({ children }: { children: unknown }) => children,
-}));
-
 // Mock Asgardeo to avoid buffer resolution issues in tests
 vi.mock("@asgardeo/react", () => ({
   useAsgardeo: () => ({
@@ -36,6 +25,7 @@ vi.mock("@asgardeo/react", () => ({
     state: {},
     signIn: vi.fn(),
     signOut: vi.fn(),
+    getIdToken: vi.fn().mockResolvedValue("mock-token-123"),
   }),
   AsgardeoProvider: ({ children }: { children: unknown }) => children,
 }));
