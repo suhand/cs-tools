@@ -33,6 +33,10 @@ export function useAuthApiClient() {
     // 1. Get the fresh token automatically
     const token = await getIdToken();
 
+    if (!token) {
+      throw new Error("Unable to retrieve ID token");
+    }
+
     const headers = new Headers(options?.headers);
 
     headers.set("Authorization", `Bearer ${token}`);
