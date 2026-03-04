@@ -11,7 +11,8 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@asgardeo/react": "^0.10.0",
+    "@asgardeo/react": "^0.13.2",
+    "@asgardeo/react-router": "^1.1.0",
     "@lexical/code": "^0.40.0",
     "@lexical/html": "^0.40.0",
     "@lexical/link": "^0.40.0",
