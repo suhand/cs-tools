@@ -22,7 +22,7 @@ import {
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import type { TimeCardSearchResponse } from "@models/responses";
 import type { TimeCardSearchRequest } from "@models/requests";
 
@@ -49,8 +49,7 @@ export default function useSearchProjectTimeCards({
   Error
 > {
   const logger = useLogger();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useInfiniteQuery<TimeCardSearchResponse, Error>({
     queryKey: [
@@ -60,7 +59,10 @@ export default function useSearchProjectTimeCards({
       endDate,
       states,
     ],
-    queryFn: async ({ pageParam = 0, signal }): Promise<TimeCardSearchResponse> => {
+    queryFn: async ({
+      pageParam = 0,
+      signal,
+    }): Promise<TimeCardSearchResponse> => {
       logger.debug(
         `Searching time cards for project ID: ${projectId}, start: ${startDate}, end: ${endDate}, offset: ${pageParam}`,
       );
@@ -82,9 +84,10 @@ export default function useSearchProjectTimeCards({
           pagination: { limit: 10, offset: pageParam as number },
         };
 
-        const response = await fetchFn(requestUrl, {
+        const token = await getIdToken();
+        const response = await fetch(requestUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: addApiHeaders(token),
           body: JSON.stringify(body),
           signal,
         });
@@ -94,9 +97,7 @@ export default function useSearchProjectTimeCards({
         );
 
         if (!response.ok) {
-          throw new Error(
-            `Error searching time cards: ${response.statusText}`,
-          );
+          throw new Error(`Error searching time cards: ${response.statusText}`);
         }
 
         const data: TimeCardSearchResponse = await response.json();

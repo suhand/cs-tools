@@ -17,7 +17,7 @@
 import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import type { ConversationRequest } from "@models/requests";
 import type { ConversationResponse } from "@models/responses";
 
@@ -33,8 +33,7 @@ export function usePostConversations(): UseMutationResult<
   { projectId: string } & ConversationRequest
 > {
   const logger = useLogger();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useMutation<
     ConversationResponse,
@@ -60,14 +59,14 @@ export function usePostConversations(): UseMutationResult<
 
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL;
       if (!baseUrl) {
-        throw new Error(
-          "CUSTOMER_PORTAL_BACKEND_BASE_URL is not configured",
-        );
+        throw new Error("CUSTOMER_PORTAL_BACKEND_BASE_URL is not configured");
       }
 
       const requestUrl = `${baseUrl}/projects/${projectId}/conversations`;
-      const response = await fetchFn(requestUrl, {
+      const token = await getIdToken();
+      const response = await fetch(requestUrl, {
         method: "POST",
+        headers: addApiHeaders(token),
         body: JSON.stringify({ message, envProducts, region, tier }),
       });
 

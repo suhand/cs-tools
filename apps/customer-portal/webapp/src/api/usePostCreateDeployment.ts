@@ -21,7 +21,7 @@ import {
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import type { CreateDeploymentRequest } from "@models/requests";
 import type { CreateDeploymentResponse } from "@models/responses";
@@ -37,8 +37,7 @@ export function usePostCreateDeployment(
 ): UseMutationResult<CreateDeploymentResponse, Error, CreateDeploymentRequest> {
   const logger = useLogger();
   const queryClient = useQueryClient();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useMutation<CreateDeploymentResponse, Error, CreateDeploymentRequest>({
     mutationFn: async (
@@ -58,8 +57,10 @@ export function usePostCreateDeployment(
 
         const requestUrl = `${baseUrl}/projects/${projectId}/deployments`;
 
-        const response = await fetchFn(requestUrl, {
+        const token = await getIdToken();
+        const response = await fetch(requestUrl, {
           method: "POST",
+          headers: addApiHeaders(token),
           body: JSON.stringify(body),
         });
 

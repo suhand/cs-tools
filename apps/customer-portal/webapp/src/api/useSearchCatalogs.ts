@@ -15,7 +15,7 @@
 
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import type { CatalogSearchResponse } from "@models/responses";
@@ -30,8 +30,7 @@ export function useSearchCatalogs(
   deployedProductId: string,
 ): UseQueryResult<CatalogSearchResponse, Error> {
   const logger = useLogger();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useQuery<CatalogSearchResponse, Error>({
     queryKey: [ApiQueryKeys.CATALOGS_SEARCH, deployedProductId],
@@ -47,9 +46,10 @@ export function useSearchCatalogs(
 
       const requestUrl = `${baseUrl}/deployments/products/${deployedProductId}/catalogs/search`;
 
-      const response = await fetchFn(requestUrl, {
+      const token = await getIdToken();
+      const response = await fetch(requestUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: addApiHeaders(token),
         body: JSON.stringify({}),
       });
 

@@ -21,7 +21,7 @@ import {
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import type { PostDeploymentProductRequest } from "@models/requests";
 
@@ -43,8 +43,7 @@ export function usePostDeploymentProduct(): UseMutationResult<
 > {
   const logger = useLogger();
   const queryClient = useQueryClient();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useMutation<void, Error, PostDeploymentProductVariables>({
     mutationFn: async ({
@@ -70,9 +69,10 @@ export function usePostDeploymentProduct(): UseMutationResult<
         }
 
         const requestUrl = `${baseUrl}/deployments/${deploymentId}/products`;
-        const response = await fetchFn(requestUrl, {
+        const token = await getIdToken();
+        const response = await fetch(requestUrl, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: addApiHeaders(token),
           body: JSON.stringify(body),
         });
 

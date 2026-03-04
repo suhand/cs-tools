@@ -18,7 +18,7 @@ import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import type { ProductVulnerabilitiesSearchRequest } from "@models/requests";
 import type { ProductVulnerabilitiesSearchResponse } from "@models/responses";
 
@@ -32,8 +32,7 @@ export function usePostProductVulnerabilitiesSearch(
   request: ProductVulnerabilitiesSearchRequest,
 ): UseQueryResult<ProductVulnerabilitiesSearchResponse, Error> {
   const logger = useLogger();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useQuery<ProductVulnerabilitiesSearchResponse, Error>({
     queryKey: [ApiQueryKeys.PRODUCT_VULNERABILITIES_SEARCH, request],
@@ -45,14 +44,14 @@ export function usePostProductVulnerabilitiesSearch(
 
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL;
       if (!baseUrl) {
-        throw new Error(
-          "CUSTOMER_PORTAL_BACKEND_BASE_URL is not configured",
-        );
+        throw new Error("CUSTOMER_PORTAL_BACKEND_BASE_URL is not configured");
       }
 
       const requestUrl = `${baseUrl}/products/vulnerabilities/search`;
-      const response = await fetchFn(requestUrl, {
+      const token = await getIdToken();
+      const response = await fetch(requestUrl, {
         method: "POST",
+        headers: addApiHeaders(token),
         body: JSON.stringify(request),
       });
 
