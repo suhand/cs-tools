@@ -21,7 +21,7 @@ import {
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import { ApiQueryKeys, ApiMutationKeys } from "@constants/apiConstants";
 import { CommentType } from "@constants/supportConstants";
 
@@ -58,8 +58,7 @@ export function usePostChangeRequestComment(): UseMutationResult<
 > {
   const logger = useLogger();
   const queryClient = useQueryClient();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useMutation<
     PostChangeRequestCommentResponse,
@@ -87,8 +86,10 @@ export function usePostChangeRequestComment(): UseMutationResult<
 
       const encodedChangeRequestId = encodeURIComponent(changeRequestId);
       const requestUrl = `${baseUrl}/change-requests/${encodedChangeRequestId}/comments`;
-      const response = await fetchFn(requestUrl, {
+      const token = await getIdToken();
+      const response = await fetch(requestUrl, {
         method: "POST",
+        headers: addApiHeaders(token),
         body: JSON.stringify({
           content: body.content,
           type: body.type,
@@ -117,7 +118,10 @@ export function usePostChangeRequestComment(): UseMutationResult<
     onSuccess: (_data, variables) => {
       // Invalidate only the active change request's comments
       queryClient.invalidateQueries({
-        queryKey: [ApiQueryKeys.CHANGE_REQUEST_COMMENTS, variables.changeRequestId],
+        queryKey: [
+          ApiQueryKeys.CHANGE_REQUEST_COMMENTS,
+          variables.changeRequestId,
+        ],
       });
     },
   });

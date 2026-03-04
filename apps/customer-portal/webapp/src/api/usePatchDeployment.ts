@@ -21,7 +21,7 @@ import {
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
+import { addApiHeaders } from "@utils/apiUtils";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import type { PatchDeploymentRequest } from "@models/requests";
 
@@ -44,8 +44,7 @@ export function usePatchDeployment(): UseMutationResult<
 > {
   const logger = useLogger();
   const queryClient = useQueryClient();
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const { isSignedIn, isLoading: isAuthLoading, getIdToken } = useAsgardeo();
 
   return useMutation<void, Error, PatchDeploymentVariables>({
     mutationFn: async ({
@@ -61,9 +60,7 @@ export function usePatchDeployment(): UseMutationResult<
         });
 
         if (!isSignedIn || isAuthLoading) {
-          throw new Error(
-            "User must be signed in to update a deployment",
-          );
+          throw new Error("User must be signed in to update a deployment");
         }
 
         const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL;
@@ -72,16 +69,14 @@ export function usePatchDeployment(): UseMutationResult<
         }
 
         const requestUrl = `${baseUrl}/projects/${projectId}/deployments/${deploymentId}`;
-        const response = await fetchFn(requestUrl, {
+        const token = await getIdToken();
+        const response = await fetch(requestUrl, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: addApiHeaders(token),
           body: JSON.stringify(body),
         });
 
-        logger.debug(
-          "[usePatchDeployment] Response status:",
-          response.status,
-        );
+        logger.debug("[usePatchDeployment] Response status:", response.status);
 
         if (!response.ok) {
           const text = await response.text();
