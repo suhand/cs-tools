@@ -16,9 +16,9 @@
 
 import { useInfiniteQuery, type InfiniteData } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
+import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
-import { useAuthApiClient } from "@context/AuthApiContext";
 import type {
   CaseAttachmentsResponse,
   CaseAttachment,
@@ -36,7 +36,7 @@ const PAGE_SIZE = 10;
 export function useGetCaseAttachments(caseId: string) {
   const logger = useLogger();
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const authFetch = useAuthApiClient();
 
   return useInfiniteQuery<
     CaseAttachmentsResponse,
@@ -66,7 +66,10 @@ export function useGetCaseAttachments(caseId: string) {
         });
         const encodedCaseId = encodeURIComponent(caseId);
         const requestUrl = `${baseUrl}/cases/${encodedCaseId}/attachments?${params}`;
-        const response = await fetchFn(requestUrl, { method: "GET", signal });
+        const response = await authFetch(requestUrl, {
+          method: "GET",
+          signal,
+        });
 
         logger.debug(
           `[useGetCaseAttachments] Response status: ${response.status}`,

@@ -20,8 +20,8 @@ import {
   type UseMutationResult,
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
+import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import type { PostCaseAttachmentRequest } from "@models/requests";
 
@@ -44,7 +44,7 @@ export function usePostAttachments(): UseMutationResult<
   const logger = useLogger();
   const queryClient = useQueryClient();
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const authFetch = useAuthApiClient();
 
   return useMutation<void, Error, PostAttachmentsVariables>({
     mutationFn: async ({
@@ -69,8 +69,9 @@ export function usePostAttachments(): UseMutationResult<
         }
 
         const requestUrl = `${baseUrl}/cases/${caseId}/attachments`;
-        const response = await fetchFn(requestUrl, {
+        const response = await authFetch(requestUrl, {
           method: "POST",
+
           body: JSON.stringify(body),
         });
 

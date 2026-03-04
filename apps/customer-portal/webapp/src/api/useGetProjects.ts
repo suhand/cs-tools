@@ -20,9 +20,9 @@ import {
   type InfiniteData,
 } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
+import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
-import { useAuthApiClient } from "@context/AuthApiContext";
 import type {
   SearchProjectsResponse,
   ProjectListItem,
@@ -49,7 +49,7 @@ export default function useInfiniteProjects({
 > {
   const logger = useLogger();
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const authFetch = useAuthApiClient();
 
   const normalizedSearchQuery = searchQuery?.trim() || undefined;
 
@@ -81,7 +81,7 @@ export default function useInfiniteProjects({
           body.filters = { searchQuery: normalizedSearchQuery };
         }
 
-        const response = await fetchFn(requestUrl, {
+        const response = await authFetch(requestUrl, {
           method: "POST",
           body: JSON.stringify(body),
         });

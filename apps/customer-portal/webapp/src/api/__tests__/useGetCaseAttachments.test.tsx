@@ -77,7 +77,8 @@ const mockAuthFetch = vi.fn().mockResolvedValue({
   ok: true,
   json: () => Promise.resolve(mockAttachmentsPage1),
 });
-vi.mock("@context/AuthApiContext", () => ({
+
+vi.mock("@api/useAuthApiClient", () => ({
   useAuthApiClient: () => mockAuthFetch,
 }));
 

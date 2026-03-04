@@ -16,8 +16,8 @@
 
 import { useMutation, type UseMutationResult } from "@tanstack/react-query";
 import { useAsgardeo } from "@asgardeo/react";
+import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
-import { useAuthApiClient } from "@context/AuthApiContext";
 import type {
   CreateCaseRequest,
   CreateServiceRequestPayload,
@@ -36,7 +36,7 @@ export function usePostCase(): UseMutationResult<
 > {
   const logger = useLogger();
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  const fetchFn = useAuthApiClient();
+  const authFetch = useAuthApiClient();
 
   return useMutation<
     CreateCaseResponse,
@@ -71,8 +71,9 @@ export function usePostCase(): UseMutationResult<
 
         const requestUrl = `${baseUrl}/cases`;
 
-        const response = await fetchFn(requestUrl, {
+        const response = await authFetch(requestUrl, {
           method: "POST",
+
           body: JSON.stringify(body),
         });
 

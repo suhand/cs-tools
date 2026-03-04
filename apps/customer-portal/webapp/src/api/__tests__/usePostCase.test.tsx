@@ -29,6 +29,8 @@ vi.mock("@/hooks/useLogger", () => ({
   useLogger: () => mockLogger,
 }));
 
+const mockAuthFetch = vi.fn();
+
 const mockGetIdToken = vi.fn().mockResolvedValue("mock-token");
 let mockIsSignedIn = true;
 let mockIsAuthLoading = false;
@@ -38,11 +40,6 @@ vi.mock("@asgardeo/react", () => ({
     isSignedIn: mockIsSignedIn,
     isLoading: mockIsAuthLoading,
   }),
-}));
-
-const mockAuthFetch = vi.fn();
-vi.mock("@context/AuthApiContext", () => ({
-  useAuthApiClient: () => mockAuthFetch,
 }));
 
 describe("usePostCase", () => {
@@ -75,6 +72,7 @@ describe("usePostCase", () => {
     mockIsSignedIn = true;
     mockIsAuthLoading = false;
     vi.clearAllMocks();
+    vi.stubGlobal("fetch", mockAuthFetch);
   });
 
   afterEach(() => {
