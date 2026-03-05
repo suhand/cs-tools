@@ -3159,6 +3159,63 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         return mapChangeRequestResponse(response);
     }
 
+    # Update a change request by change request ID.
+    # 
+    # + id - ID of the change request
+    # + payload - Change request update payload containing fields to be updated
+    # + return - Updated change request details or an error
+    resource function patch change\-requests/[entity:IdString id](http:RequestContext ctx,
+            entity:ChangeRequestUpdatePayload payload) returns entity:UpdatedChangeRequest|http:BadRequest|
+        http:Unauthorized|http:Forbidden|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:ChangeRequestUpdateResponse|error response = entity:updateChangeRequest(userInfo.idToken, id, payload);
+        if response is error {
+            if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${
+                        userInfo.userId} is not authorized to update change request information!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `Access to update change request information is forbidden for user: ${
+                        userInfo.userId}`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "Access to update change request information is forbidden for the user!"
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_BAD_REQUEST {
+                return <http:BadRequest>{
+                    body: {
+                        message: "Invalid request parameters for updating change request."
+                    }
+                };
+            }
+
+            string customError = "Failed to update change request.";
+            log:printError(customError, response);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return response.changeRequest;
+    }
+
     # Get change request statistics for a project.
     #
     # + id - ID of the project

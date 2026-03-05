@@ -431,6 +431,17 @@ public isolated function searchChangeRequests(string idToken, ChangeRequestSearc
     return csEntityClient->/change\-requests/search.post(payload, generateHeaders(idToken));
 }
 
+# Update a change request.
+# 
+# + idToken - ID token for authorization
+# + changeRequestId - Unique ID of the change request to be updated
+# + payload - Change request update payload containing details to be updated in the change request
+# + return - Change request update response containing details of the updated change request or error
+public isolated function updateChangeRequest(string idToken, string changeRequestId, ChangeRequestUpdatePayload payload)
+    returns ChangeRequestUpdateResponse|error {
+
+    return csEntityClient->/change\-requests/[changeRequestId].patch(payload, generateHeaders(idToken));
+}
 # Search catalogs.
 #
 # + idToken - ID token for authorization

@@ -1556,3 +1556,34 @@ public type ProjectChangeRequestStatsResponse record {|
     ChoiceListItem[] stateCount;
     json...;
 |};
+
+# DateTime string type with YYYY-MM-DD HH:MM:SS format constraint.
+@constraint:String {
+    pattern: re `^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) ([01]\d|2[0-3]):[0-5]\d:[0-5]\d$`
+}
+public type DateTimeWithoutTimezone string;
+
+# Request payload for updating a change request.
+public type ChangeRequestUpdatePayload record {|
+    # Planned start date and time (format: YYYY-MM-DD HH:MM:SS)
+    DateTimeWithoutTimezone plannedStartOn;
+|};
+
+# Response from updating a change request.
+public type ChangeRequestUpdateResponse record {|
+    # Success message
+    string message;
+    # Updated change request details
+    UpdatedChangeRequest changeRequest;
+|};
+
+# Updated change request details.
+public type UpdatedChangeRequest record {|
+    # ID of the updated change request
+    IdString id;
+    # Updated date and time
+    string updatedOn;
+    # User who updated the change request
+    string updatedBy;
+    json...;
+|};
