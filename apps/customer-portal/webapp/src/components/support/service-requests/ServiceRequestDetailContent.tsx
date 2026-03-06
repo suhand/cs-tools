@@ -768,15 +768,20 @@ export default function ServiceRequestDetailContent({
             </Stack>
           </Paper>
 
+          {(() => {
+            const displayableActions = CASE_STATUS_ACTIONS.filter((action) =>
+              getAvailableCaseActions(statusLabel).includes(action.label),
+            ).filter((action) => action.label !== "Open Related Case");
+            const isClosed =
+              statusLabel?.toLowerCase() === "closed";
+            if (isClosed || displayableActions.length === 0) return null;
+            return (
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 0 }}>
             <Typography variant="subtitle2" color="text.primary" sx={{ mb: 1.5 }}>
               Manage service request status
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              {CASE_STATUS_ACTIONS.filter((action) =>
-                getAvailableCaseActions(statusLabel).includes(action.label),
-              )
-                .filter((action) => action.label !== "Open Related Case")
+              {displayableActions
                 .map(({ label, Icon }) => {
                   const stateLabel = ACTION_TO_CASE_STATE_LABEL[label];
                   const stateKeyEntry = caseStates?.find(
@@ -847,6 +852,8 @@ export default function ServiceRequestDetailContent({
                 })}
             </Stack>
           </Paper>
+            );
+          })()}
 
           <Paper variant="outlined" sx={{ p: 2, borderRadius: 0 }}>
             <Typography variant="subtitle2" color="text.primary" sx={{ mb: 1.5 }}>
