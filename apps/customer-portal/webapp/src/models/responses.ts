@@ -77,6 +77,8 @@ export interface UserDetails {
   lastName: string;
   firstName: string;
   timeZone: string;
+  phoneNumber?: string | null;
+  avatar?: string | null;
 }
 
 // Project user (invited/registered) for project users list.
@@ -369,6 +371,13 @@ export interface ChangeRequestStats {
   scheduled: number;
   inProgress: number;
   completed: number;
+}
+
+// Response from PATCH /change-requests/:id (update planned start).
+export interface PatchChangeRequestResponse {
+  id: string;
+  updatedBy: string;
+  updatedOn: string;
 }
 
 // Change Request Stats API Response
