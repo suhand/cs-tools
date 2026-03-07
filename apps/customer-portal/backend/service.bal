@@ -415,9 +415,9 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + deploymentId - ID of the deployment to be updated
     # + payload - Deployment update payload
     # + return - Updated deployment or error response
-    resource function patch projects/[string projectId]/deployments/[string deploymentId](http:RequestContext ctx,
-            entity:DeploymentUpdatePayload payload)
-            returns entity:UpdatedDeployment|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
+    resource function patch projects/[entity:IdString projectId]/deployments/[entity:IdString deploymentId](
+            http:RequestContext ctx, entity:DeploymentUpdatePayload payload)
+        returns entity:UpdatedDeployment|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
         if userInfo is error {
@@ -592,8 +592,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + attachmentId - ID of the attachment to be updated
     # + payload - Attachment update payload
     # + return - Updated attachment or error response
-    resource function patch deployments/[string deploymentId]/attachments/[string attachmentId](http:RequestContext ctx,
-            types:AttachmentUpdatePayload payload)
+    resource function patch deployments/[entity:IdString deploymentId]/attachments/[entity:IdString attachmentId](
+            http:RequestContext ctx, types:AttachmentUpdatePayload payload)
         returns entity:UpdatedAttachment|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -2035,8 +2035,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + productId - ID of the product to be updated
     # + payload - Deployed product update payload
     # + return - Updated deployed product or error response
-    resource function patch deployments/[string deploymentId]/products/[string productId](http:RequestContext ctx,
-            entity:DeployedProductUpdatePayload payload) returns
+    resource function patch deployments/[entity:IdString deploymentId]/products/[entity:IdString productId](
+            http:RequestContext ctx, entity:DeployedProductUpdatePayload payload) returns
         entity:UpdatedDeployedProduct|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -2456,7 +2456,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     #
     # + id - ID of the project
     # + return - List of project contacts or error
-    resource function get projects/[string id]/contacts(http:RequestContext ctx)
+    resource function get projects/[entity:IdString id]/contacts(http:RequestContext ctx)
         returns user_management:Contact[]|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -2525,7 +2525,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + id - ID of the project
     # + payload - Contact information to be added
     # + return - Membership information or error response
-    resource function post projects/[string id]/contacts(http:RequestContext ctx,
+    resource function post projects/[entity:IdString id]/contacts(http:RequestContext ctx,
             types:ContactOnboardPayload payload)
         returns user_management:Membership|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
@@ -2604,7 +2604,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + id - ID of the project
     # + email - Email of the contact to be removed
     # + return - Membership information or error response
-    resource function delete projects/[string id]/contacts/[string email](http:RequestContext ctx)
+    resource function delete projects/[entity:IdString id]/contacts/[string email](http:RequestContext ctx)
         returns http:Ok|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -2678,7 +2678,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + email - Email of the contact whose role is to be updated
     # + payload - Updated role information
     # + return - Membership information or error response
-    resource function patch projects/[string id]/contacts/[string email](http:RequestContext ctx,
+    resource function patch projects/[entity:IdString id]/contacts/[string email](http:RequestContext ctx,
             types:MembershipSecurityPayload payload)
         returns user_management:Membership|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
@@ -2752,7 +2752,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + id - ID of the project
     # + payload - Contact information to be validated
     # + return - Contact information if valid or error response
-    resource function post projects/[string id]/contacts/validate(http:RequestContext ctx,
+    resource function post projects/[entity:IdString id]/contacts/validate(http:RequestContext ctx,
             types:ValidationPayload payload)
         returns http:Ok|http:Conflict|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
@@ -2979,8 +2979,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + callRequestId - ID of the call request
     # + payload - Call request update payload
     # + return - Updated call request details or an error
-    resource function patch cases/[string caseId]/call\-requests/[string callRequestId](http:RequestContext ctx,
-            types:CallRequestUpdatePayload payload)
+    resource function patch cases/[entity:IdString caseId]/call\-requests/[entity:IdString callRequestId](
+            http:RequestContext ctx, types:CallRequestUpdatePayload payload)
         returns entity:UpdatedCallRequest|http:BadRequest|http:Forbidden|http:NotFound|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -3195,8 +3195,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + startDate - Start date for the statistics (optional)
     # + endDate - End date for the statistics (optional)
     # + return - Time card statistics for the project or an error
-    resource function get projects/[string id]/stats/time\-cards(http:RequestContext ctx, entity:Date? startDate,
-            entity:Date? endDate)
+    resource function get projects/[entity:IdString id]/stats/time\-cards(http:RequestContext ctx,
+            entity:Date? startDate, entity:Date? endDate)
         returns entity:ProjectTimeCardStatsResponse|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
