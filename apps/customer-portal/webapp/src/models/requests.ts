@@ -201,6 +201,12 @@ export interface PatchCallRequest {
   utcTimes?: string[];
 }
 
+// Request body for updating current user profile (PATCH /users/me).
+export interface PatchUserMeRequest {
+  phoneNumber?: string;
+  timeZone?: string;
+}
+
 // Request body for creating a project contact (POST /projects/:projectId/contacts).
 export interface CreateProjectContactRequest {
   contactEmail: string;

@@ -22,6 +22,7 @@ import {
 import { useAsgardeo } from "@asgardeo/react";
 import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
+import type { PatchUserMeRequest } from "@models/requests";
 
 /**
  * Hook to update current user profile (PATCH /users/me).
