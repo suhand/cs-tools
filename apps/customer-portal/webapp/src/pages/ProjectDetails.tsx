@@ -16,7 +16,7 @@
 
 import { Box, Typography, Grid } from "@wso2/oxygen-ui";
 import { useParams, useOutletContext } from "react-router";
-import { useState, useEffect, type JSX } from "react";
+import { useState, useEffect, useMemo, type JSX } from "react";
 import { useAsgardeo } from "@asgardeo/react";
 import TabBar from "@components/common/tab-bar/TabBar";
 import {
@@ -94,12 +94,16 @@ export default function ProjectDetails(): JSX.Element {
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
 
-  const visibleTabs = PROJECT_DETAILS_TABS.filter((tab) => {
-    if (hideDeploymentsAndTimeTracking) {
-      return tab.id !== "deployments" && tab.id !== "time-tracking";
-    }
-    return true;
-  });
+  const visibleTabs = useMemo(
+    () =>
+      PROJECT_DETAILS_TABS.filter((tab) => {
+        if (hideDeploymentsAndTimeTracking) {
+          return tab.id !== "deployments" && tab.id !== "time-tracking";
+        }
+        return true;
+      }),
+    [hideDeploymentsAndTimeTracking],
+  );
 
   useEffect(() => {
     const tabIds = visibleTabs.map((t) => t.id);
