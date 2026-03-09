@@ -19,7 +19,6 @@ import ballerina/log;
 
 // TODO: This variable is currently unused. It will be used when the authorization logic (see lines 54-60) is restored.
 public configurable AppRoles authorizedRoles = ?;
-public configurable string adminRole = "sn_customerservice.customer_admin";
 
 # To handle authorization for each resource function invocation.
 public isolated service class JwtInterceptor {

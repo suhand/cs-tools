@@ -3660,7 +3660,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        boolean isAdmin = authorization:checkRoles([authorization:adminRole], userDetails.roles);
+        boolean isAdmin = authorization:checkRoles([authorization:authorizedRoles.adminRole], userDetails.roles);
 
         // Only allow admins to create service tokens
         if !isAdmin && payload.tokenType == registry:SERVICE_TOKEN {
@@ -3849,7 +3849,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        boolean isAdmin = authorization:checkRoles([authorization:adminRole], userDetails.roles);
+        boolean isAdmin = authorization:checkRoles([authorization:authorizedRoles.adminRole], userDetails.roles);
 
         registry:Token[]|error response = registry:searchTokens(
                 {
@@ -3984,7 +3984,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        boolean isAdmin = authorization:checkRoles([authorization:adminRole], userDetails.roles);
+        boolean isAdmin = authorization:checkRoles([authorization:authorizedRoles.adminRole], userDetails.roles);
 
         // Enforce that only admins can delete service tokens, and users can only delete their own tokens.
         if !isAdmin &&
@@ -4136,7 +4136,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        boolean isAdmin = authorization:checkRoles([authorization:adminRole], userDetails.roles);
+        boolean isAdmin = authorization:checkRoles([authorization:authorizedRoles.adminRole], userDetails.roles);
 
         // Enforce that only admins can delete service tokens, and users can only delete their own tokens.
         if !isAdmin &&
