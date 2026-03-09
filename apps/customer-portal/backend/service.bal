@@ -194,9 +194,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 } else {
                     log:printError("Failed to update phone number.", updatedUser);
                 }
-            }
-
-            if updatedUser is scim:User {
+            } else {
                 error? cacheInvalidate = userCache.invalidate(string `${userInfo.email}:userinfo`);
                 if cacheInvalidate is error {
                     log:printWarn("Error invalidating user information from cache", cacheInvalidate);
@@ -214,12 +212,13 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 } else {
                     log:printError("Failed to update user timezone.", response);
                 }
+            } else {
+                error? cacheInvalidate = userCache.invalidate(string `${userInfo.email}:userinfo`);
+                if cacheInvalidate is error {
+                    log:printWarn("Error invalidating user information from cache", cacheInvalidate);
+                }
+                updatedUserResponse.timeZone = timeZone;
             }
-            error? cacheInvalidate = userCache.invalidate(string `${userInfo.email}:userinfo`);
-            if cacheInvalidate is error {
-                log:printWarn("Error invalidating user information from cache", cacheInvalidate);
-            }
-            updatedUserResponse.timeZone = timeZone;
         }
 
         return updatedUserResponse;
