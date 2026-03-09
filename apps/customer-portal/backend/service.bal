@@ -3936,7 +3936,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        registry:TokenDescriptionInfo|error tokenInformation = registry:deriveTokenInfoFromDescription(token.description);
+        registry:TokenDescriptionInfo|error tokenInformation
+            = registry:deriveTokenInfoFromDescription(token.description);
         if tokenInformation is error {
             log:printError("Failed to derive token information.", tokenInformation);
             return <http:InternalServerError>{
@@ -3946,7 +3947,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        entity:ProjectResponse|error projectResponse = entity:getProject(userInfo.idToken, tokenInformation.snProjectId);
+        entity:ProjectResponse|error projectResponse
+            = entity:getProject(userInfo.idToken, tokenInformation.snProjectId);
         if projectResponse is error {
             if getStatusCode(projectResponse) == http:STATUS_UNAUTHORIZED {
                 log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
@@ -3957,7 +3959,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 };
             }
             if getStatusCode(projectResponse) == http:STATUS_FORBIDDEN {
-                logForbiddenProjectAccess(id, userInfo.userId);
+                logForbiddenProjectAccess(tokenInformation.snProjectId, userInfo.userId);
                 return <http:Forbidden>{
                     body: {
                         message: ERR_MSG_PROJECT_ACCESS_FORBIDDEN
@@ -3965,7 +3967,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 };
             }
             if getStatusCode(projectResponse) == http:STATUS_NOT_FOUND {
-                log:printWarn(string `Project with ID: ${id} not found for user: ${userInfo.userId}`);
+                log:printWarn(string `Project with ID: ${tokenInformation.snProjectId} not found for user: ${
+                    userInfo.userId}`);
                 return <http:NotFound>{
                     body: {
                         message: "The requested token does not exist or you don't have access to it."
@@ -4086,7 +4089,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        registry:TokenDescriptionInfo|error tokenInformation = registry:deriveTokenInfoFromDescription(token.description);
+        registry:TokenDescriptionInfo|error tokenInformation 
+            = registry:deriveTokenInfoFromDescription(token.description);
         if tokenInformation is error {
             log:printError("Failed to derive token information.", tokenInformation);
             return <http:InternalServerError>{
@@ -4096,7 +4100,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        entity:ProjectResponse|error projectResponse = entity:getProject(userInfo.idToken, tokenInformation.snProjectId);
+        entity:ProjectResponse|error projectResponse = entity:getProject(userInfo.idToken,
+            tokenInformation.snProjectId);
         if projectResponse is error {
             if getStatusCode(projectResponse) == http:STATUS_UNAUTHORIZED {
                 log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
