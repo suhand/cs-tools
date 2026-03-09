@@ -26,10 +26,10 @@ import {
 import { Calendar, FileText, User } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
 import type { CaseListItem } from "@models/responses";
+import { getSeverityLegendColor } from "@constants/dashboardConstants";
 import {
   formatDateTime,
   getAssignedEngineerLabel,
-  getSeverityColor,
   getStatusColor,
   getStatusIcon,
   mapSeverityToDisplay,
@@ -120,25 +120,30 @@ export default function AllCasesList({
                   >
                     {caseItem.number || "--"}
                   </Typography>
-                  <Box
+                  <Chip
+                    label={mapSeverityToDisplay(caseItem.severity?.label)}
+                    size="small"
+                    variant="outlined"
                     sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
+                      bgcolor: alpha(
+                        getSeverityLegendColor(caseItem.severity?.label),
+                        0.1,
+                      ),
+                      color: getSeverityLegendColor(caseItem.severity?.label),
+                      borderColor: alpha(
+                        getSeverityLegendColor(caseItem.severity?.label),
+                        0.3,
+                      ),
+                      fontWeight: 500,
+                      px: 0,
+                      height: 20,
+                      fontSize: "0.75rem",
+                      "& .MuiChip-label": {
+                        pl: "6px",
+                        pr: "6px",
+                      },
                     }}
-                  >
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        bgcolor: getSeverityColor(caseItem.severity?.label),
-                      }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      {mapSeverityToDisplay(caseItem.severity?.label)}
-                    </Typography>
-                  </Box>
+                  />
                   <Chip
                     size="small"
                     variant="outlined"

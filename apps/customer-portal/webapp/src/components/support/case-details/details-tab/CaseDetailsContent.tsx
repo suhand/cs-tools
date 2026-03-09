@@ -25,7 +25,6 @@ import {
   resolveColorFromTheme,
   getStatusIconElement,
   getInitials,
-  mapSeverityToDisplay,
   isSecurityReportAnalysisType,
 } from "@utils/support";
 import ErrorIndicator from "@components/common/error-indicator/ErrorIndicator";
@@ -173,7 +172,7 @@ export default function CaseDetailsContent({
               <CaseDetailsHeader
                 caseNumber={data?.number}
                 title={data?.title}
-                severityLabel={mapSeverityToDisplay(severityLabel ?? undefined)}
+                severityLabel={severityLabel ?? undefined}
                 statusLabel={statusLabel}
                 statusChipIcon={statusChipIcon}
                 statusChipSx={statusChipSx}

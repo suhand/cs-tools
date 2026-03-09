@@ -78,6 +78,14 @@ export interface SharedEnvContext {
   tier: string;
 }
 
+// Request body for PATCH /users/me (partial update, only changed fields).
+export interface PatchUserMeRequest {
+  phoneNumber?: string;
+  timeZone?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 // Request body for case classification.
 export interface CaseClassificationRequest extends SharedEnvContext {
   chatHistory: string;
@@ -199,6 +207,12 @@ export interface PatchCallRequest {
   reason: string;
   stateKey: number;
   utcTimes?: string[];
+}
+
+// Request body for updating current user profile (PATCH /users/me).
+export interface PatchUserMeRequest {
+  phoneNumber?: string;
+  timeZone?: string;
 }
 
 // Request body for creating a project contact (POST /projects/:projectId/contacts).

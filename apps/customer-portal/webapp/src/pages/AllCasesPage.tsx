@@ -36,11 +36,13 @@ import {
 } from "@wso2/oxygen-ui";
 import { ArrowLeft } from "@wso2/oxygen-ui-icons-react";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
+import useGetProjectDetails from "@api/useGetProjectDetails";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { useGetDeployments } from "@api/useGetDeployments";
-import { getIncidentAndQueryIds } from "@utils/support";
+import { getIncidentAndQueryIds, isS0Case } from "@utils/support";
 import { CaseType } from "@constants/supportConstants";
+import { PROJECT_TYPE_LABELS } from "@constants/projectDetailsConstants";
 import type { AllCasesFilterValues } from "@models/responses";
 import AllCasesStatCards from "@components/support/all-cases/AllCasesStatCards";
 import AllCasesSearchBar from "@components/support/all-cases/AllCasesSearchBar";
@@ -63,6 +65,15 @@ export default function AllCasesPage(): JSX.Element {
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
   const [page, setPage] = useState(1);
   const pageSize = 10;
+
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+  } = useGetProjectDetails(projectId || "");
+  const projectReady = !isProjectLoading && project !== undefined;
+  const isManagedCloudSubscription =
+    project?.type?.label === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
+  const excludeS0 = projectReady ? !isManagedCloudSubscription : false;
 
   // Fetch filter metadata first to get Incident and Query IDs for stats API
   const { data: filterMetadata } = useGetProjectFilters(projectId || "");
@@ -148,16 +159,20 @@ export default function AllCasesPage(): JSX.Element {
     void fetchNextPage();
   }, [data, hasNextPage, fetchNextPage]);
 
-  const allCases = useMemo(
+  const rawCases = useMemo(
     () => data?.pages.flatMap((page) => page.cases) ?? [],
     [data],
   );
   const apiTotalRecords = data?.pages?.[0]?.totalRecords ?? 0;
 
-  // API returns filtered/sorted results; no frontend filtering/sorting needed
-  const filteredAndSearchedCases = allCases;
+  const filteredAndSearchedCases = useMemo(
+    () => (excludeS0 ? rawCases.filter((c) => !isS0Case(c)) : rawCases),
+    [rawCases, excludeS0],
+  );
 
-  const totalItems = apiTotalRecords || filteredAndSearchedCases.length;
+  const totalItems = excludeS0
+    ? filteredAndSearchedCases.length
+    : (apiTotalRecords || filteredAndSearchedCases.length);
 
   // Pagination logic
   const paginatedCases = useMemo(() => {
@@ -235,6 +250,7 @@ export default function AllCasesPage(): JSX.Element {
         deployments={deploymentsData?.deployments}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
+        excludeS0={excludeS0}
       />
 
       {/* Sort and results count */}

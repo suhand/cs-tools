@@ -15,7 +15,7 @@
 // under the License.
 
 import { useParams, useNavigate } from "react-router";
-import { type JSX, useMemo, useEffect } from "react";
+import { type JSX, useMemo } from "react";
 import {
   Box,
   Button,
@@ -27,7 +27,6 @@ import {
   alpha,
   colors,
   Skeleton,
-  CircularProgress,
 } from "@wso2/oxygen-ui";
 import {
   ArrowLeft,
@@ -41,21 +40,14 @@ import {
   Users,
   RotateCcw,
   Shield,
-  MessageSquare,
   Download,
   ExternalLink,
 } from "@wso2/oxygen-ui-icons-react";
-import { useIsMutating } from "@tanstack/react-query";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import ErrorStateIcon from "@components/common/error-state/ErrorStateIcon";
-import ErrorIndicator from "@components/common/error-indicator/ErrorIndicator";
 import useGetChangeRequestDetails from "@api/useGetChangeRequestDetails";
-import { useInfiniteChangeRequestComments } from "@api/useInfiniteChangeRequestComments";
-import ChangeRequestCommentInput from "@components/support/change-requests/ChangeRequestCommentInput";
 import ScheduledMaintenanceWindowCard from "@components/support/change-requests/ScheduledMaintenanceWindowCard";
-import { formatCommentDate, hasDisplayableContent, stripAllTags } from "@utils/support";
 import { generateChangeRequestDetailsPdf } from "@utils/changeRequestDetailsPdf";
-import { ApiMutationKeys } from "@constants/apiConstants";
 import {
   formatImpactLabel,
   getChangeRequestStateIcon,
@@ -110,42 +102,6 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
     error,
     isFetching,
   } = useGetChangeRequestDetails(changeRequestId || "");
-
-  const {
-    data: commentsData,
-    isLoading: isLoadingComments,
-    isFetching: isFetchingComments,
-    isError: isErrorComments,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteChangeRequestComments(changeRequestId || "");
-
-  // Auto-fetch all pages in background
-  useEffect(() => {
-    if (!commentsData || !hasNextPage || isFetchingNextPage) return;
-    void fetchNextPage();
-  }, [commentsData, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // Check if any change request comment mutation is pending
-  const isPostingComment = useIsMutating({ mutationKey: ApiMutationKeys.POST_CHANGE_REQUEST_COMMENT }) > 0;
-
-  // Flatten all comments from all pages with defensive handling
-  const allComments = useMemo(() => {
-    return commentsData?.pages.flatMap((page) => page.comments ?? []) ?? [];
-  }, [commentsData?.pages]);
-
-  const commentsSorted = useMemo(() => {
-    return [...allComments].sort(
-      (a, b) =>
-        new Date(a.createdOn).getTime() - new Date(b.createdOn).getTime(),
-    );
-  }, [allComments]);
-
-  const commentsToShow = useMemo(
-    () => commentsSorted.filter(hasDisplayableContent),
-    [commentsSorted],
-  );
 
   // Workflow stages with dynamic state
   const { workflowStages, currentStateIndex } = useMemo(() => {
@@ -945,143 +901,23 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
         </Box>
       </Paper>
 
-      {/* Notes & Comments Card */}
-      <Paper variant="outlined">
-        <Box sx={{ px: 3, pt: 3, pb: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
-            <MessageSquare size={20} />
-            <Typography variant="h6">Notes & Comments</Typography>
-          </Box>
-          <Typography variant="body2" color="text.secondary">
-            Track updates and communications related to this change request
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            maxHeight: 400,
-            overflow: "auto",
-            px: 3,
-            py: 2,
-          }}
-        >
-          {isLoadingComments ? (
-            <Stack spacing={2}>
-              {[1, 2, 3].map((i) => (
-                <Stack
-                  key={i}
-                  direction="row"
-                  spacing={1.5}
-                  alignItems="flex-start"
-                >
-                  <Skeleton variant="circular" width={32} height={32} />
-                  <Box sx={{ flex: 1 }}>
-                    <Skeleton variant="text" width="40%" height={20} />
-                    <Skeleton
-                      variant="rectangular"
-                      height={60}
-                      sx={{ mt: 1 }}
-                    />
-                  </Box>
-                </Stack>
-              ))}
-            </Stack>
-          ) : isErrorComments ? (
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                justifyContent: "center",
-                py: 3,
-              }}
-            >
-              <ErrorIndicator entityName="comments" size="small" />
-              <Typography variant="body2" color="text.secondary">
-                Unable to load comments.
-              </Typography>
-            </Box>
-          ) : commentsToShow.length === 0 ? (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ textAlign: "center", py: 3 }}
-            >
-              No comments yet. Be the first to add one!
-            </Typography>
-          ) : (
-            <Stack spacing={2}>
-              {commentsToShow.map((comment) => {
-                // Strip both HTML tags and custom tags like [code]...[/code] from content
-                const cleanContent = stripAllTags(comment.content) || "No content";
-
-                return (
-                  <Paper
-                    key={comment.id}
-                    sx={{
-                      p: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        mb: 1,
-                      }}
-                    >
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        {comment.createdBy || "Unknown"}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatCommentDate(comment.createdOn)}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {cleanContent}
-                    </Typography>
-                  </Paper>
-                );
-              })}
-            </Stack>
-          )
-          }
-        </Box>
-
-        <Divider />
-
-        <ChangeRequestCommentInput changeRequestId={changeRequestId || ""} />
-      </Paper>
       {/* Action Buttons */}
       <Box sx={{ display: "flex", gap: 2 }}>
         <Button
           variant="contained"
-          startIcon={
-            isLoadingComments || isFetchingComments || isPostingComment ? (
-              <CircularProgress size={18} sx={{ color: "inherit" }} />
-            ) : (
-              <Download size={18} />
-            )
-          }
+          startIcon={<Download size={18} />}
           sx={{ flex: 1 }}
           onClick={() => {
             try {
-              // Use memoized allComments for PDF generation
-              generateChangeRequestDetailsPdf(
-                changeRequest,
-                allComments,
-              );
+              generateChangeRequestDetailsPdf(changeRequest, []);
             } catch (error) {
               const message = error instanceof Error ? error.message : "Failed to generate PDF";
               showError(message);
               console.error("PDF generation error:", error);
             }
           }}
-          disabled={isLoadingComments || isFetchingComments || isPostingComment}
         >
-          {isLoadingComments || isFetchingComments || isPostingComment
-            ? "Loading..."
-            : "Download Change Request PDF"}
+          Download Change Request PDF
         </Button>
         <Button
           variant="contained"

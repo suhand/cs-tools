@@ -66,6 +66,31 @@ public type UserResponse record {|
     json...;
 |};
 
+# Request payload for updating user.
+public type UserUpdatePayload record {|
+    # Time zone to update for the user
+    string timeZone;
+|};
+
+# Response payload for user update.
+public type UserUpdateResponse record {|
+    # Success message
+    string message;
+    # Updated user details
+    UpdatedUser user;
+|};
+
+# Updated user details.
+public type UpdatedUser record {|
+    # ID of the user
+    IdString id;
+    # User who performed the update
+    string updatedBy;
+    # Updated date and time
+    DateTimeWithoutTimezone updatedOn;
+    json...;
+|};
+
 # Project data.
 public type Project record {|
     # ID
@@ -138,6 +163,32 @@ public type Account record {|
     string? ownerEmail;
     # Technical owner email
     string? technicalOwnerEmail;
+    json...;
+|};
+
+# Payload for updating a project.
+public type ProjectUpdatePayload record {|
+    # Indicates whether the agent is enabled for the project
+    boolean hasAgent;
+|};
+
+# Response from updating a project.
+public type ProjectUpdateResponse record {|
+    # Success message
+    string message;
+    # Updated project metadata
+    UpdatedProject project;
+    json...;
+|};
+
+# Updated project details.
+public type UpdatedProject record {|
+    # ID of the project
+    IdString id;
+    # User who updated the project
+    string updatedBy;
+    # Updated date and time
+    DateTimeWithoutTimezone updatedOn;
     json...;
 |};
 
@@ -428,6 +479,8 @@ public type SortBy record {|
 public type ProjectMetadataResponse record {|
     # List of available case states (eg: Open, Closed, etc.)
     ChoiceListItem[] caseStates;
+    # List of available time zones (eg: UTC, GMT, etc.)
+    ChoiceListItem[] timeZones;
     # List of available case severities (eg: S0, S1, etc.)
     ChoiceListItem[] severities;
     # List of available issue types (eg: Error, Total Outage, etc.)
@@ -616,6 +669,10 @@ public type Attachment record {|
     string createdOn;
     # Download URL
     string downloadUrl;
+    # Base64 encoded file content (data URI format: data:@file/<type>;base64,<content>)
+    string content;
+    # Description of the attachment
+    string? description;
     json...;
 |};
 
@@ -626,6 +683,54 @@ public type AttachmentsResponse record {|
     # Total records count
     int totalRecords;
     *Pagination;
+|};
+
+# Request payload for updating an attachment.
+public type AttachmentUpdatePayload record {|
+    # Reference ID (case or deployment ID)
+    IdString referenceId;
+    # Reference type
+    ReferenceType referenceType;
+    # File name
+    string? name?;
+    # Description of the attachment (only for deployment type)
+    string? description?;
+    json...;
+|};
+
+# Response from updating an attachment.
+public type AttachmentUpdateResponse record {|
+    # Success message
+    string message;
+    # Updated attachment details
+    UpdatedAttachment attachment;
+|};
+
+# Updated attachment details.
+public type UpdatedAttachment record {|
+    # ID of the updated attachment
+    IdString id;
+    # Updated date and time
+    string updatedOn;
+    # User who updated the attachment
+    string updatedBy;
+    json...;
+|};
+
+# Delete attachment response from ServiceNow.
+public type AttachmentDeleteResponse record {|
+    # Success message
+    string message;
+    # Deleted attachment details
+    record {|
+        # ID of the deleted attachment
+        IdString id;
+        # User who deleted the attachment
+        string deletedBy;
+        # Deleted date and time
+        string deletedOn;
+        json...;
+    |} attachment;
 |};
 
 # Deployed product data.
@@ -857,12 +962,12 @@ public type CreatedAttachment record {|
     # User who created the attachment
     string createdBy;
     # Download URL
-    string downloadUrl;
+    string downloadUrl?;
     json...;
 |};
 
 # Payload for creating an attachment.
-public type AttachmentPayload record {|
+public type AttachmentCreatePayload record {|
     # Reference ID to which the attachment is associated (e.g., query ID, incident ID, etc)
     IdString referenceId;
     # Reference type
@@ -873,6 +978,8 @@ public type AttachmentPayload record {|
     string 'type;
     # Content of the file as a byte array
     string file;
+    # Description of the attachment
+    string? description?;
 |};
 
 # Inline attachment.

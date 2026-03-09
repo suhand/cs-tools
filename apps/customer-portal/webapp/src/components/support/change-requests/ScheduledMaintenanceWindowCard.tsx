@@ -34,22 +34,31 @@ import {
 } from "@wso2/oxygen-ui-icons-react";
 import { usePatchChangeRequest } from "@api/usePatchChangeRequest";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
+import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
 import type { ChangeRequestDetails } from "@models/responses";
 
 export interface ScheduledMaintenanceWindowCardProps {
   changeRequest: ChangeRequestDetails;
 }
 
+/** Returns true if date string is empty or invalid. */
+function isDateAvailable(dateStr: string | null | undefined): boolean {
+  if (!dateStr?.trim()) return false;
+  const d = new Date(dateStr.replace(" ", "T"));
+  return !Number.isNaN(d.getTime());
+}
+
 /**
  * Format API date string to display format (e.g. "Tuesday, December 15, 2099 at 10:00 PM").
- * Timezone suffix (e.g. GMT+5:30) is omitted.
+ * Returns "Not available" for empty or invalid dates.
  *
  * @param {string} dateStr - API date string (e.g. "2026-02-28 15:30:50").
- * @returns {string} Formatted date string.
+ * @returns {string} Formatted date string or "Not available".
  */
-function formatDisplayDate(dateStr: string): string {
+function formatDisplayDate(dateStr: string | null | undefined): string {
+  if (!isDateAvailable(dateStr)) return "Not available";
   try {
-    const d = new Date(dateStr.replace(" ", "T"));
+    const d = new Date((dateStr ?? "").replace(" ", "T"));
     return d.toLocaleString(undefined, {
       weekday: "long",
       year: "numeric",
@@ -59,7 +68,7 @@ function formatDisplayDate(dateStr: string): string {
       minute: "2-digit",
     });
   } catch {
-    return dateStr;
+    return "Not available";
   }
 }
 
@@ -127,6 +136,7 @@ export default function ScheduledMaintenanceWindowCard({
   changeRequest,
 }: ScheduledMaintenanceWindowCardProps): JSX.Element {
   const { showError } = useErrorBanner();
+  const { showSuccess } = useSuccessBanner();
   const patchMutation = usePatchChangeRequest(changeRequest.id);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(() =>
@@ -155,6 +165,7 @@ export default function ScheduledMaintenanceWindowCard({
       {
         onSuccess: () => {
           setIsEditing(false);
+          showSuccess("Planned start updated successfully");
         },
         onError: (err) => {
           showError(err?.message ?? "Failed to update planned start");
@@ -206,6 +217,9 @@ export default function ScheduledMaintenanceWindowCard({
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   fullWidth
+                  inputProps={{
+                    min: new Date().toISOString().slice(0, 16),
+                  }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -239,17 +253,19 @@ export default function ScheduledMaintenanceWindowCard({
                 <Typography variant="body2" color="text.primary">
                   {formatDisplayDate(changeRequest.startDate)}
                 </Typography>
-                <IconButton
-                  size="small"
-                  aria-label="Edit planned start"
-                  color="primary"
-                  onClick={() => {
-                    setEditValue(toDatetimeLocal(changeRequest.startDate));
-                    setIsEditing(true);
-                  }}
-                >
-                  <PencilLine size={16} />
-                </IconButton>
+                {isDateAvailable(changeRequest.startDate) && (
+                  <IconButton
+                    size="small"
+                    aria-label="Edit planned start"
+                    color="primary"
+                    onClick={() => {
+                      setEditValue(toDatetimeLocal(changeRequest.startDate));
+                      setIsEditing(true);
+                    }}
+                  >
+                    <PencilLine size={16} />
+                  </IconButton>
+                )}
               </Box>
             )}
           </Box>

@@ -23,6 +23,10 @@ export interface ProjectListItem {
   key: string;
   createdOn: string;
   description: string;
+  type?: {
+    id: string;
+    label: string;
+  };
 }
 
 /** Account nested in project details response. */
@@ -79,6 +83,7 @@ export interface UserDetails {
   timeZone: string;
   phoneNumber?: string | null;
   avatar?: string | null;
+  roles?: string[];
 }
 
 // Project user (invited/registered) for project users list.
@@ -457,6 +462,8 @@ export interface CaseDetails {
   issueType: IdLabelRef | null;
   catalog?: IdLabelRef | null;
   catalogItem?: IdLabelRef | null;
+  /** Filled variables for service requests (from backend). */
+  variables?: { name: string; value: string }[];
   deployment: IdLabelRef | null;
   severity: IdLabelRef | null;
   status: IdLabelRef | null;

@@ -30,6 +30,7 @@ import type {
   ProjectDeploymentItem,
 } from "@models/responses";
 import { ALL_CASES_FILTER_DEFINITIONS } from "@constants/supportConstants";
+import { isS0SeverityLabel } from "@constants/dashboardConstants";
 import { deriveFilterLabels, mapSeverityToDisplay } from "@utils/support";
 
 export interface AllCasesFiltersProps {
@@ -37,6 +38,7 @@ export interface AllCasesFiltersProps {
   filterMetadata: CaseMetadataResponse | undefined;
   deployments?: ProjectDeploymentItem[];
   onFilterChange: (field: string, value: string) => void;
+  excludeS0?: boolean;
 }
 
 /**
@@ -50,6 +52,7 @@ export default function AllCasesFilters({
   filterMetadata,
   deployments,
   onFilterChange,
+  excludeS0 = false,
 }: AllCasesFiltersProps): JSX.Element {
   const handleSelectChange =
     (field: string) => (event: SelectChangeEvent<string | string[]>) => {
@@ -70,15 +73,21 @@ export default function AllCasesFilters({
             }))
           : (() => {
               const metadataOptions = filterMetadata?.[def.metadataKey];
-              return Array.isArray(metadataOptions)
-                ? metadataOptions.map((item: { label: string; id: string }) => ({
-                    label:
-                      def.metadataKey === "severities"
-                        ? mapSeverityToDisplay(item.label)
-                        : item.label,
-                    value: def.useLabelAsValue ? item.label : item.id,
-                  }))
-                : [];
+              if (!Array.isArray(metadataOptions)) return [];
+              const filtered =
+                def.metadataKey === "severities" && excludeS0
+                  ? metadataOptions.filter(
+                      (item: { label: string }) =>
+                        !isS0SeverityLabel(item.label),
+                    )
+                  : metadataOptions;
+              return filtered.map((item: { label: string; id: string }) => ({
+                label:
+                  def.metadataKey === "severities"
+                    ? mapSeverityToDisplay(item.label)
+                    : item.label,
+                value: def.useLabelAsValue ? item.label : item.id,
+              }));
             })();
 
         return (

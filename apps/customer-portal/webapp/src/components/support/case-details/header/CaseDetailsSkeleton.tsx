@@ -38,10 +38,12 @@ export function CaseDetailsHeaderSkeleton(): JSX.Element {
         sx={{ mb: 0.5, flexWrap: "wrap" }}
       >
         <Skeleton variant="text" width={100} height={20} />
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-          <Skeleton variant="circular" width={8} height={8} />
-          <Skeleton variant="text" width={28} height={16} />
-        </Box>
+        <Skeleton
+          variant="rounded"
+          width={56}
+          height={20}
+          sx={{ borderRadius: "10px" }}
+        />
         <Skeleton variant="rounded" width={72} height={20} />
       </Stack>
       <Skeleton variant="text" width="70%" height={28} sx={{ maxWidth: 400 }} />

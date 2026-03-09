@@ -27,6 +27,7 @@ import {
 } from "@wso2/oxygen-ui-icons-react";
 import { type ReactElement, type JSX } from "react";
 import type { CaseDetails } from "@models/responses";
+import { getSeverityLegendColor } from "@constants/dashboardConstants";
 import AssignedEngineerDisplay from "@case-details-details/AssignedEngineerDisplay";
 import CaseDetailsCard from "@case-details-details/CaseDetailsCard";
 import ErrorStateIcon from "@components/common/error-state/ErrorStateIcon";
@@ -36,7 +37,6 @@ import {
   formatUtcToLocal,
   formatDateOnly,
   getAssignedEngineerLabel,
-  getSeverityColor,
   getStatusColor,
   getStatusIconElement,
   mapSeverityToDisplay,
@@ -143,25 +143,30 @@ export default function CaseDetailsDetailsPanel({
           </Box>
           <Box>
             <Typography {...labelSx}>Severity</Typography>
-            <Box
+            <Chip
+              label={mapSeverityToDisplay(severityLabel ?? undefined)}
+              size="small"
+              variant="outlined"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
+                bgcolor: alpha(
+                  getSeverityLegendColor(severityLabel ?? undefined),
+                  0.1,
+                ),
+                color: getSeverityLegendColor(severityLabel ?? undefined),
+                borderColor: alpha(
+                  getSeverityLegendColor(severityLabel ?? undefined),
+                  0.3,
+                ),
+                fontWeight: 500,
+                px: 0,
+                height: 20,
+                fontSize: "0.75rem",
+                "& .MuiChip-label": {
+                  pl: "6px",
+                  pr: "6px",
+                },
               }}
-            >
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  bgcolor: getSeverityColor(severityLabel ?? undefined),
-                }}
-              />
-              <Typography variant="caption" color="text.secondary">
-                {mapSeverityToDisplay(severityLabel ?? undefined)}
-              </Typography>
-            </Box>
+            />
           </Box>
           <Box>
             <Typography {...labelSx}>Category</Typography>

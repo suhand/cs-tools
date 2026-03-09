@@ -39,7 +39,10 @@ import {
   type CaseTypeInput,
 } from "@constants/supportConstants";
 import { CaseReportType } from "@constants/securityConstants";
-import { SEVERITY_LABEL_TO_DISPLAY } from "@constants/dashboardConstants";
+import {
+  SEVERITY_LABEL_TO_DISPLAY,
+  isS0SeverityLabel,
+} from "@constants/dashboardConstants";
 import type { CaseComment, MetadataItem } from "@models/responses";
 import { alpha, colors, type Theme } from "@wso2/oxygen-ui";
 import DOMPurify from "dompurify";
@@ -875,6 +878,19 @@ export function mapSeverityToDisplay(label?: string): string {
 }
 
 /**
+ * Returns true if the case has S0 (Catastrophic) severity.
+ * Used to filter out S0 cases when project type is not Managed Cloud Subscription.
+ *
+ * @param caseItem - Case with optional severity.
+ * @returns {boolean}
+ */
+export function isS0Case(
+  caseItem: { severity?: { label?: string } | null },
+): boolean {
+  return isS0SeverityLabel(caseItem?.severity?.label);
+}
+
+/**
  * Returns the icon component for a severity label (announcement cards).
  * S0/S1: TriangleAlert, S2: CircleAlert, S3: Clock, S4: CircleCheck.
  *
@@ -982,7 +998,50 @@ export function convertCodeTagsToHtml(content: string): string {
 }
 
 /**
+ * Strips all [code]...[/code] blocks and returns concatenated inner HTML.
+ * Used for multi-block content to avoid grey <code> background on structured sections.
+ *
+ * @param content - Raw content with one or more [code]...[/code] blocks.
+ * @returns {string} Inner HTML without code wrappers.
+ */
+export function stripAllCodeBlocks(content: string): string {
+  if (!content || typeof content !== "string") return "";
+  return content.replace(/\[code\]([\s\S]*?)\[\/code\]/gi, "$1");
+}
+
+/**
+ * Removes leading <br>, <br/>, <br /> and whitespace from HTML.
+ * Fixes extra blank first line from content like "[code]<br><b>...</b>[/code]".
+ *
+ * @param html - HTML string.
+ * @returns {string} HTML with leading br/whitespace removed.
+ */
+export function trimLeadingBr(html: string): string {
+  if (!html || typeof html !== "string") return "";
+  return html.replace(/^(\s*<br\s*\/?>\s*)+/i, "").trimStart();
+}
+
+/**
+ * Returns true if content has exactly one top-level [code]...[/code] wrapper
+ * (no multiple [code] blocks). Used to decide between stripCodeWrapper and convertCodeTagsToHtml.
+ *
+ * @param content - Raw content string.
+ * @returns {boolean} True when single wrapper.
+ */
+export function hasSingleCodeWrapper(content: string): boolean {
+  if (!content || typeof content !== "string") return false;
+  const trimmed = content.trim();
+  if (!trimmed.startsWith("[code]") || !trimmed.endsWith("[/code]")) {
+    return false;
+  }
+  const codeOpen = trimmed.match(/\[code\]/gi);
+  const codeClose = trimmed.match(/\[\/code\]/gi);
+  return (codeOpen?.length ?? 0) === 1 && (codeClose?.length ?? 0) === 1;
+}
+
+/**
  * Strips the [code]...[/code] wrapper from comment content.
+ * Only strips when there is exactly one wrapper (use hasSingleCodeWrapper first).
  *
  * @param content - Raw content string.
  * @returns {string} Content without the code wrapper.
@@ -990,10 +1049,8 @@ export function convertCodeTagsToHtml(content: string): string {
 export function stripCodeWrapper(content: string): string {
   if (!content || typeof content !== "string") return "";
   const trimmed = content.trim();
-  if (trimmed.startsWith("[code]") && trimmed.endsWith("[/code]")) {
-    return trimmed.slice(6, -7).trim();
-  }
-  return content;
+  if (!hasSingleCodeWrapper(content)) return content;
+  return trimmed.slice(6, -7).trim();
 }
 
 /**

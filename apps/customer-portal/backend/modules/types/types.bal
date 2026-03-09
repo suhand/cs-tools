@@ -218,6 +218,8 @@ public type UpdatedUser record {|
 public type ProjectFilterOptions record {|
     # List of case states
     ReferenceItem[] caseStates;
+    # List of available time zones (eg: UTC, GMT, etc.)
+    ReferenceItem[] timeZones;
     # List of case severities
     ReferenceItem[] severities;
     # List of issue types
@@ -272,6 +274,8 @@ public type ProjectResponse record {|
     record {|
         # ID of the account
         entity:IdString id;
+        # Indicates whether the agent is enabled for the account
+        boolean hasAgent;
         # Name of the account
         string? name;
         # Activation date
@@ -286,7 +290,7 @@ public type ProjectResponse record {|
         string? ownerEmail;
         # Technical owner email
         string? technicalOwnerEmail;
-    |}? account;
+    |} account;
 |};
 
 # Projects response.
@@ -435,7 +439,7 @@ public type CreatedAttachment record {|
     # User who created the attachment
     string createdBy;
     # Download URL
-    string downloadUrl;
+    string downloadUrl?;
 |};
 
 # Attachment data.
@@ -454,6 +458,10 @@ public type Attachment record {|
     string createdOn;
     # Download URL
     string downloadUrl;
+    # Base64 encoded file content (data URI format: data:@file/<type>;base64,<content>)
+    string content;
+    # Description of the attachment
+    string? description;
 |};
 
 # Attachments response.
@@ -463,6 +471,14 @@ public type AttachmentsResponse record {|
     # Total records count
     int totalRecords;
     *entity:Pagination;
+|};
+
+# Payload for updating an attachment.
+public type AttachmentUpdatePayload record {|
+    # File name
+    string? name?;
+    # Description of the attachment (only for deployment type)
+    string? description?;
 |};
 
 # Deployment information.
@@ -541,13 +557,15 @@ public type CommentCreatePayload record {|
 |};
 
 # Payload for creating an attachment.
-public type AttachmentPayload record {|
+public type AttachmentCreatePayload record {|
     # File name
     string name;
     # MIME type of the file
     string 'type;
     # Base 64 encoded content
     string content;
+    # Description of the attachment
+    string? description?;
 |};
 
 # Product vulnerability metadata response.
