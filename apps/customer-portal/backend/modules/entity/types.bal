@@ -142,6 +142,26 @@ public type ProjectResponse record {|
     Date? endDate;
     # Account information
     Account account;
+    # Query hour information
+    string? totalQueryHours;
+    # Consumed query hours
+    string? consumedQueryHours;
+    # Remaining query hours
+    string? remainingQueryHours;
+    # Go-live date
+    Date? goLiveDate;
+    # Go-live plan date
+    Date? goLivePlanDate;
+    # Onboarding hour information
+    string? totalOnboardingHours;
+    # Consumed onboarding hours
+    string? consumedOnboardingHours;
+    # Remaining onboarding hours
+    string? remainingOnboardingHours;
+    # Onboarding expiry date
+    Date? onboardingExpiryDate;
+    # Onboarding status
+    string? onboardingStatus;
     json...;
 |};
 
