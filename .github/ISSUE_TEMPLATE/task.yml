@@ -1,23 +1,23 @@
 name: "✍️ Create a Task"
 description: Create a task for an app, module, or shared operation in the monorepo.
-title: "[Task] "
-labels: ["task"]
+title: ""
+labels: ["Type/Task"]
 body:
   - type: markdown
     attributes:
       value: |
         Please use the title in the following format:
 
-        [App/Module] [Area] Short issue title
+        [App/Integration] [Area] Short issue title
 
         Example:
         [Customer Portal] [BE] Bring user management business logic to the backend
 
   - type: dropdown
-    id: app_module
+    id: component
     attributes:
-      label: App / Module
-      description: Select the related app, module, or shared area.
+      label: Component
+      description: Select the affected app, integration, service, or shared module.
       options:
         - Customer Portal
         - Customer Service
