@@ -148,7 +148,9 @@ const ProductVulnerabilitiesTable = ({
           setPage(0);
         }}
         onFilterToggle={() => {
-          if (Object.keys(filters).length > 0) {
+          if (
+            activeFilterFields.filter((f) => appliedFilters[f.id]).length > 0
+          ) {
             handleClearFilters();
           } else {
             setIsFilterOpen(!isFilterOpen);

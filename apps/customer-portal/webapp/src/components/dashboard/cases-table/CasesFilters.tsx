@@ -26,9 +26,14 @@ import type { JSX } from "react";
 import type { SelectChangeEvent } from "@wso2/oxygen-ui";
 import type { FilterField } from "@components/common/filter-panel/FilterPopover";
 
+/**
+ * Select-specific FilterField that ensures only select-type fields are passed.
+ */
+type SelectFilterField = FilterField & { type: "select" };
+
 export interface CasesFiltersProps {
   filters: Record<string, string | number>;
-  filterFields: FilterField[];
+  filterFields: SelectFilterField[];
   onFilterChange: (field: string, value: string | number) => void;
 }
 
@@ -52,8 +57,6 @@ export default function CasesFilters({
   return (
     <Grid container spacing={2} sx={{ mt: 1 }}>
       {filterFields.map((field) => {
-        if (field.type !== "select") return null;
-
         const options = field.options || [];
 
         return (

@@ -18,6 +18,15 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import CasesTableHeader from "@components/dashboard/cases-table/CasesTableHeader";
 
+const mockNavigate = vi.fn();
+const mockUseParams = vi.fn(() => ({ projectId: "project-1" }));
+
+// Mock react-router hooks
+vi.mock("react-router", () => ({
+  useNavigate: () => mockNavigate,
+  useParams: mockUseParams,
+}));
+
 // Mock Oxygen UI components (include Menu for ActiveFilters)
 vi.mock("@wso2/oxygen-ui", () => ({
   Box: ({ children }: any) => <div data-testid="box">{children}</div>,

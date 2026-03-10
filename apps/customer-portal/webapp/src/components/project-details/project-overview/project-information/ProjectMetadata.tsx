@@ -113,7 +113,7 @@ const ProjectMetadata = ({
             >
               Project Type
             </Typography>
-            {isLoading ? (
+            {isLoading || isError ? (
               <Skeleton variant="rounded" width={80} height={24} />
             ) : (
               <Tooltip title={type?.label ?? ""} arrow>
@@ -145,7 +145,7 @@ const ProjectMetadata = ({
             >
               Support Tier
             </Typography>
-            {isLoading ? (
+            {isLoading || isError ? (
               <Skeleton variant="rounded" width={80} height={24} />
             ) : (
               <Tooltip title={supportTier} arrow>
@@ -177,7 +177,7 @@ const ProjectMetadata = ({
             >
               SLA Status
             </Typography>
-            {isLoading ? (
+            {isLoading || isError ? (
               <Skeleton variant="rounded" width={60} height={24} />
             ) : (
               <Tooltip title={slaStatus} arrow>

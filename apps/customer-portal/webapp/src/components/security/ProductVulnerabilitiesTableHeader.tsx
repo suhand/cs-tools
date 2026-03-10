@@ -84,9 +84,6 @@ const ProductVulnerabilitiesTableHeader = ({
         >
           <Box sx={{ width: "100%", flexGrow: 1 }}>
             <TextField
-              sx={{
-                width: "100%",
-              }}
               value={searchValue}
               onChange={handleSearchChange}
               placeholder="Search CVE or component"

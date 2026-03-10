@@ -222,14 +222,18 @@ const CasesTable = ({
     setPage(0);
   };
 
+  const getActiveFiltersCount = () => {
+    return Object.values(filters).filter((v) => v !== "" && v != null).length;
+  };
+
   return (
     <ListingTable.Container sx={{ width: "100%", mb: 4, p: 3 }}>
       {/* Header */}
       <CasesTableHeader
-        activeFiltersCount={Object.keys(filters).length}
+        activeFiltersCount={getActiveFiltersCount()}
         isFiltersOpen={isFilterOpen}
         onFilterToggle={() => {
-          if (Object.keys(filters).length > 0) {
+          if (getActiveFiltersCount() > 0) {
             handleClearFilters();
           } else {
             setIsFilterOpen(!isFilterOpen);
