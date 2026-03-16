@@ -1032,9 +1032,9 @@ export interface CallRequest {
 
 export interface CallRequestsResponse {
   callRequests: CallRequest[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
+  totalRecords?: number;
+  offset?: number;
+  limit?: number;
 }
 
 // Response for creating or updating a call request (POST/PATCH).
