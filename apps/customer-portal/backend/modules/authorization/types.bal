@@ -14,14 +14,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# [Configurable] Asgardeo JWT configuration.
-public type AuthorizationConfig record {|
+# [Configurable] Token validator configuration.
+public type TokenValidatorConfig record {|
+    # Issuer
+    string issuer;
+    # Audience  
+    string audience;
     # JWKS EndPoint 
     string jwksEndPoint;
-    # JWT Audience  
-    string jwtAudience;
-    # JWT Issuer
-    string jwtIssuer;
 |};
 
 # JWT payload data structure from decoded token.

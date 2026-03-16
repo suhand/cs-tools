@@ -18,14 +18,14 @@ import ballerina/jwt;
 import ballerina/log;
 
 public configurable AppRoles authorizedRoles = ?;
-configurable AuthorizationConfig authorizationConfig = ?;
+configurable TokenValidatorConfig tokenValidatorConfig = ?;
 
 final jwt:ValidatorConfig & readonly jwtConfig = {
-    issuer: authorizationConfig.jwtIssuer,
-    audience: authorizationConfig.jwtAudience,
+    issuer: tokenValidatorConfig.issuer,
+    audience: tokenValidatorConfig.audience,
     clockSkew: 60,
     signatureConfig: {
-        jwksConfig: {url: authorizationConfig.jwksEndPoint}
+        jwksConfig: {url: tokenValidatorConfig.jwksEndPoint}
     }
 };
 
@@ -69,7 +69,7 @@ public isolated service class JwtInterceptor {
 
         jwt:Payload|error payload = jwt:validate(idToken, jwtConfig.cloneReadOnly());
         if payload is error {
-            string errorMsg = "Invalid JWT";
+            string errorMsg = "Invalid or expired token!";
             log:printError(errorMsg, payload);
             return <http:Unauthorized>{body: {message: errorMsg}};
         }
