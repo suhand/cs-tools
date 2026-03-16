@@ -98,6 +98,7 @@ public isolated function streamChat(string sessionId, string payload, websocket:
             if event is websocket:ConnectionClosureError {
                 upstreamClosed = true;
             } else {
+                log:printError("Error reading from upstream AI chat agent", event);
                 json errorPayload = {"type": "error", "message": event.message()};
                 error? writeErr = caller->writeTextMessage(errorPayload.toJsonString());
                 if writeErr is error {
@@ -112,6 +113,9 @@ public isolated function streamChat(string sessionId, string payload, websocket:
             break;
         }
         json|error parsed = event.fromJsonString();
+        if parsed is error {
+            log:printError("Failed to parse upstream event as JSON", parsed);
+        }
         if parsed is map<json> {
             string evtType = (parsed["type"] ?: "").toString();
             if evtType == "final" || evtType == "error" {

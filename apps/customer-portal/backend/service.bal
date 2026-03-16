@@ -4262,7 +4262,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
 }
 
 # WebSocket service to proxy messages between the browser and the upstream Python AI chat agent for real-time communication in chat sessions.
-isolated service /ws on new websocket:Listener(wsPort) {
+isolated service / on new websocket:Listener(wsPort) {
 
     # Upgrade an HTTP request to WebSocket for a given chat session.
     #
@@ -4284,6 +4284,13 @@ isolated service class WsProxyService {
         self.sessionId = sessionId;
     }
 
+    # Handles incoming WebSocket text messages from the browser client.
+    # Responds to ping messages, enforces single-stream concurrency, and proxies
+    # user messages to the upstream AI chat agent via the ai_chat_agent module.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + data - Raw text message received from the client
+    # + return - Error if message handling or forwarding fails
     remote function onMessage(websocket:Caller caller, string data) returns error? {
         json|error parsed = data.fromJsonString();
         boolean isPing = data.trim().toLowerAscii() == "ping"
@@ -4320,10 +4327,20 @@ isolated service class WsProxyService {
         }
     }
 
+    # Handles WebSocket connection errors on the proxy link.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + err - The error that occurred on the connection
+    # + return - Error if error handling itself fails
     remote function onError(websocket:Caller caller, error err) returns error? {
         log:printError("WebSocket proxy connection error", err);
     }
 
+    # Handles WebSocket connection closure events.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + statusCode - WebSocket close status code
+    # + reason - Reason string for the closure
     remote function onClose(websocket:Caller caller, int statusCode, string reason) {
         log:printInfo(string `WebSocket proxy closed [${statusCode}]: ${reason}`);
     }
