@@ -64,13 +64,15 @@ export default function ImageFullscreenModal({
           aria-label="Close"
           size="small"
           onClick={onClose}
+          color="warning"
           sx={{
             position: "absolute",
             right: 16,
             top: 16,
             zIndex: 1,
-            color: "grey.300",
-            "&:hover": { color: "common.white", bgcolor: "action.hover" },
+            border: "1px solid",
+            borderColor: "warning.main",
+            color: "warning.main",
           }}
         >
           <X size={24} aria-hidden />
