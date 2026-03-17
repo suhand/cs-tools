@@ -37,6 +37,7 @@ import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
 import { useLogger } from "@hooks/useLogger";
 import type { CreateCaseRequest } from "@models/requests";
+import type { DeploymentProductItem } from "@models/responses";
 import { BasicInformationSection } from "@components/support/case-creation-layout/form-sections/basic-information-section/BasicInformationSection";
 import { CaseCreationHeader } from "@components/support/case-creation-layout/header/CaseCreationHeader";
 import { CaseDetailsSection } from "@components/support/case-creation-layout/form-sections/case-details-section/CaseDetailsSection";
@@ -161,13 +162,15 @@ export default function CreateCasePage(): JSX.Element {
     isLoading: deploymentProductsLoading,
     isError: deploymentProductsError,
   } = useGetDeploymentsProducts(selectedDeploymentId);
-  const allDeploymentProducts = useMemo(
-    () =>
-      (deploymentProductsData ?? []).filter((item) =>
-        item.product?.label?.trim(),
-      ),
-    [deploymentProductsData],
-  );
+  const allDeploymentProducts = useMemo(() => {
+    const deploymentProductsArray = Array.isArray(deploymentProductsData)
+      ? deploymentProductsData
+      : ((deploymentProductsData as any)?.deployedProducts ?? []) as DeploymentProductItem[];
+
+    return deploymentProductsArray.filter((item: DeploymentProductItem) =>
+      item.product?.label?.trim(),
+    );
+  }, [deploymentProductsData]);
   const baseProductOptions = getBaseProductOptions(allDeploymentProducts);
 
   // Sort product options in ascending order by label

@@ -54,7 +54,7 @@ export function useAllDeploymentProducts(
 
   const results = useQueries({
     queries: deploymentIds.map((deploymentId) => ({
-      queryKey: [ApiQueryKeys.DEPLOYMENT_PRODUCTS, deploymentId],
+      queryKey: [ApiQueryKeys.DEPLOYMENT_PRODUCTS, deploymentId, "all"],
       queryFn: async () => {
         const token = await getIdToken();
         const fetchFn: FetchFn = (url, init) =>
