@@ -45,6 +45,6 @@ isolated function createAiChatAgentWsClient(string sessionId) returns websocket:
     return new (string `${aiChatAgentWsBaseUrl}/ws?sessionId=${sessionId}`, {
         auth: {
             ...clientCredentialsOauth2ConfigWs
-        },
+        }
     });
 }
