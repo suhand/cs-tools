@@ -48,7 +48,6 @@ public isolated service class JwtInterceptor {
             };
         }
 
-        // TODO: Remove this if the token issuer issue get resolved.
         string|error userIdToken = req.getHeader(USER_ID_TOKEN_HEADER);
         if userIdToken is error {
             string errorMsg = "Missing user id token info header!";
@@ -60,18 +59,19 @@ public isolated service class JwtInterceptor {
             };
         }
 
-        [jwt:Header, jwt:Payload]|jwt:Error result = jwt:decode(idToken);
-        if result is jwt:Error {
-            string errorMsg = "Error while reading the Invoker info!";
-            log:printError(errorMsg, result);
-            return <http:InternalServerError>{body: {message: errorMsg}};
-        }
-
+        // Validate JWT token
         jwt:Payload|error payload = jwt:validate(idToken, jwtConfig.cloneReadOnly());
         if payload is error {
             string errorMsg = "Invalid or expired token!";
             log:printError(errorMsg, payload);
             return <http:Unauthorized>{body: {message: errorMsg}};
+        }
+
+        [jwt:Header, jwt:Payload]|jwt:Error result = jwt:decode(idToken);
+        if result is jwt:Error {
+            string errorMsg = "Error while reading the Invoker info!";
+            log:printError(errorMsg, result);
+            return <http:InternalServerError>{body: {message: errorMsg}};
         }
 
         jwt:Payload jwtPayload = result[1];
