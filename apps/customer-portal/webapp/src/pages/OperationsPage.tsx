@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { type JSX } from "react";
+import { type JSX, useMemo } from "react";
 import { Box, Grid, Stack } from "@wso2/oxygen-ui";
 import { useNavigate, useParams } from "react-router";
 import { FileText } from "@wso2/oxygen-ui-icons-react";
@@ -45,8 +45,17 @@ export default function OperationsPage(): JSX.Element {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
   const { data: project } = useGetProjectDetails(projectId || "");
+  const projectTypeLabel = project?.type?.label;
+
   const isManagedCloudSubscription =
-    project?.type?.label === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
+    projectTypeLabel === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
+  const isCloudSupport =
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
+
+  const isServiceRequestEnabled =
+    isManagedCloudSubscription || isCloudSupport;
+  const isChangeRequestEnabled = isManagedCloudSubscription;
 
   const {
     data: srData,
@@ -58,7 +67,7 @@ export default function OperationsPage(): JSX.Element {
       filters: { caseTypes: [CaseType.SERVICE_REQUEST] },
       sortBy: { field: "createdOn", order: "desc" },
     },
-    { enabled: !!projectId && isManagedCloudSubscription },
+    { enabled: !!projectId && isServiceRequestEnabled },
   );
   const serviceRequests =
     srData?.pages?.[0]?.cases?.slice(0, OPERATIONS_OVERVIEW_LIST_LIMIT) ?? [];
@@ -72,7 +81,7 @@ export default function OperationsPage(): JSX.Element {
     {},
     0,
     OPERATIONS_OVERVIEW_LIST_LIMIT,
-    { enabled: !!projectId && isManagedCloudSubscription },
+    { enabled: !!projectId && isChangeRequestEnabled },
   );
   const changeRequests = crData?.changeRequests ?? [];
 
@@ -82,7 +91,7 @@ export default function OperationsPage(): JSX.Element {
     isError: isSrStatsError,
   } = useGetProjectCasesStats(projectId || "", {
     caseTypes: [CaseType.SERVICE_REQUEST],
-    enabled: !!projectId && isManagedCloudSubscription,
+    enabled: !!projectId && isServiceRequestEnabled,
   });
 
   const {
@@ -90,7 +99,7 @@ export default function OperationsPage(): JSX.Element {
     isLoading: isCrStatsLoading,
     isError: isCrStatsError,
   } = useGetProjectChangeRequestsStats(projectId || "", {
-    enabled: !!projectId && isManagedCloudSubscription,
+    enabled: !!projectId && isChangeRequestEnabled,
   });
 
   const activeServiceRequests = srStats?.activeCount;
@@ -105,23 +114,48 @@ export default function OperationsPage(): JSX.Element {
     crStats?.stateCount?.find((s) => s.label === "Closed")?.count ?? 0;
 
   const completedThisMonth =
-    (srStats ? closedSrCount : 0) + (crStats ? closedCrCount : 0);
+    (isServiceRequestEnabled ? closedSrCount : 0) +
+    (isChangeRequestEnabled ? closedCrCount : 0);
 
   const stats: Partial<Record<OperationsStatKey, number>> | undefined =
     !srStats && !crStats
       ? undefined
       : {
-          ...(activeServiceRequests !== undefined && {
-            activeServiceRequests,
-          }),
-          ...(activeChangeRequests !== undefined && {
-            activeChangeRequests,
-          }),
+          ...(isServiceRequestEnabled &&
+            activeServiceRequests !== undefined && {
+              activeServiceRequests,
+            }),
+          ...(isChangeRequestEnabled &&
+            activeChangeRequests !== undefined && {
+              activeChangeRequests,
+            }),
           ...(completedThisMonth > 0 && { completedThisMonth }),
-          ...(scheduledCrCount > 0 && { upcomingChanges: scheduledCrCount }),
+          ...(isChangeRequestEnabled && scheduledCrCount > 0 && {
+            upcomingChanges: scheduledCrCount,
+          }),
         };
 
-  const isError = isSrStatsError && isCrStatsError;
+  const isError =
+    (isServiceRequestEnabled && isSrStatsError) ||
+    (isChangeRequestEnabled && isCrStatsError);
+
+  const operationsStatConfigs = useMemo(() => {
+    const configs = [...OPERATIONS_STAT_CONFIGS];
+    if (!isServiceRequestEnabled) {
+      return configs.filter((c) => c.key !== "activeServiceRequests");
+    }
+    if (!isChangeRequestEnabled) {
+      return configs.filter(
+        (c) => c.key !== "activeChangeRequests" && c.key !== "upcomingChanges",
+      );
+    }
+    return configs;
+  }, [isServiceRequestEnabled, isChangeRequestEnabled]);
+
+  const overviewGridSize =
+    isServiceRequestEnabled && isChangeRequestEnabled
+      ? { xs: 12, lg: 6 }
+      : { xs: 12, lg: 12 };
 
   return (
     <Stack spacing={3}>
@@ -133,82 +167,87 @@ export default function OperationsPage(): JSX.Element {
           isError={isError}
           entityName="operations"
           stats={stats}
-          configs={OPERATIONS_STAT_CONFIGS}
+          configs={operationsStatConfigs}
         />
       </Box>
-      {isManagedCloudSubscription && (
+      {(isServiceRequestEnabled || isChangeRequestEnabled) && (
         <>
           <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
-            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-              <SupportOverviewCard
-                title="Service Requests"
-                subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} service requests`}
-                icon={FileText}
-                iconVariant="orange"
-                footerButtons={[
-                  {
-                    label: "View my requests",
-                    onClick: () =>
-                      navigate(
-                        `/projects/${projectId}/operations/service-requests?createdByMe=true`,
-                      ),
-                  },
-                  {
-                    label: "View all requests",
-                    onClick: () =>
-                      navigate(`/projects/${projectId}/operations/service-requests`),
-                  },
-                ]}
-                isError={isSrError}
-              >
-                <OutstandingCasesList
-                  cases={serviceRequests}
-                  isLoading={isSrLoading}
-                  onCaseClick={
-                    projectId
-                      ? (c) =>
-                          navigate(
-                            `/projects/${projectId}/operations/service-requests/${c.id}`,
-                          )
-                      : undefined
-                  }
-                />
-              </SupportOverviewCard>
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6 }} sx={{ display: "flex" }}>
-              <SupportOverviewCard
-                title="Change Requests"
-                subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} change requests`}
-                icon={FileText}
-                iconVariant="blue"
-                footerButtons={[
-                  {
-                    label: "View all change requests",
-                    onClick: () =>
-                      navigate(
-                        `/projects/${projectId}/operations/change-requests`,
-                      ),
-                  },
-                ]}
-                isError={isCrError}
-              >
-                <OutstandingChangeRequestsList
-                  changeRequests={changeRequests}
-                  isLoading={isCrLoading}
-                  onItemClick={
-                    projectId
-                      ? (cr) =>
-                          navigate(
-                            `/projects/${projectId}/operations/change-requests/${cr.id}`,
-                          )
-                      : undefined
-                  }
-                />
-              </SupportOverviewCard>
-            </Grid>
+            {isServiceRequestEnabled && (
+              <Grid size={overviewGridSize} sx={{ display: "flex" }}>
+                <SupportOverviewCard
+                  title="Service Requests"
+                  subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} service requests`}
+                  icon={FileText}
+                  iconVariant="orange"
+                  footerButtons={[
+                    {
+                      label: "View my requests",
+                      onClick: () =>
+                        navigate(
+                          `/projects/${projectId}/operations/service-requests?createdByMe=true`,
+                        ),
+                    },
+                    {
+                      label: "View all requests",
+                      onClick: () =>
+                        navigate(`/projects/${projectId}/operations/service-requests`),
+                    },
+                  ]}
+                  isError={isSrError}
+                >
+                  <OutstandingCasesList
+                    cases={serviceRequests}
+                    isLoading={isSrLoading}
+                    onCaseClick={
+                      projectId
+                        ? (c) =>
+                            navigate(
+                              `/projects/${projectId}/operations/service-requests/${c.id}`,
+                            )
+                        : undefined
+                    }
+                  />
+                </SupportOverviewCard>
+              </Grid>
+            )}
+            {isChangeRequestEnabled && (
+              <Grid size={overviewGridSize} sx={{ display: "flex" }}>
+                <SupportOverviewCard
+                  title="Change Requests"
+                  subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} change requests`}
+                  icon={FileText}
+                  iconVariant="blue"
+                  footerButtons={[
+                    {
+                      label: "View all change requests",
+                      onClick: () =>
+                        navigate(
+                          `/projects/${projectId}/operations/change-requests`,
+                        ),
+                    },
+                  ]}
+                  isError={isCrError}
+                >
+                  <OutstandingChangeRequestsList
+                    changeRequests={changeRequests}
+                    isLoading={isCrLoading}
+                    onItemClick={
+                      projectId
+                        ? (cr) =>
+                            navigate(
+                              `/projects/${projectId}/operations/change-requests/${cr.id}`,
+                            )
+                        : undefined
+                    }
+                  />
+                </SupportOverviewCard>
+              </Grid>
+            )}
           </Grid>
         </>
       )}
     </Stack>
   );
 }
+
