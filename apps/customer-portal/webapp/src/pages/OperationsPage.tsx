@@ -116,10 +116,13 @@ export default function OperationsPage(): JSX.Element {
     (isServiceRequestEnabled ? closedSrCount : 0) +
     (isChangeRequestEnabled ? closedCrCount : 0);
 
+  const srReady = !isServiceRequestEnabled || srStats !== undefined;
+  const crReady = !isChangeRequestEnabled || crStats !== undefined;
+
+  // Only create stats object when all enabled sources have returned data
   const stats: Partial<Record<OperationsStatKey, number>> | undefined =
-    !srStats && !crStats
-      ? undefined
-      : {
+    srReady && crReady
+      ? {
           ...(isServiceRequestEnabled &&
             activeServiceRequests !== undefined && {
               activeServiceRequests,
@@ -133,7 +136,8 @@ export default function OperationsPage(): JSX.Element {
             scheduledCrCount > 0 && {
               upcomingChanges: scheduledCrCount,
             }),
-        };
+        }
+      : undefined;
 
   const isError =
     (isServiceRequestEnabled && isSrStatsError) ||
