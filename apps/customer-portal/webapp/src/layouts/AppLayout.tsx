@@ -15,8 +15,15 @@
 // under the License.
 
 import { notificationBannerConfig } from "@config/notificationBannerConfig";
-import { AppShell, Box, useAppShell, LinearProgress } from "@wso2/oxygen-ui";
-import { type JSX, type ReactNode, useRef, useEffect } from "react";
+import {
+  AppShell,
+  Box,
+  useAppShell,
+  LinearProgress,
+  Typography,
+} from "@wso2/oxygen-ui";
+import { type JSX, type ReactNode, useRef, useEffect, useState } from "react";
+import { useAsgardeo } from "@asgardeo/react";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useLocation, Outlet } from "react-router";
 import IdleTimeoutProvider from "@providers/IdleTimeoutProvider";
@@ -40,6 +47,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
   const location = useLocation();
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const { isLoading: isAuthLoading } = useAsgardeo();
 
   useEffect(() => {
     if (mainContentRef.current) {
@@ -52,6 +60,29 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
   });
 
   const { isVisible } = useLoader();
+  const [loadingMessage, setLoadingMessage] = useState<
+    "Authenticating…" | "Fetching user info…" | "Please wait…"
+  >("Authenticating…");
+
+  // Animate loading message in the center of the page.
+  useEffect(() => {
+    if (!isAuthLoading) return;
+
+    setLoadingMessage("Authenticating…");
+
+    const t1 = setTimeout(() => {
+      setLoadingMessage("Fetching user info…");
+    }, 1500);
+
+    const t2 = setTimeout(() => {
+      setLoadingMessage("Please wait…");
+    }, 3000);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [isAuthLoading]);
 
   // Persist sidebar collapsed state to localStorage
   useEffect(() => {
@@ -144,17 +175,44 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
               ref={mainContentRef}
               sx={{
                 flex: 1,
-                minHeight: isDetailsStylePage ? "60vh" : 0,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
                 overflow: "auto",
-                display: isDetailsStylePage ? "flex" : "block",
-                flexDirection: isDetailsStylePage ? "column" : undefined,
-                ...(isDetailsStylePage ? { px: 0, pb: 0, pt: 0 } : { p: 3 }),
+                ...(isDetailsStylePage ? { minHeight: "60vh" } : {}),
+                ...(isAuthLoading
+                  ? { p: 0 }
+                  : isDetailsStylePage
+                    ? { px: 0, pb: 0, pt: 0 }
+                    : { p: 3 }),
               }}
             >
-              {children || (
-                <Outlet
-                  context={{ sidebarCollapsed: shellState.sidebarCollapsed }}
-                />
+              {isAuthLoading ? (
+                <Box
+                  sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 2,
+                  }}
+                >
+                  <LinearProgress
+                    color="warning"
+                    sx={{ width: "80%", maxWidth: 400, height: 4 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    {loadingMessage}
+                  </Typography>
+                </Box>
+              ) : (
+                children || (
+                  <Outlet
+                    context={{ sidebarCollapsed: shellState.sidebarCollapsed }}
+                  />
+                )
               )}
             </Box>
           </Box>
