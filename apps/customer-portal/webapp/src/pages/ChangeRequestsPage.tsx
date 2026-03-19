@@ -45,7 +45,7 @@ import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetChangeRequests, {
   useGetChangeRequestsInfinite,
 } from "@api/useGetChangeRequests";
-import { useGetProjectChangeRequestsStats } from "@api/useGetProjectChangeRequestsStats";
+import { useGetProjectChangeRequestStats } from "@api/useGetProjectChangeRequestStats";
 import ChangeRequestsStatCards from "@components/support/change-requests/ChangeRequestsStatCards";
 import ChangeRequestsSearchBar from "@components/support/change-requests/ChangeRequestsSearchBar";
 import ChangeRequestsList from "@components/support/change-requests/ChangeRequestsList";
@@ -81,7 +81,7 @@ export default function ChangeRequestsPage(): JSX.Element {
     isLoading: isStatsLoading,
     isError: isStatsError,
     isFetching: isStatsFetching,
-  } = useGetProjectChangeRequestsStats(projectId || "", { enabled: !!projectId });
+  } = useGetProjectChangeRequestStats(projectId || "", { enabled: !!projectId });
 
   // Debug logging for stats
   useEffect(() => {
