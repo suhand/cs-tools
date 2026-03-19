@@ -35,28 +35,28 @@ final cache:Cache userCache = new ({
     cleanupInterval: 1800
 });
 
-// service class ErrorInterceptor {
-//     *http:ResponseErrorInterceptor;
+service class ErrorInterceptor {
+    *http:ResponseErrorInterceptor;
 
-//     # Intercepts the response error.
-//     #
-//     # + err - The error occurred during request processing
-//     # + return - Bad request response or error
-//     remote function interceptResponseError(error err) returns http:BadRequest|error {
+    # Intercepts the response error.
+    #
+    # + err - The error occurred during request processing
+    # + return - Bad request response or error
+    remote function interceptResponseError(error err) returns http:BadRequest|error {
 
-//         // Handle data-binding errors.
-//         if err is http:PayloadBindingError {
-//             string customError = "Payload binding failed!";
-//             log:printError(customError, err);
-//             return {
-//                 body: {
-//                     message: customError
-//                 }
-//             };
-//         }
-//         return err;
-//     }
-// }
+        // Handle data-binding errors.
+        if err is http:PayloadBindingError {
+            string customError = "Payload binding failed!";
+            log:printError(customError, err);
+            return {
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return err;
+    }
+}
 
 // TODO: Remove after the ballerina header configs setting through choreo issue is fixed
 http:ListenerConfiguration listenerConf = {
@@ -70,8 +70,8 @@ http:ListenerConfiguration listenerConf = {
     id: "cs/customer-portal"
 }
 service / on new http:Listener(9090, listenerConf) {
-    // public function createInterceptors() returns http:Interceptor[] =>
-    //     [new authorization:JwtInterceptor(), new ErrorInterceptor()];
+    public function createInterceptors() returns http:Interceptor[] =>
+        [new authorization:JwtInterceptor(), new ErrorInterceptor()];
 
     # Service init function.
     #
@@ -4252,8 +4252,54 @@ service / on new http:Listener(9090, listenerConf) {
     # + deploymentId - ID of the deployment
     # + payload - Project status request containing email
     # + return - Change request details object or Error
-    resource function post projects/[string projectId]/deployments/[string deploymentId]/license(product_consumption_subscription:DownloadLicensePayload payload)
-        returns product_consumption_subscription:License|http:InternalServerError {
+    resource function post projects/[string projectId]/deployments/[string deploymentId]/license
+        (product_consumption_subscription:DownloadLicensePayload payload, http:RequestContext ctx)
+        returns product_consumption_subscription:License|http:InternalServerError|http:Unauthorized|http:Forbidden|http:NotFound {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:ProjectResponse|error projectResponse = entity:getProject(userInfo.idToken, projectId);
+        if projectResponse is error {
+            if getStatusCode(projectResponse) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(projectResponse) == http:STATUS_FORBIDDEN {
+                logForbiddenProjectAccess(projectId, userInfo.userId);
+                return <http:Forbidden>{
+                    body: {
+                        message: ERR_MSG_PROJECT_ACCESS_FORBIDDEN
+                    }
+                };
+            }
+            if getStatusCode(projectResponse) == http:STATUS_NOT_FOUND {
+                log:printWarn(string `Project with ID: ${projectId} not found for user: ${userInfo.userId}`);
+                return <http:NotFound>{
+                    body: {
+                        message: "The requested project does not exist or you don't have access to it."
+                    }
+                };
+            }
+
+            string customError = "Failed to retrieve project details.";
+            log:printError(customError, projectResponse);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
         
         product_consumption_subscription:LicenseDownloadPayload downloadPayload = {
             email: payload.email,
@@ -4261,7 +4307,8 @@ service / on new http:Listener(9090, listenerConf) {
             projectId: projectId
         };
         
-        product_consumption_subscription:License|error licenseResponse = product_consumption_subscription:downloadLicense(downloadPayload);
+        product_consumption_subscription:License|error licenseResponse = product_consumption_subscription:downloadLicense
+            (downloadPayload);
         if licenseResponse is error {
             string customError = "Failed to retrieve license.";
             log:printError(customError, licenseResponse);
