@@ -4246,18 +4246,32 @@ service / on new http:Listener(9090, listenerConf) {
         return response;
     }
 
-    # Fetch change request details by change request ID.
+    # Download license for a project deployment.
     #
+    # + projectId - ID of the project
+    # + deploymentId - ID of the deployment
+    # + payload - Project status request containing email
     # + return - Change request details object or Error
-    resource function post test(product_consumption_subscription:ProjectStatusRequest payload)
-        returns json|error {
-
-        json|error retval = product_consumption_subscription:process(payload);
-        if retval is error {
-            log:printError("Error while fetching change request details", retval);
-
+    resource function post projects/[string projectId]/deployments/[string deploymentId]/license(product_consumption_subscription:DownloadLicensePayload payload)
+        returns product_consumption_subscription:License|http:InternalServerError {
+        
+        product_consumption_subscription:LicenseDownloadPayload downloadPayload = {
+            email: payload.email,
+            deploymentId: deploymentId,
+            projectId: projectId
+        };
+        
+        product_consumption_subscription:License|error licenseResponse = product_consumption_subscription:downloadLicense(downloadPayload);
+        if licenseResponse is error {
+            string customError = "Failed to retrieve license.";
+            log:printError(customError, licenseResponse);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
         }
-        return retval;
+        return licenseResponse;
     }
 
 

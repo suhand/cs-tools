@@ -1,25 +1,15 @@
-// Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
+// Copyright (c) 2026, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
 //
 // This software is the property of WSO2 LLC. and its suppliers, if any.
 // Dissemination of any information or reproduction of any material contained
 // herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
 // You may not alter or remove any copyright or other notice from copies of this content.
-# Creates an application for the project in Choreo.
-#
-# + return - Created application details or error
-public isolated function test() returns json|error {
 
-    return productConsumptionClient->/generate\-secret\-keys.post({});
-
-}
-
-
-
-# Processes the product consumption flow for a project based on its current status.
+# This module handles the product consumption subscription process and license retrieval.
 #
 # + payload - Project status request containing email, deploymentId, and projectId
-# + return - License details or completion message, or error
-public isolated  function process(ProjectStatusRequest payload) returns json|error {
+# + return - License details or error
+public isolated  function downloadLicense(LicenseDownloadPayload payload) returns License|error {
 
     // 1. Get current status
     Result statusRes =
@@ -31,52 +21,52 @@ public isolated  function process(ProjectStatusRequest payload) returns json|err
 
 
     int status = statusRes.result.status;
-    string applicationId = statusRes.applicationId ?: "";
+    string? applicationId = statusRes.result.applicationId;
+    string? applicationName = statusRes.result.name;
+    string? applicationDescription = statusRes.result.description;
 
-    // STATUS 1 → CREATE APPLICATION
-    if status == 1 {
+    // CREATE APPLICATION
+    if status == 1  {
         ApplicationCreateResponse app =
             check productConsumptionClient->/applications
-                .post({name: payload.projectId+"Test", description: "Application for project " + payload.projectId});
+                .post({name: applicationName, description: applicationDescription});
 
         applicationId = app.applicationId;
 
         Result _ = check productConsumptionClient->/projects/[payload.projectId]
             .patch({
-                status: "2",
+                status: 2,
                 applicationId: applicationId
             });
 
         status = 2;
     }
+    if applicationId is () {
+        return error("Application ID is required.");
+    }
 
-    // STATUS 2 → SUBSCRIBE
-    if status == 2 {
-        ApplicationSubscriptionResponse _ = check productConsumptionClient->/applications/[applicationId]/subscribe.post(<ApplicationSubscriptionPayload>{
+    if (status == 2 ) {
+        ApplicationSubscriptionResponse _ = check productConsumptionClient->/applications/[applicationId]/subscribe
+            .post(<ApplicationSubscriptionPayload>{
             applicationId: applicationId
         });
 
         Result _ = check productConsumptionClient->/projects/[payload.projectId]
             .patch({
-                status: "3"
+                status: 3
             });
 
         status = 3;
     }
 
-    // STATUS 3 → GENERATE CREDENTIALS
-    if status == 3 {
+    // GENERATE CREDENTIALS
+    if (status == 3) {
         ApplicationKeyGenerationResponse creds =
-            check productConsumptionClient->/applications/[applicationId]/generate\-credentials
-                .post(<ApplicationKeyGenerationPayload>{
-            keyType: "PRODUCTION",
-            keyManager: "Resident Key Manager",
-            grantTypesToBeSupported: ["client_credentials"]
-        });
+            check productConsumptionClient->/applications/[applicationId]/generate\-credentials.post({});
 
         Result _ = check productConsumptionClient->/projects/[payload.projectId]
             .patch({
-                status: "4",
+                status: 4,
                 consumerKey: creds.consumerKey,
                 consumerSecret: creds.consumerSecret
             });
@@ -84,14 +74,14 @@ public isolated  function process(ProjectStatusRequest payload) returns json|err
         status = 4;
     }
 
-    // STATUS 4 → GENERATE SECRET KEYS
+    // GENERATE SECRET KEYS
     if status == 4 {
         SecretKeysResponse keys =
             check productConsumptionClient->/generate\-secret\-keys.post({});
 
         Result _ = check productConsumptionClient->/projects/[payload.projectId]
             .patch({
-                status: "5",
+                status: 5,
                 primarySecretKey: keys.primarySecretKey,
                 secondarySecretKey: keys.secondarySecretKey
             });
@@ -99,7 +89,7 @@ public isolated  function process(ProjectStatusRequest payload) returns json|err
         status = 5;
     }
 
-    // STATUS 5 → DOWNLOAD LICENSE
+    // DOWNLOAD LICENSE
     if status == 5 {
         LicenseResponse license =
             check productConsumptionClient->/projects/[payload.projectId]/deployments/[payload.deploymentId]/license
@@ -109,8 +99,8 @@ public isolated  function process(ProjectStatusRequest payload) returns json|err
                     }
                     );
 
-        return license.toJson();
+        License licenseData = license.result.license;
+        return licenseData;
     }
-
-    return {message: "Process completed"};
+    return  error("Unexpected application status: " + status.toString());
 }

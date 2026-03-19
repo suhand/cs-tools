@@ -1,8 +1,9 @@
-# Client authentication optional parameters structure.
-public type OptionalParams record {|
-    # Organization Handle
-    string orgHandle?;
-|};
+// Copyright (c) 2026, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
+//
+// This software is the property of WSO2 LLC. and its suppliers, if any.
+// Dissemination of any information or reproduction of any material contained
+// herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+// You may not alter or remove any copyright or other notice from copies of this content.
 
 # Client authentication configuration structure.
 public type ClientAuthConfig record {|
@@ -21,21 +22,32 @@ public type Result record {|
     # ServiceNow system identifier
     string sys_id?;
     # Choreo application ID
-    string applicationId?;
-    Result1 result;
+    string applicationId?; 
+    # Status data
+    Data result;
 |};
 
 # ServiceNow response structure.
-public type Result1 record {|
+public type Data record {|
     # Response message
     int status;
     # Choreo application ID
     string applicationId?;
+    # Application name
+    string name?;
+    # Application description
+    string description?;
     json...;
+|};
+
+# Project status request payload structure (inbound to this service).
+public type DownloadLicensePayload record {
+    # Email of the user
+    string email;
 };
 
 # Project status request payload structure (inbound to this service).
-public type ProjectStatusRequest record {
+public type LicenseDownloadPayload record {
     # Email of the user
     string email;
     # Unique deployment identifier
@@ -45,13 +57,13 @@ public type ProjectStatusRequest record {
 };
 
 # Choreo application creation response structure.
-public type ApplicationCreateResponse record {
+public type ApplicationCreateResponse record {|
     # Application name
     string name;
     # Application ID
     string applicationId;
     json...;
-};
+|};
 
 # Choreo credentials generation response structure.
 public type CredentialsResponse record {
@@ -93,16 +105,10 @@ public type License record {|
     string signature;
 |};
 
-# License result object nested under 'result'.
+# License download response structure.
 public type LicenseResult record {|
     # Success flag
     boolean success;
-    # Project sys_id
-    string project_id;
-    # Deployment sys_id
-    string deployment_id;
-    # User email
-    string email;
     # License details
     License license;
 |};
@@ -113,10 +119,6 @@ public type LicenseResponse record {|
     LicenseResult result;
 |};
 
-
-
-
-
 # Project status response structure.
 public type ProjectStatusResponse record {|
     # Application status code
@@ -124,9 +126,7 @@ public type ProjectStatusResponse record {|
     # Choreo application ID
     string applicationId?;
     json...;
-};
-
-// ─── CHOREO APPLICATION TYPES ────────────────────────────────────────────────
+|};
 
 # Application Create payload structure.
 public type ApplicationCreatePayload record {|
@@ -151,16 +151,6 @@ public type ApplicationSubscriptionResponse record {|
     # API ID
     string apiId;
     json...;
-};
-
-# Application Key Generation payload structure.
-public type ApplicationKeyGenerationPayload record {|
-    # Key type (e.g., "PRODUCTION" or "SANDBOX")
-    string keyType;
-    # Key manager name
-    string keyManager;
-    # Grant types to be supported
-    string[] grantTypesToBeSupported;
 |};
 
 # Application key generation response structure.
@@ -170,4 +160,4 @@ public type ApplicationKeyGenerationResponse record {|
     # Consumer secret
     string consumerSecret;
     json...;
-};
+|};
