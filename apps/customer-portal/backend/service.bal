@@ -4374,10 +4374,16 @@ isolated service / on new websocket:Listener(wsPort) {
 
     # Upgrade an HTTP request to WebSocket for a given chat session.
     #
+    # + req - The HTTP request containing JWT headers for authentication
     # + sessionId - Conversation/session ID to route to the upstream Python agent
     # + return - WebSocket service or upgrade error
-    isolated resource function get [string sessionId]() returns websocket:Service|websocket:UpgradeError {
-        log:printInfo(string `Upgrading to WebSocket for session ID: ${sessionId}`);
+    isolated resource function get [string sessionId](http:Request req) returns websocket:Service|websocket:UpgradeError {
+        authorization:UserInfoPayload|error userInfo = authorization:getUserInfoFromRequest(req);
+        if userInfo is error {
+            log:printError("WebSocket upgrade rejected: authorization failed", userInfo);
+            return error websocket:UpgradeError("Unauthorized: " + userInfo.message());
+        }
+        log:printInfo(string `Upgrading to WebSocket for session ID: ${sessionId}, user: ${userInfo.email}`);
         return new WsProxyService(sessionId);
     }
 }
