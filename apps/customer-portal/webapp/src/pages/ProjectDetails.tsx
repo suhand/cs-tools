@@ -93,6 +93,7 @@ export default function ProjectDetails(): JSX.Element {
   const hideDeploymentsAndTimeTracking =
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
+  const hideServiceHoursAllocations = hideDeploymentsAndTimeTracking;
 
   const visibleTabs = useMemo(
     () =>
@@ -151,13 +152,15 @@ export default function ProjectDetails(): JSX.Element {
                   isError={!!projectError}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <ServiceHoursAllocationsCard
-                  project={project}
-                  isLoading={(isDetailsLoading || !project) && !projectError}
-                  isError={!!projectError}
-                />
-              </Grid>
+              {!hideServiceHoursAllocations && (
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <ServiceHoursAllocationsCard
+                    project={project}
+                    isLoading={(isDetailsLoading || !project) && !projectError}
+                    isError={!!projectError}
+                  />
+                </Grid>
+              )}
             </Grid>
           </Box>
         );

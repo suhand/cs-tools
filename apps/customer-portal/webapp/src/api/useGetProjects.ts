@@ -32,6 +32,7 @@ import type { SearchProjectsRequest } from "@models/requests";
 interface UseInfiniteProjectsParams {
   searchQuery?: string;
   pageSize?: number;
+  enabled?: boolean;
 }
 
 /**
@@ -43,6 +44,7 @@ interface UseInfiniteProjectsParams {
 export default function useInfiniteProjects({
   searchQuery,
   pageSize = 20,
+  enabled = true,
 }: UseInfiniteProjectsParams = {}): UseInfiniteQueryResult<
   InfiniteData<SearchProjectsResponse>,
   Error
@@ -60,6 +62,7 @@ export default function useInfiniteProjects({
       normalizedSearchQuery,
       pageSize,
     ],
+    enabled: enabled && isSignedIn && !isAuthLoading,
     queryFn: async ({ pageParam = 0 }): Promise<SearchProjectsResponse> => {
       logger.debug(
         `[useInfiniteProjects] Fetching projects... offset: ${pageParam}, limit: ${pageSize}, searchQuery: ${normalizedSearchQuery || "none"}`,
@@ -121,7 +124,6 @@ export default function useInfiniteProjects({
       return totalFetched;
     },
     initialPageParam: 0,
-    enabled: isSignedIn && !isAuthLoading,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

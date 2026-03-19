@@ -14,25 +14,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import LoginInvertedImage from "@assets/images/login-page/login-screen-inverted.svg";
-import LoginImage from "@assets/images/login-page/login-screen.svg";
-import { ColorSchemeImage } from "@wso2/oxygen-ui";
 import { type JSX } from "react";
+import { Navigate } from "react-router";
+import { useAsgardeo } from "@asgardeo/react";
+import AppLayout from "@layouts/AppLayout";
 
-export default function LoginBackground(): JSX.Element {
-  return (
-    <ColorSchemeImage
-      src={{
-        light: LoginImage,
-        dark: LoginInvertedImage,
-      }}
-      alt={{
-        light: "Login Screen Image (Light)",
-        dark: "Login Screen Image (Dark)",
-      }}
-      height={450}
-      width="auto"
-      sx={{ position: "absolute", bottom: 50, right: -100 }}
-    />
-  );
+/**
+ * AuthGuard renders AppLayout (header/footer) so loading state is visible
+ * and Asgardeo authentication flow can be observed. Redirects to home only
+ * when not signed in and auth check is complete.
+ *
+ * @returns {JSX.Element} AppLayout or redirect to home.
+ */
+export default function AuthGuard(): JSX.Element {
+  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
+
+  if (!isSignedIn && !isAuthLoading) {
+    return <Navigate to="/home" replace />;
+  }
+
+  return <AppLayout />;
 }
