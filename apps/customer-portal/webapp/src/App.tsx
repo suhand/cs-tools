@@ -16,7 +16,7 @@
 
 import { type JSX } from "react";
 import { Route, Routes, Navigate } from "react-router";
-import { ProtectedRoute } from "@asgardeo/react-router";
+import AuthGuard from "@layouts/AuthGuard";
 import ProjectHub from "@pages/ProjectHub";
 import ProjectPage from "@pages/ProjectPage";
 import ProjectDetails from "@pages/ProjectDetails";
@@ -39,7 +39,6 @@ import CreateServiceRequestPage from "@pages/CreateServiceRequestPage";
 import NoveraChatPage from "@pages/NoveraChatPage";
 import DescribeIssuePage from "@pages/DescribeIssuePage";
 import CreateCasePage from "@pages/CreateCasePage";
-import AppLayout from "@layouts/AppLayout";
 import { ErrorBannerProvider } from "@context/error-banner/ErrorBannerContext";
 import { SuccessBannerProvider } from "@context/success-banner/SuccessBannerContext";
 import { LoaderProvider } from "@context/linear-loader/LoaderContext";
@@ -50,7 +49,6 @@ import VulnerabilityDetailsPage from "@pages/VulnerabilityDetailsPage";
 import OperationsPage from "@pages/OperationsPage";
 import EngagementsPage from "@pages/EngagementsPage";
 
-
 export default function App(): JSX.Element {
   return (
     <LoaderProvider>
@@ -60,14 +58,7 @@ export default function App(): JSX.Element {
             {/* Public Route */}
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected Routes - All routes inside ProtectedRoute are automatically protected */}
-            <Route
-              element={
-                <ProtectedRoute redirectTo="/login">
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
+            <Route element={<AuthGuard />}>
               {/* ProjectHub Page */}
               <Route path="/" element={<ProjectHub />} />
 
@@ -83,7 +74,10 @@ export default function App(): JSX.Element {
                   <Route index element={<OperationsPage />} />
                   <Route path="service-requests">
                     <Route index element={<ServiceRequestsPage />} />
-                    <Route path="create" element={<CreateServiceRequestPage />} />
+                    <Route
+                      path="create"
+                      element={<CreateServiceRequestPage />}
+                    />
                     <Route
                       path=":serviceRequestId"
                       element={<ServiceRequestDetailsPage />}
@@ -146,10 +140,7 @@ export default function App(): JSX.Element {
                     />
                   </Route>
                   <Route path="security-report">
-                    <Route
-                      path="create"
-                      element={<CreateCasePage />}
-                    />
+                    <Route path="create" element={<CreateCasePage />} />
                   </Route>
                 </Route>
                 {/* Updates */}
