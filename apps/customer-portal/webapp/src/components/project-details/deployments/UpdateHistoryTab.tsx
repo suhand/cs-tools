@@ -27,6 +27,7 @@ import {
 import { SquarePen, Trash2 } from "@wso2/oxygen-ui-icons-react";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
   type ChangeEvent,
@@ -42,7 +43,11 @@ export interface UpdateHistoryTabProps {
   productVersion: string;
   isLoading?: boolean;
   onSaveUpdates: (updates: ProductUpdate[]) => Promise<void>;
-  onClose: () => void;
+  onFormStateChange?: (state: {
+    canAdd: boolean;
+    isSaving: boolean;
+    handleAdd: () => void;
+  }) => void;
 }
 
 interface UpdateFormData {
@@ -69,7 +74,7 @@ export default function UpdateHistoryTab({
   productVersion,
   isLoading,
   onSaveUpdates,
-  onClose,
+  onFormStateChange,
 }: UpdateHistoryTabProps): JSX.Element {
   const [form, setForm] = useState<UpdateFormData>(INITIAL_FORM);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
@@ -183,6 +188,19 @@ export default function UpdateHistoryTab({
       setIsSaving(false);
     }
   }, [form, updates, onSaveUpdates]);
+
+  const isFormValid = !!form.updateLevel && !!form.date;
+
+  // Notify parent of form state changes
+  useEffect(() => {
+    if (onFormStateChange) {
+      onFormStateChange({
+        canAdd: isFormValid && !isSaving,
+        isSaving,
+        handleAdd: handleAddUpdate,
+      });
+    }
+  }, [isFormValid, isSaving, handleAddUpdate, onFormStateChange]);
 
   const handleEditClick = useCallback(
     (update: ProductUpdate) => {
@@ -425,32 +443,19 @@ export default function UpdateHistoryTab({
             </Typography>
           </Box>
         )}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 1,
-            pt: 1,
-          }}
-        >
-          <Button
-            variant="outlined"
-            onClick={onClose}
-            disabled={isSaving}
-            sx={{ minWidth: 100 }}
-          >
-            Close
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleAddUpdate}
-            disabled={!form.updateLevel || !form.date || isSaving}
-            sx={{ minWidth: 120 }}
-          >
-            {isSaving ? "Adding..." : "Add Update"}
-          </Button>
-        </Box>
+        {!onFormStateChange && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddUpdate}
+              disabled={!isFormValid || isSaving}
+              sx={{ minWidth: 120 }}
+            >
+              {isSaving ? "Adding..." : "Add Update"}
+            </Button>
+          </Box>
+        )}
       </Box>
     </Box>
   );
@@ -488,6 +493,10 @@ function TimelineItem({
   isLoadingUpdateLevels,
 }: TimelineItemProps): JSX.Element {
   const [editForm, setEditForm] = useState<ProductUpdate>(update);
+
+  useEffect(() => {
+    setEditForm(update);
+  }, [update, isEditing]);
 
   const handleEditChange =
     (field: keyof ProductUpdate) => (e: ChangeEvent<HTMLInputElement>) => {

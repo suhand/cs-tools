@@ -31,6 +31,7 @@ import ProjectDeployments from "@components/project-details/deployments/ProjectD
 import ProjectTimeTracking from "@components/project-details/time-tracking/ProjectTimeTracking";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import { useGetProjectStat } from "@api/useGetProjectStat";
+import useInfiniteProjects, { flattenProjectPages } from "@api/useGetProjects";
 import { useLogger } from "@hooks/useLogger";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 
@@ -51,6 +52,14 @@ export default function ProjectDetails(): JSX.Element {
   const { sidebarCollapsed } = useOutletContext<{
     sidebarCollapsed: boolean;
   }>() || { sidebarCollapsed: false };
+
+  const { data: projectsData } = useInfiniteProjects({ enabled: true });
+  const allProjects = flattenProjectPages(projectsData);
+  const currentProject = useMemo(
+    () => allProjects.find((p) => p.id === projectId),
+    [allProjects, projectId],
+  );
+  const projectTypeLabel = currentProject?.type?.label;
 
   const {
     data: project,
@@ -89,7 +98,6 @@ export default function ProjectDetails(): JSX.Element {
     }
   }, [projectError, statsError, logger]);
 
-  const projectTypeLabel = project?.type?.label;
   const hideDeploymentsAndTimeTracking =
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
@@ -185,7 +193,7 @@ export default function ProjectDetails(): JSX.Element {
   };
 
   return (
-    <>
+    <Box>
       {/* project page tabs */}
       <TabBar
         tabs={visibleTabs}
@@ -194,7 +202,7 @@ export default function ProjectDetails(): JSX.Element {
       />
 
       {/* project page content */}
-      <Box sx={{ flex: 1 }}>{renderContent()}</Box>
-    </>
+      <Box>{renderContent()}</Box>
+    </Box>
   );
 }
