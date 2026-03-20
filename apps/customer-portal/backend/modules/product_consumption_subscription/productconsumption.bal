@@ -89,9 +89,7 @@ public isolated function processLicenseDownload(LicenseDownloadPayload payload) 
     if status == STATUS_GENERATED_SECRET_KEYS {
         LicenseResponse license =
         check productConsumptionClient->/projects/[payload.projectId]/deployments/[payload.deploymentId]/license.post(
-            {
-                email: payload.email
-            }
+            {email: payload.email}
         );
 
         return license.result.license;
