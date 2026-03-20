@@ -4303,7 +4303,6 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         }
         product_consumption_subscription:License|error licenseResponse =
             product_consumption_subscription:downloadLicense({email: payload.email, deploymentId, projectId});
-            (downloadPayload);
         if licenseResponse is error {
             string customError = "Failed to retrieve license.";
             log:printError(customError, licenseResponse);
