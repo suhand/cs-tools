@@ -81,6 +81,7 @@ public type SecretKeysResponse record {
     string primarySecretKey;
     # Secondary subscription secret key
     string secondarySecretKey;
+    json...;
 };
 
 # Subscription data within the license response.
