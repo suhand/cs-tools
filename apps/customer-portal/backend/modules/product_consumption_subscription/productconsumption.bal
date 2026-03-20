@@ -19,7 +19,6 @@
 # + payload - Project status request containing email, deploymentId, and projectId
 # + return - License details or error
 public isolated function downloadLicense(LicenseDownloadPayload payload) returns License|error {
-
     // 1. Get current status
     Result statusRes =
         check productConsumptionClient->/projects/[payload.projectId]/consumption/status
