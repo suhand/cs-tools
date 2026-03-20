@@ -72,12 +72,11 @@ public isolated function downloadLicense(LicenseDownloadPayload payload) returns
         ApplicationKeyGenerationResponse creds =
             check productConsumptionClient->/applications/[applicationId]/generate\-credentials.post({});
 
-        Result _ = check productConsumptionClient->/projects/[payload.projectId]
-            .patch({
-                status: 4,
-                consumerKey: creds.consumerKey,
-                consumerSecret: creds.consumerSecret
-            });
+       Result _ = check productConsumptionClient->/projects/[payload.projectId].patch({
+            status: 4,
+            consumerKey: creds.consumerKey,
+            consumerSecret: creds.consumerSecret
+        });
 
         status = 4;
     }
