@@ -48,12 +48,6 @@ public type Data record {|
 |};
 
 # Project status request payload structure (inbound to this service).
-public type DownloadLicensePayload record {
-    # Email of the user
-    string email;
-};
-
-# Project status request payload structure (inbound to this service).
 public type LicenseDownloadPayload record {
     # Email of the user
     string email;
