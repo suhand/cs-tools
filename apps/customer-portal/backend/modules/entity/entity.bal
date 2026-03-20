@@ -77,10 +77,10 @@ public isolated function getProjectActivityStats(string idToken, string id) retu
 # + id - Unique ID of the project
 # + caseTypes - Optional array of case types to filter statistics
 # + return - Project cases statistics or error
-public isolated function getCaseStatsForProject(string idToken, string id, string[]? caseTypes)
+public isolated function getCaseStatsForProject(string idToken, string id, CaseType[]? caseTypes)
     returns ProjectCaseStatsResponse|error {
 
-    if caseTypes is string[] {
+    if caseTypes is CaseType[] {
         return csEntityClient->/projects/[id]/cases/stats.get(generateHeaders(idToken), caseTypes = caseTypes);
     }
     return csEntityClient->/projects/[id]/cases/stats.get(generateHeaders(idToken));
@@ -187,6 +187,15 @@ public isolated function createAttachment(string idToken, AttachmentCreatePayloa
     return csEntityClient->/attachments.post(payload, generateHeaders(idToken));
 }
 
+# Get attachment by ID.
+#
+# + idToken - ID token for authorization
+# + attachmentId - ID of the attachment
+# + return - Attachment response or error
+public isolated function getAttachment(string idToken, IdString attachmentId) returns AttachmentResponse|error {
+    return csEntityClient->/attachments/[attachmentId].get(generateHeaders(idToken));
+}
+
 # Update an attachment.
 #
 # + idToken - ID token for authorization
@@ -214,11 +223,14 @@ public isolated function deleteAttachment(string idToken, IdString attachmentId)
 #
 # + idToken - ID token for authorization
 # + deploymentId - ID of the deployment
+# + offset - Offset for pagination
+# + 'limit - Limit for pagination
 # + return - Products response or error
-public isolated function getDeployedProducts(string idToken, string deploymentId)
-    returns DeployedProductsResponse|error {
+public isolated function getDeployedProducts(string idToken, string deploymentId, int offset = DEFAULT_OFFSET,
+    int 'limit = DEFAULT_LIMIT) returns DeployedProductsResponse|error {
 
-    return csEntityClient->/deployed\-products/search.post({deploymentId}, generateHeaders(idToken));
+    return csEntityClient->/deployed\-products/search.post({deploymentId, pagination: {offset, 'limit}},
+        generateHeaders(idToken));
 }
 
 # Create a deployed product.

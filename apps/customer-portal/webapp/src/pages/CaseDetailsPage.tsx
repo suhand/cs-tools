@@ -43,6 +43,11 @@ export default function CaseDetailsPage(): JSX.Element {
     caseId || "",
   );
 
+  const isEngagementRoute = location.pathname.includes("/engagements/");
+  const isSecurityReportAnalysisRoute = location.pathname.includes(
+    "security-report-analysis",
+  );
+
   // Show skeletons immediately when no data (avoid "-" flash on refresh) and when loading/refetching.
   const showSkeletons =
     isLoading || isFetching || (data === undefined && !isError);
@@ -74,6 +79,11 @@ export default function CaseDetailsPage(): JSX.Element {
   }, [isError, showError]);
 
   const handleBack = () => {
+    if (isEngagementRoute) {
+      navigate(`/projects/${projectId}/engagements`);
+      return;
+    }
+
     const queryTab = new URLSearchParams(location.search).get("tab");
     const caseDetailsWithFlag = data as
       | ({ isSecurityReport?: boolean } & typeof data)
@@ -82,21 +92,21 @@ export default function CaseDetailsPage(): JSX.Element {
     const isSecurityReport =
       caseDetailsWithFlag?.isSecurityReport === true ||
       isSecurityReportAnalysisType(data?.type) ||
-      location.pathname.includes("security-report-analysis") ||
+      isSecurityReportAnalysisRoute ||
       queryTab === SecurityTab.VULNERABILITIES;
 
     if (isSecurityReport) {
       navigate(
-        `/${projectId}/security-center?tab=${SecurityTab.VULNERABILITIES}`,
+        `/projects/${projectId}/security-center?tab=${SecurityTab.VULNERABILITIES}`,
       );
     } else {
-      navigate(`/${projectId}/support/cases`);
+      navigate(`/projects/${projectId}/support/cases`);
     }
   };
 
   const handleOpenRelatedCase = () => {
     if (!projectId) return;
-    navigate(`/${projectId}/support/chat/create-related-case`, {
+    navigate(`/projects/${projectId}/support/chat/create-related-case`, {
       state: {
         relatedCase: {
           parentCaseId: data?.id ?? caseId ?? "",
@@ -119,6 +129,8 @@ export default function CaseDetailsPage(): JSX.Element {
       projectId={projectId}
       onBack={handleBack}
       onOpenRelatedCase={handleOpenRelatedCase}
+      hideActionRow={isSecurityReportAnalysisRoute}
+      showEngineerOnly={isEngagementRoute}
     />
   );
 }

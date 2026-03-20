@@ -14,6 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/websocket;
+import ballerina/log;
 # Create case classification for the given payload.
 #
 # + payload - Case classification payload
@@ -74,4 +76,55 @@ public isolated function deleteChatConversation(string projectId, string convers
 # + return - Recommendation response or error
 public isolated function getRecommendation(RecommendationRequest payload) returns RecommendationResponse|error {
     return aiChatAgentClient->/recommendations.post(payload);
-}   
+}
+
+# Stream chat events from the upstream AI chat agent WebSocket back to the browser caller.
+# Opens a dedicated upstream connection per call, sends the payload, then pipes every event
+# verbatim until a "final" or "error" event or the upstream connection closes.
+#
+# + sessionId - Conversation/session ID used to route to the upstream Python session
+# + payload - Raw JSON string (user_message) to forward to the upstream agent
+# + caller - The browser WebSocket caller to forward events back to
+# + return - Error if the upstream connection or forwarding fails
+public isolated function streamChat(string sessionId, string payload, websocket:Caller caller) returns error? {
+    websocket:Client agentClient = check createAiChatAgentWsClient(sessionId);
+    check agentClient->writeTextMessage(payload);
+    boolean upstreamClosed = false;
+    while true {
+        string|error event = agentClient->readTextMessage();
+        if event is error {
+            if event is websocket:ConnectionClosureError {
+                upstreamClosed = true;
+            } else {
+                log:printError("Error reading from upstream AI chat agent", event);
+                json errorPayload = {"type": "error", "message": event.message()};
+                error? writeErr = caller->writeTextMessage(errorPayload.toJsonString());
+                if writeErr is error {
+                    log:printError("Failed to send error to caller (client disconnected)", writeErr);
+                }
+            }
+            break;
+        }
+        error? writeErr = caller->writeTextMessage(event);
+        if writeErr is error {
+            log:printError("Failed to forward event to caller (client disconnected)", writeErr);
+            break;
+        }
+        json|error parsed = event.fromJsonString();
+        if parsed is error {
+            log:printError("Failed to parse upstream event as JSON", parsed);
+        }
+        if parsed is map<json> {
+            string evtType = (parsed["type"] ?: "").toString();
+            if evtType == "final" || evtType == "error" {
+                break;
+            }
+        }
+    }
+    if !upstreamClosed {
+        error? closeErr = agentClient->close(1000, "session complete");
+        if closeErr is error {
+            log:printError("Failed to close upstream WebSocket connection", closeErr);
+        }
+    }
+}

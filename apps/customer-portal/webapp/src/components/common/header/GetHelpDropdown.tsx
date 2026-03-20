@@ -30,9 +30,10 @@ import {
   ShieldAlert,
 } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { getNoveraChatEnabled } from "@utils/settingsStorage";
+import useInfiniteProjects, { flattenProjectPages } from "@api/useGetProjects";
+import { PROJECT_TYPE_LABELS } from "@constants/projectDetailsConstants";
 
 interface GetHelpMenuItem {
   id: string;
@@ -51,6 +52,24 @@ interface GetHelpMenuItem {
 export default function GetHelpDropdown(): JSX.Element {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId?: string }>();
+
+  const { data: projectsData } = useInfiniteProjects({ pageSize: 20 });
+  const projects = useMemo(
+    () => flattenProjectPages(projectsData),
+    [projectsData],
+  );
+
+  const selectedProject = useMemo(
+    () => projects.find((p) => p.id === projectId),
+    [projects, projectId],
+  );
+
+  const projectTypeLabel = selectedProject?.type?.label;
+  const isServiceRequestVisible =
+    projectTypeLabel === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION ||
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -65,11 +84,11 @@ export default function GetHelpDropdown(): JSX.Element {
   const handleIssue = () => {
     handleClose();
     if (projectId) {
-      const noveraEnabled = getNoveraChatEnabled();
+      const noveraEnabled = selectedProject?.hasAgent ?? false;
       if (noveraEnabled) {
-        navigate(`/${projectId}/support/chat/describe-issue`);
+        navigate(`/projects/${projectId}/support/chat/describe-issue`);
       } else {
-        navigate(`/${projectId}/support/chat/create-case`, {
+        navigate(`/projects/${projectId}/support/chat/create-case`, {
           state: { skipChat: true },
         });
       }
@@ -79,7 +98,7 @@ export default function GetHelpDropdown(): JSX.Element {
   const handleServiceRequest = () => {
     handleClose();
     if (projectId) {
-      navigate(`/${projectId}/support/service-requests/create`);
+      navigate(`/projects/${projectId}/support/service-requests/create`);
     }
   };
 
@@ -87,10 +106,7 @@ export default function GetHelpDropdown(): JSX.Element {
     handleClose();
     if (projectId) {
       navigate(
-        `/${projectId}/support/chat/create-case?type=security_report_analysis`,
-        {
-          state: { skipChat: true },
-        },
+        `/projects/${projectId}/support/security-report/create`,
       );
     }
   };
@@ -103,13 +119,17 @@ export default function GetHelpDropdown(): JSX.Element {
       icon: <MessageSquare size={16} />,
       onClick: handleIssue,
     },
-    {
-      id: "service-request",
-      label: "Service Request",
-      description: "Request deployment assistance",
-      icon: <FileText size={16} />,
-      onClick: handleServiceRequest,
-    },
+    ...(isServiceRequestVisible
+      ? [
+          {
+            id: "service-request",
+            label: "Service Request",
+            description: "Request deployment assistance",
+            icon: <FileText size={16} />,
+            onClick: handleServiceRequest,
+          },
+        ]
+      : []),
     {
       id: "security-report",
       label: "Security Report",

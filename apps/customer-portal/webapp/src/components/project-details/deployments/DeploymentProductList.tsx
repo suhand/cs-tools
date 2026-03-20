@@ -218,7 +218,7 @@ export default function DeploymentProductList({
             )}
           </Box>
           <Button
-            variant="contained"
+            variant="outlined"
             size="small"
             startIcon={<Plus />}
             sx={{ height: 32, fontSize: "0.75rem" }}
@@ -332,7 +332,14 @@ function ProductItemRow({
   const eolStr = item.endOfLifeOn
     ? formatProjectDate(item.endOfLifeOn)
     : displayValue(null, emptyVal);
-  const updateLevelStr = displayValue(item.updateLevel, emptyVal);
+  const updateLevelStr = (() => {
+    const levels =
+      item.updates
+        ?.map((u) => u.updateLevel)
+        .filter((l): l is number => typeof l === "number") ?? [];
+    if (levels.length === 0) return emptyVal;
+    return String(Math.max(...levels));
+  })();
 
   return (
     <Box

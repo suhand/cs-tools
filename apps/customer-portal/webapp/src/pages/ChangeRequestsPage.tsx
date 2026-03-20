@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import {
   useState,
   useMemo,
@@ -60,7 +60,9 @@ import { generateChangeRequestsSchedulePdf } from "@utils/changeRequestsSchedule
  */
 export default function ChangeRequestsPage(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId } = useParams<{ projectId: string }>();
+  const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
 
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
   const [searchTerm, setSearchTerm] = useState("");
@@ -224,7 +226,7 @@ export default function ChangeRequestsPage(): JSX.Element {
   };
 
   const handleChangeRequestClick = (item: ChangeRequestItem): void => {
-    navigate(`/${projectId}/support/change-requests/${item.id}`);
+    navigate(`/projects/${projectId}/${basePath}/change-requests/${item.id}`);
   };
 
   const handleExportSchedule = () => {
@@ -249,7 +251,7 @@ export default function ChangeRequestsPage(): JSX.Element {
           sx={{ mb: 2 }}
           variant="text"
         >
-          Back to Support Center
+          Back
         </Button>
         <Box
           sx={{
@@ -260,7 +262,7 @@ export default function ChangeRequestsPage(): JSX.Element {
         >
           <Box>
             <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-              Change Requests
+              All Change Requests
             </Typography>
             <Typography variant="body2" color="text.secondary">
               Track and manage deployment changes and updates

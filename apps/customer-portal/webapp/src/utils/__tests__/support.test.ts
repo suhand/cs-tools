@@ -660,6 +660,12 @@ describe("support utils", () => {
       expect(replaceInlineImageSources(html, null)).toContain("src");
     });
 
+    it("should normalize JSON-escaped forward slashes so images render", () => {
+      const html = '<img src=\"https:\\/\\/example.com\\/img.png\" alt=\"x\">';
+      // The returned HTML should contain a usable URL (without the escaping backslashes)
+      expect(replaceInlineImageSources(html, null)).toContain("https://example.com/img.png");
+    });
+
     it("should replace src by sys_id when attachment matches", () => {
       const html = '<img src="/sys123.iix" alt="x">';
       const attachments = [
@@ -676,6 +682,20 @@ describe("support utils", () => {
       ];
       const result = replaceInlineImageSources(html, attachments);
       expect(result).toContain("https://cdn.example.com/att.png");
+    });
+
+    it("should preserve absolute .iix src even when matching attachment exists", () => {
+      const html =
+        '<img src="https://wso2sndev.wso2.com/att456.iix" alt="inline">';
+      const attachments = [
+        {
+          id: "att456",
+          downloadUrl: "https://wso2sndev.wso2.com/sys_attachment.do?sys_id=att456",
+        },
+      ];
+      const result = replaceInlineImageSources(html, attachments);
+      expect(result).toContain("https://wso2sndev.wso2.com/att456.iix");
+      expect(result).not.toContain("sys_attachment.do");
     });
 
     it("should handle single-quoted src", () => {

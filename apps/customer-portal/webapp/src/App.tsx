@@ -16,7 +16,8 @@
 
 import { type JSX } from "react";
 import { Route, Routes, Navigate } from "react-router";
-import { ProtectedRoute } from "@asgardeo/react-router";
+import AuthGuard from "@layouts/AuthGuard";
+import HomePage from "@pages/HomePage";
 import ProjectHub from "@pages/ProjectHub";
 import ProjectPage from "@pages/ProjectPage";
 import ProjectDetails from "@pages/ProjectDetails";
@@ -39,14 +40,14 @@ import CreateServiceRequestPage from "@pages/CreateServiceRequestPage";
 import NoveraChatPage from "@pages/NoveraChatPage";
 import DescribeIssuePage from "@pages/DescribeIssuePage";
 import CreateCasePage from "@pages/CreateCasePage";
-import AppLayout from "@layouts/AppLayout";
 import { ErrorBannerProvider } from "@context/error-banner/ErrorBannerContext";
 import { SuccessBannerProvider } from "@context/success-banner/SuccessBannerContext";
 import { LoaderProvider } from "@context/linear-loader/LoaderContext";
-import LoginPage from "@pages/LoginPage";
 import SecurityPage from "@pages/SecurityPage";
 import SettingsPage from "@pages/SettingsPage";
 import VulnerabilityDetailsPage from "@pages/VulnerabilityDetailsPage";
+import OperationsPage from "@pages/OperationsPage";
+import EngagementsPage from "@pages/EngagementsPage";
 
 export default function App(): JSX.Element {
   return (
@@ -55,26 +56,41 @@ export default function App(): JSX.Element {
         <SuccessBannerProvider>
           <Routes>
             {/* Public Route */}
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/home" element={<HomePage />} />
 
-            {/* Protected Routes - All routes inside ProtectedRoute are automatically protected */}
-            <Route
-              element={
-                <ProtectedRoute redirectTo="/login">
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            >
+            <Route element={<AuthGuard />}>
               {/* ProjectHub Page */}
               <Route path="/" element={<ProjectHub />} />
 
               {/* Project Specific Routes */}
-              <Route path="/:projectId">
+              <Route path="projects/:projectId">
                 {/* Dashboard */}
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
                 {/* Project Details */}
                 <Route path="project-details" element={<ProjectDetails />} />
+                {/* Operations */}
+                <Route path="operations">
+                  <Route index element={<OperationsPage />} />
+                  <Route path="service-requests">
+                    <Route index element={<ServiceRequestsPage />} />
+                    <Route
+                      path="create"
+                      element={<CreateServiceRequestPage />}
+                    />
+                    <Route
+                      path=":serviceRequestId"
+                      element={<ServiceRequestDetailsPage />}
+                    />
+                  </Route>
+                  <Route path="change-requests">
+                    <Route index element={<ChangeRequestsPage />} />
+                    <Route
+                      path=":changeRequestId"
+                      element={<ChangeRequestDetailsPage />}
+                    />
+                  </Route>
+                </Route>
                 {/* Support */}
                 <Route path="support">
                   <Route index element={<SupportPage />} />
@@ -123,6 +139,9 @@ export default function App(): JSX.Element {
                       element={<CreateCasePage />}
                     />
                   </Route>
+                  <Route path="security-report">
+                    <Route path="create" element={<CreateCasePage />} />
+                  </Route>
                 </Route>
                 {/* Updates */}
                 <Route path="updates">
@@ -148,10 +167,10 @@ export default function App(): JSX.Element {
                   />
                 </Route>
                 {/* Engagements */}
-                <Route
-                  path="engagements"
-                  element={<ProjectPage title="Engagements" />}
-                />
+                <Route path="engagements">
+                  <Route index element={<EngagementsPage />} />
+                  <Route path=":caseId" element={<CaseDetailsPage />} />
+                </Route>
                 {/* LegalContracts */}
                 <Route
                   path="legal-contracts"
@@ -173,7 +192,7 @@ export default function App(): JSX.Element {
             </Route>
 
             {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </SuccessBannerProvider>
       </ErrorBannerProvider>

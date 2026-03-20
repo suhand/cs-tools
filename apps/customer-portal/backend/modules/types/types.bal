@@ -76,6 +76,8 @@ public type Case record {|
     string? title;
     # Case description
     string? description;
+    # Duration
+    string? duration;
     # issueType of the case
     ReferenceItem? issueType;
     # Severity of the case
@@ -83,11 +85,15 @@ public type Case record {|
     # State of the case
     ReferenceItem? status;
     # Catalog information (if the case is a service request)
-    ReferenceItem? catalog;
+    ReferenceItem? catalog?;
     # Catalog item information (if the case is a service request)
-    ReferenceItem? catalogItem;
+    ReferenceItem? catalogItem?;
     # Assigned team
     ReferenceItem? assignedTeam;
+    # Product information
+    ReferenceItem? product;
+    # Engagement type information
+    ReferenceItem engagementType?;
 |};
 
 # Case information.
@@ -141,6 +147,12 @@ public type CaseResponse record {|
     boolean? hasAutoClosed?;
     # Change requests (only for service requests)
     ReferenceItem[]? changeRequests?;
+    # Engagement payment type information
+    ReferenceItem engagementPaymentType?;
+    # Engagement start date
+    entity:Date? engagementStartDate?;
+    # Engagement end date
+    entity:Date? engagementEndDate?;
     # Variables for service request
     entity:ServiceRequestVariable[]? variables?;
 |};
@@ -238,6 +250,10 @@ public type ProjectFilterOptions record {|
     ReferenceItem[] caseTypes;
     # List of available time card states
     ReferenceItem[] timeCardStates;
+    # List of available engagement types
+    ReferenceItem[] engagementTypes;
+    # List of available engagement payment types
+    ReferenceItem[] engagementPaymentTypes;
     # Severity based allocation time mapping (severity ID to allocation time in minutes)
     map<int> severityBasedAllocationTime;
 |};
@@ -256,12 +272,30 @@ public type Project record {|
     string? description;
     # Project type
     ReferenceItem 'type;
-    json...;
+    # Novera agent enabled status for the project
+    boolean hasAgent;
+    # Active cases count
+    int activeCasesCount;
+    # Active chats/conversations count
+    int activeChatsCount;
+    # SLA status (e.g., "Needs Attention")
+    string slaStatus;
 |};
 
 # Project information.
 public type ProjectResponse record {|
-    *Project;
+    # ID of the project
+    entity:IdString id;
+    # Name of the project
+    string name;
+    # Project key
+    string key;
+    # Created date and time
+    string createdOn;
+    # Description of the project
+    string? description;
+    # Project type
+    ReferenceItem 'type;
     # Salesforce ID
     string sfId;
     # Indicates if the project has service requests
@@ -291,6 +325,26 @@ public type ProjectResponse record {|
         # Technical owner email
         string? technicalOwnerEmail;
     |} account;
+    # Query hour information
+    decimal? totalQueryHours;
+    # Consumed query hours
+    decimal? consumedQueryHours;
+    # Remaining query hours
+    decimal? remainingQueryHours;
+    # Go-live date
+    entity:Date? goLiveDate;
+    # Go-live plan date
+    entity:Date? goLivePlanDate;
+    # Onboarding hour information
+    decimal? totalOnboardingHours;
+    # Consumed onboarding hours
+    decimal? consumedOnboardingHours;
+    # Remaining onboarding hours
+    decimal? remainingOnboardingHours;
+    # Onboarding expiry date
+    entity:Date? onboardingExpiryDate;
+    # Onboarding status
+    string? onboardingStatus;
 |};
 
 # Projects response.
@@ -304,8 +358,12 @@ public type ProjectsResponse record {|
 
 # Case statistics for a project.
 public type ProjectCaseStats record {|
-    # Total case count
-    int totalCases;
+    # Total count(last 30d)
+    int totalCount;
+    # Active case count (cases that are not in closed state)
+    int activeCount;
+    # Outstanding case count (cases that are not solution proposed or closed)
+    int outstandingCount;
     # Average response time
     decimal averageResponseTime;
     # Resolved case count breakdown
@@ -336,6 +394,10 @@ public type ProjectCaseStats record {|
     ReferenceItem[] caseTypeCount;
     # Cases trend
     entity:CasesTrend[] casesTrend;
+    # Count of cases by engagement type
+    ReferenceItem[] engagementTypeCount;
+    # Outstanding cases count by engagement type
+    ReferenceItem[] outstandingEngagementTypeCount;
 |};
 
 # Project support statistics.
@@ -457,9 +519,7 @@ public type Attachment record {|
     # Created date and time
     string createdOn;
     # Download URL
-    string downloadUrl;
-    # Base64 encoded file content (data URI format: data:@file/<type>;base64,<content>)
-    string content;
+    string? downloadUrl;
     # Description of the attachment
     string? description;
 |};
@@ -501,6 +561,15 @@ public type Deployment record {|
     ReferenceItem? 'type;
 |};
 
+# Deployments response.
+public type DeploymentsResponse record {|
+    # List of deployments
+    Deployment[] deployments;
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
+|};
+
 # Deployed product data.
 public type DeployedProduct record {|
     # ID
@@ -519,6 +588,8 @@ public type DeployedProduct record {|
     ReferenceItem? deployment;
     # Product version
     ReferenceItem? version;
+    # Product updates
+    entity:ProductUpdate[]? updates;
     # Cores allocated for the product
     int? cores;
     # TPS allocated for the product
@@ -527,8 +598,15 @@ public type DeployedProduct record {|
     string? releasedOn;
     # End of life date of the product
     string? endOfLifeOn;
-    # Update level of the product
-    string? updateLevel;
+|};
+
+# Deployed products response.
+public type DeployedProductsResponse record {|
+    # List of deployed products
+    DeployedProduct[] deployedProducts;
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
 |};
 
 # Request payload for creating a deployed product.
@@ -848,7 +926,9 @@ public type CallRequest record {|
 public type CallRequestsResponse record {|
     # List of call requests
     CallRequest[] callRequests;
-    // TODO: Remove after adding pagination
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
 |};
 
 # Request payload for creating a call request.
@@ -896,7 +976,9 @@ public type ProductVersion record {|
 public type ProductVersionsResponse record {|
     # List of product versions
     ProductVersion[] versions;
-    json...; // TODO: Add pagination
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
 |};
 
 # Time card data.
@@ -1252,6 +1334,10 @@ public type ChangeRequestResponse record {|
 public type ProjectChangeRequestStatsResponse record {|
     # Total change request count
     int totalCount;
+    # Active change request count (change requests that are not in rollback or closed or cancelled state)
+    int activeCount;
+    # Outstanding change request count
+    int outstandingCount;
     # Count of change requests by state
     ReferenceItem[] stateCount;
 |};

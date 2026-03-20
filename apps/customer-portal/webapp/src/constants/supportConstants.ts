@@ -20,6 +20,7 @@ import {
   BookOpen,
   Bot,
   Calendar,
+  CalendarDays,
   CircleAlert,
   CircleCheck,
   CirclePause,
@@ -32,9 +33,9 @@ import {
   MessageSquare,
   Paperclip,
   Phone,
+  Server,
   TriangleAlert,
   TrendingUp,
-  Zap,
   RotateCcw,
   CheckCircle,
   XCircle,
@@ -43,6 +44,7 @@ import {
   ShieldCheck,
   UserCheck,
   CalendarCheck,
+  FileCheck,
 } from "@wso2/oxygen-ui-icons-react";
 import { colors, alpha } from "@wso2/oxygen-ui";
 import { type ComponentType } from "react";
@@ -96,6 +98,10 @@ export const CaseStatus = {
 
 export type CaseStatus = (typeof CaseStatus)[keyof typeof CaseStatus];
 
+export const SUPPORT_STATE_CLOSED = CaseStatus.CLOSED;
+export const SUPPORT_STATE_AWAITING_INFO = CaseStatus.AWAITING_INFO;
+export const SUPPORT_STATE_WAITING_ON_WSO2 = CaseStatus.WAITING_ON_WSO2;
+
 // Call request status types.
 export const CallRequestStatus = {
   CANCELED: "Canceled",
@@ -134,10 +140,11 @@ export const CaseSeverityLevel = {
 export type CaseSeverityLevel =
   (typeof CaseSeverityLevel)[keyof typeof CaseSeverityLevel];
 
-// Case type values for case creation.
+// Case type values for case creation and stats filters.
 export const CaseType = {
   DEFAULT_CASE: "default_case",
   SERVICE_REQUEST: "service_request",
+  ENGAGEMENT: "engagement",
   SECURITY_REPORT_ANALYSIS: "security_report_analysis",
   ANNOUNCEMENT: "announcement",
 } as const;
@@ -156,44 +163,11 @@ export const CASE_ATTACHMENTS_INITIAL_LIMIT = 50;
 // Interface for support statistics card configuration.
 export interface SupportStatConfig<Key = keyof ProjectSupportStats> {
   iconColor: "primary" | "secondary" | "success" | "error" | "info" | "warning";
-  icon: ComponentType;
+  icon: ComponentType<{ size?: number; color?: string }>;
   key: Key;
   label: string;
-  secondaryIcon?: ComponentType;
+  secondaryIcon?: ComponentType<{ size?: number; color?: string }>;
 }
-
-/**
- * Valid keys for project time tracking statistics.
- */
-export type TimeTrackingStatKey =
-  | "totalHours"
-  | "billableHours"
-  | "nonBillableHours";
-
-/**
- * Configuration for the time tracking statistics cards.
- */
-export const TIME_TRACKING_STAT_CONFIGS: SupportStatConfig<TimeTrackingStatKey>[] =
-  [
-    {
-      icon: Clock,
-      iconColor: "primary",
-      key: "totalHours",
-      label: "Total Hours",
-    },
-    {
-      icon: Zap,
-      iconColor: "success",
-      key: "billableHours",
-      label: "Billable Hours",
-    },
-    {
-      icon: Activity,
-      iconColor: "info",
-      key: "nonBillableHours",
-      label: "Non-Billable Hours",
-    },
-  ];
 
 /**
  * Valid keys for all cases statistics.
@@ -273,10 +247,10 @@ export const SUPPORT_STAT_CONFIGS: SupportStatConfig[] = [
     secondaryIcon: TrendingUp,
   },
   {
-    icon: MessageSquare,
+    icon: FileCheck,
     iconColor: "success",
-    key: "sessionChats",
-    label: "Chat Sessions",
+    key: "resolvedRecently",
+    label: "Resolved Recently",
     secondaryIcon: Bot,
   },
   {
@@ -333,6 +307,9 @@ export const SUPPORT_OVERVIEW_CASES_LIMIT = 5;
 
 // Number of chat history items to show on support overview cards.
 export const SUPPORT_OVERVIEW_CHAT_LIMIT = 5;
+
+// Number of service requests / change requests to show on operations overview cards.
+export const OPERATIONS_OVERVIEW_LIST_LIMIT = 5;
 
 // Rich text editor constants
 export const RICH_TEXT_HISTORY_LIMIT = 50;
@@ -877,6 +854,45 @@ export const SERVICE_REQUEST_STAT_CONFIGS: SupportStatConfig<ServiceRequestStatK
       label: "Rejected",
     },
   ];
+
+/**
+ * Valid keys for operations statistics.
+ */
+export type OperationsStatKey =
+  | "activeServiceRequests"
+  | "activeChangeRequests"
+  | "completedThisMonth"
+  | "upcomingChanges";
+
+/**
+ * Configuration for the operations statistics cards.
+ */
+export const OPERATIONS_STAT_CONFIGS: SupportStatConfig<OperationsStatKey>[] = [
+  {
+    icon: Server,
+    iconColor: "info",
+    key: "activeServiceRequests",
+    label: "Active Service Requests",
+  },
+  {
+    icon: CalendarDays,
+    iconColor: "primary",
+    key: "activeChangeRequests",
+    label: "Active Change Requests",
+  },
+  {
+    icon: CircleCheck,
+    iconColor: "success",
+    key: "completedThisMonth",
+    label: "Completed This Month",
+  },
+  {
+    icon: Calendar,
+    iconColor: "warning",
+    key: "upcomingChanges",
+    label: "Upcoming Changes",
+  },
+];
 
 /**
  * Change request filter definitions.

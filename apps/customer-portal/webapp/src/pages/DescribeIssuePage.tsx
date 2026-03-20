@@ -56,11 +56,12 @@ export default function DescribeIssuePage(): JSX.Element {
   const { showError } = useErrorBanner();
   const [value, setValue] = useState("");
   const [hasApiFailed, setHasApiFailed] = useState(false);
+  const [isLoadingAfterClick, setIsLoadingAfterClick] = useState(false);
 
   const { data: projectDeployments } = useGetProjectDeployments(
     projectId || "",
   );
-  const { productsByDeploymentId, isLoading: isProductsLoading } =
+  const { productsByDeploymentId } =
     useAllDeploymentProducts(projectDeployments);
   const envProducts = useMemo(
     () => buildEnvProducts(productsByDeploymentId, projectDeployments),
@@ -76,7 +77,7 @@ export default function DescribeIssuePage(): JSX.Element {
       location.key === "default" ||
       (typeof window !== "undefined" && window.history.length <= 1)
     ) {
-      navigate(projectId ? `/${projectId}/dashboard` : "/");
+      navigate(projectId ? `/projects/${projectId}/dashboard` : "/");
     } else {
       navigate(-1);
     }
@@ -88,6 +89,7 @@ export default function DescribeIssuePage(): JSX.Element {
     if (!plainText.trim() || !projectId) return;
     if (submittingRef.current) return;
     submittingRef.current = true;
+    setIsLoadingAfterClick(true);
 
     try {
       const conversationResponse = await postConversation({
@@ -102,12 +104,15 @@ export default function DescribeIssuePage(): JSX.Element {
         initialUserMessage: plainText.trim(),
         conversationResponse,
       };
-      navigate(`/${projectId}/support/chat`, { state });
+      navigate(`/projects/${projectId}/support/chat`, { state });
     } catch {
       setHasApiFailed(true);
-      showError("Could not get help. Please try again or create a support case.");
+      showError(
+        "Could not get help. Please try again or create a support case.",
+      );
     } finally {
       submittingRef.current = false;
+      setIsLoadingAfterClick(false);
     }
   }, [
     plainText,
@@ -120,13 +125,13 @@ export default function DescribeIssuePage(): JSX.Element {
 
   const handleCreateCase = useCallback(() => {
     if (!projectId) return;
-    navigate(`/${projectId}/support/chat/create-case`, {
+    navigate(`/projects/${projectId}/support/chat/create-case`, {
       state: { skipChat: true },
     });
   }, [projectId, navigate]);
 
   const isSubmitDisabled =
-    !projectId || !plainText.trim() || isSubmitting || isProductsLoading;
+    !projectId || !plainText.trim();
 
   return (
     <Box
@@ -136,19 +141,36 @@ export default function DescribeIssuePage(): JSX.Element {
         flexDirection: "column",
         width: "100%",
         minHeight: 0,
+        mt: -1.5,
       }}
     >
       <Button
         startIcon={<ArrowLeft size={18} />}
         onClick={handleBack}
-        sx={{ mb: 3, textTransform: "none", alignSelf: "flex-start", flexShrink: 0 }}
+        sx={{
+          mb: 1.5,
+          textTransform: "none",
+          alignSelf: "flex-start",
+          flexShrink: 0,
+        }}
         variant="text"
       >
         Back
       </Button>
 
-      <Card variant="outlined" sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-        <CardContent sx={{ p: 3, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+      <Card
+        variant="outlined"
+        sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
+      >
+        <CardContent
+          sx={{
+            p: 3,
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
           <Stack spacing={3} sx={{ flex: 1, minHeight: 0 }}>
             <Box>
               <Typography variant="h5" sx={{ mb: 1 }} component="h1">
@@ -187,12 +209,19 @@ export default function DescribeIssuePage(): JSX.Element {
                 color="text.secondary"
                 sx={{ display: "block", mt: 1, flexShrink: 0 }}
               >
-                Tip: Include details like error messages, when the issue started,
-                affected systems, and what you&apos;ve already tried.
+                Tip: Include details like error messages, when the issue
+                started, affected systems, and what you&apos;ve already tried.
               </Typography>
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, flexShrink: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 2,
+                flexShrink: 0,
+              }}
+            >
               {hasApiFailed && (
                 <Button
                   variant="contained"
@@ -208,7 +237,7 @@ export default function DescribeIssuePage(): JSX.Element {
                 variant="contained"
                 color="warning"
                 startIcon={
-                  isSubmitting ? (
+                  isLoadingAfterClick ? (
                     <CircularProgress color="inherit" size={18} />
                   ) : (
                     <Send size={18} />
@@ -217,7 +246,7 @@ export default function DescribeIssuePage(): JSX.Element {
                 onClick={handleSubmit}
                 disabled={isSubmitDisabled}
               >
-                {isSubmitting ? "Getting help…" : "Submit & Get Help"}
+                {isLoadingAfterClick ? "Getting help…" : "Submit & Get Help"}
               </Button>
             </Box>
           </Stack>

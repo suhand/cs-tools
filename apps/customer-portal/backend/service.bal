@@ -26,6 +26,8 @@ import customer_portal.user_management;
 import ballerina/cache;
 import ballerina/http;
 import ballerina/log;
+import ballerina/time;
+import ballerina/websocket;
 
 final cache:Cache userCache = new ({
     capacity: 500,
@@ -57,10 +59,11 @@ service class ErrorInterceptor {
     }
 }
 
-// TODO: Remove after the ballerina header configs setting through choreo issue is fixed
+configurable int wsPort = 9091;
+
 http:ListenerConfiguration listenerConf = {
     requestLimits: {
-        maxHeaderSize: 16384
+        maxHeaderSize: 32768
     }
 };
 
@@ -389,7 +392,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + id - ID of the project
     # + return - Deployments response or error response
     resource function get projects/[entity:IdString id]/deployments(http:RequestContext ctx)
-        returns types:Deployment[]|http:BadRequest|http:Forbidden|http:InternalServerError {
+        returns types:DeploymentsResponse|http:BadRequest|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
         if userInfo is error {
@@ -734,7 +737,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     #
     # + id - ID of the project
     # + return - Project statistics response or error
-    resource function get projects/[entity:IdString id]/stats(http:RequestContext ctx, string[]? caseTypes)
+    resource function get projects/[entity:IdString id]/stats(http:RequestContext ctx, entity:CaseType[]? caseTypes)
         returns types:ProjectStatsResponse|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -801,7 +804,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     #
     # + id - ID of the project
     # + return - Project statistics overview or error response
-    resource function get projects/[entity:IdString id]/stats/cases(http:RequestContext ctx, string[]? caseTypes)
+    resource function get projects/[entity:IdString id]/stats/cases(http:RequestContext ctx,
+            entity:CaseType[]? caseTypes)
         returns types:ProjectCaseStats|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -822,6 +826,13 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                     message: ERR_MSG_CASES_STATISTICS
                 }
             };
+        }
+
+        entity:ProjectChangeRequestStatsResponse|error changeReqStats =
+            entity:getProjectChangeRequestStats(userInfo.idToken, id);
+        if changeReqStats is error {
+            log:printError("Failed to retrieve change request statistics.", changeReqStats);
+            // To return other stats even if change request stats retrieval fails, error will not be returned.
         }
 
         return mapCaseStats(caseStats);
@@ -882,7 +893,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     #
     # + id - ID of the project
     # + return - Project support statistics or error response
-    resource function get projects/[entity:IdString id]/stats/support(http:RequestContext ctx, string[]? caseTypes)
+    resource function get projects/[entity:IdString id]/stats/support(http:RequestContext ctx,
+            entity:CaseType[]? caseTypes)
         returns types:ProjectSupportStats|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -915,7 +927,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
 
         return {
             ongoingCases: ongoingCases is int ? ongoingCases : (),
-            activeChats: mappedConversationStats.activeCount,
+            activeChats: 
+                conversationStats is entity:ProjectConversationStatsResponse ? conversationStats.activeCount : (),
             sessionChats: mappedConversationStats.sessionCount,
             resolvedChats: mappedConversationStats.resolvedCount
         };
@@ -1948,6 +1961,63 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         return response.attachment;
     }
 
+    # Get an attachment.
+    #
+    # + id - ID of the attachment
+    # + return - Attachment response or error
+    resource function get attachments/[entity:IdString id](http:RequestContext ctx)
+        returns entity:AttachmentResponse|http:Unauthorized|http:Forbidden|http:NotFound|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:AttachmentResponse|error response = entity:getAttachment(userInfo.idToken, id);
+        if response is error {
+            if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `User: ${userInfo.userId} is forbidden to get the attachment with ID: ${id}!`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "You're not authorized to get the requested attachment. " +
+                        "Please check your access permissions or contact support."
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_NOT_FOUND {
+                log:printWarn(string `Attachment with ID: ${id} not found for user: ${userInfo.userId}`);
+                return <http:NotFound>{
+                    body: {
+                        message: "The attachment you're trying to get does not exist. " +
+                        "Please check and try again."
+                    }
+                };
+            }
+
+            string customError = "Failed to get the attachment.";
+            log:printError(customError, response);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+
+        return response;
+    }
+
     # Delete an attachment.
     #
     # + id - ID of the attachment
@@ -2012,9 +2082,12 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # Get products of a deployment by deployment ID.
     #
     # + id - ID of the deployment
+    # + offset - Offset for pagination
+    # + limit - Number of products to retrieve
     # + return - Deployed products response or error response
-    resource function get deployments/[entity:IdString id]/products(http:RequestContext ctx)
-        returns types:DeployedProduct[]|http:BadRequest|http:Forbidden|http:InternalServerError {
+    resource function get deployments/[entity:IdString id]/products(http:RequestContext ctx,
+        int offset = DEFAULT_OFFSET, int 'limit = DEFAULT_LIMIT)
+        returns types:DeployedProductsResponse|http:BadRequest|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
         if userInfo is error {
@@ -2025,7 +2098,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        entity:DeployedProductsResponse|error productsResponse = entity:getDeployedProducts(userInfo.idToken, id);
+        entity:DeployedProductsResponse|error productsResponse =
+            entity:getDeployedProducts(userInfo.idToken, id, offset, 'limit);
         if productsResponse is error {
             if getStatusCode(productsResponse) == http:STATUS_FORBIDDEN {
                 log:printWarn(string `Access to deployment ID: ${id} is forbidden for user: ${userInfo.userId}`);
@@ -3968,7 +4042,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             }
             if getStatusCode(projectResponse) == http:STATUS_NOT_FOUND {
                 log:printWarn(string `Project with ID: ${tokenInformation.snProjectId} not found for user: ${
-                    userInfo.userId}`);
+                        userInfo.userId}`);
                 return <http:NotFound>{
                     body: {
                         message: "The requested token does not exist or you don't have access to it."
@@ -4089,7 +4163,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        registry:TokenDescriptionInfo|error tokenInformation 
+        registry:TokenDescriptionInfo|error tokenInformation
             = registry:deriveTokenInfoFromDescription(token.description);
         if tokenInformation is error {
             log:printError("Failed to derive token information.", tokenInformation);
@@ -4101,7 +4175,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         }
 
         entity:ProjectResponse|error projectResponse = entity:getProject(userInfo.idToken,
-            tokenInformation.snProjectId);
+                tokenInformation.snProjectId);
         if projectResponse is error {
             if getStatusCode(projectResponse) == http:STATUS_UNAUTHORIZED {
                 log:printWarn(string `User: ${userInfo.userId} is not authorized to access the customer portal!`);
@@ -4112,7 +4186,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 };
             }
             if getStatusCode(projectResponse) == http:STATUS_FORBIDDEN {
-                logForbiddenProjectAccess(id, userInfo.userId);
+                logForbiddenProjectAccess(tokenInformation.snProjectId, userInfo.userId);
                 return <http:Forbidden>{
                     body: {
                         message: ERR_MSG_PROJECT_ACCESS_FORBIDDEN
@@ -4120,7 +4194,8 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 };
             }
             if getStatusCode(projectResponse) == http:STATUS_NOT_FOUND {
-                log:printWarn(string `Project with ID: ${id} not found for user: ${userInfo.userId}`);
+                log:printWarn(string `Project with ID: ${tokenInformation.snProjectId} not found for user: ${
+                    userInfo.userId}`);
                 return <http:NotFound>{
                     body: {
                         message: "The requested token does not exist or you don't have access to it."
@@ -4243,5 +4318,90 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
         return response;
+    }
+}
+
+# WebSocket service to proxy messages between the browser and the upstream Python AI chat agent for real-time communication in chat sessions.
+isolated service / on new websocket:Listener(wsPort) {
+
+    # Upgrade an HTTP request to WebSocket for a given chat session.
+    #
+    # + sessionId - Conversation/session ID to route to the upstream Python agent
+    # + return - WebSocket service or upgrade error
+    isolated resource function get [string sessionId]() returns websocket:Service|websocket:UpgradeError {
+        log:printInfo(string `Upgrading to WebSocket for session ID: ${sessionId}`);
+        return new WsProxyService(sessionId);
+    }
+}
+
+# AI chat agent related service functions that interact with the upstream AI chat agent through the client module.
+isolated service class WsProxyService {
+    *websocket:Service;
+    private final string sessionId;
+    private boolean streaming = false;
+
+    isolated function init(string sessionId) {
+        self.sessionId = sessionId;
+    }
+
+    # Handles incoming WebSocket text messages from the browser client.
+    # Responds to ping messages, enforces single-stream concurrency, and proxies
+    # user messages to the upstream AI chat agent via the ai_chat_agent module.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + data - Raw text message received from the client
+    # + return - Error if message handling or forwarding fails
+    remote function onMessage(websocket:Caller caller, string data) returns error? {
+        json|error parsed = data.fromJsonString();
+        boolean isPing = data.trim().toLowerAscii() == "ping"
+            || (parsed is map<json> && (parsed["type"] ?: "").toString() == "ping");
+        if isPing {
+            var [epochSecs, fracSecs] = time:utcNow();
+            decimal ts = <decimal>epochSecs + fracSecs;
+            check caller->writeTextMessage(string `{"type":"pong","ts":${ts}}`);
+            return;
+        }
+        boolean alreadyStreaming;
+        lock {
+            alreadyStreaming = self.streaming;
+            if !alreadyStreaming {
+                self.streaming = true;
+            }
+        }
+        if alreadyStreaming {
+            json busyPayload = {"type": "error", "message": "A response is already being streamed. Please wait."};
+            check caller->writeTextMessage(busyPayload.toJsonString());
+            return;
+        }
+        error? err = ai_chat_agent:streamChat(self.sessionId, data, caller);
+        lock {
+            self.streaming = false;
+        }
+        if err is error {
+            log:printError("WebSocket proxy stream error", err);
+            json errorPayload = {"type": "error", "message": err.message()};
+            error? writeErr = caller->writeTextMessage(errorPayload.toJsonString());
+            if writeErr is error {
+                log:printError("Failed to send error to caller (client disconnected)", writeErr);
+            }
+        }
+    }
+
+    # Handles WebSocket connection errors on the proxy link.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + err - The error that occurred on the connection
+    # + return - Error if error handling itself fails
+    remote function onError(websocket:Caller caller, error err) returns error? {
+        log:printError("WebSocket proxy connection error", err);
+    }
+
+    # Handles WebSocket connection closure events.
+    #
+    # + caller - The WebSocket caller representing the connected browser client
+    # + statusCode - WebSocket close status code
+    # + reason - Reason string for the closure
+    remote function onClose(websocket:Caller caller, int statusCode, string reason) {
+        log:printInfo(string `WebSocket proxy closed [${statusCode}]: ${reason}`);
     }
 }

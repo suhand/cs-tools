@@ -28,8 +28,16 @@ vi.mock("../ActiveCasesChart", () => ({
 }));
 
 vi.mock("../CasesTrendChart", () => ({
-  CasesTrendChart: ({ isLoading }: any) => (
-    <div data-testid="cases-trend-chart" data-loading={isLoading}>
+  CasesTrendChart: ({ isLoading, data }: any) => (
+    <div
+      data-testid="cases-trend-chart"
+      data-loading={isLoading}
+      data-onboarding={data?.onboarding}
+      data-migration={data?.migration}
+      data-services={data?.services}
+      data-improvements={data?.improvements}
+      data-total={data?.total}
+    >
       Cases Trend Chart
     </div>
   ),
@@ -60,29 +68,20 @@ describe("ChartLayout", () => {
       high: 3,
       critical: 1,
       catastrophic: 0,
-      serviceRequest: 0,
-      securityReportAnalysis: 0,
       total: 11,
     },
     activeCases: {
-      open: 5,
-      workInProgress: 10,
-      awaitingInfo: 3,
-      waitingOnWso2: 5,
-      solutionProposed: 0,
-      reopened: 0,
-      total: 23,
+      serviceRequests: 12,
+      changeRequests: 8,
+      total: 20,
     },
-    casesTrend: [
-      {
-        period: "2026-Q1",
-        critical: 10,
-        high: 20,
-        medium: 30,
-        low: 40,
-        catastrophic: 5,
-      },
-    ],
+    engagements: {
+      onboarding: 1,
+      migration: 2,
+      services: 3,
+      improvements: 4,
+      total: 10,
+    },
     isLoading: false,
   };
 

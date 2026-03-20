@@ -21,16 +21,15 @@ import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
-import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
+import { useGetProjectChangeRequestsStats } from "@api/useGetProjectChangeRequestsStats";
 import {
   DASHBOARD_STATS,
-  OUTSTANDING_ENGAGEMENTS_CHART_DATA,
   SEVERITY_API_LABELS,
 } from "@constants/dashboardConstants";
 import { PROJECT_TYPE_LABELS } from "@constants/projectDetailsConstants";
-import { getIncidentAndQueryIds } from "@utils/support";
+import { CaseType } from "@constants/supportConstants";
 import { StatCard } from "@components/dashboard/stats/StatCard";
 import ChartLayout from "@components/dashboard/charts/ChartLayout";
 import CasesTable from "@components/dashboard/cases-table/CasesTable";
@@ -53,39 +52,60 @@ export default function DashboardPage(): JSX.Element {
   } = useGetProjectDetails(projectId || "");
   const projectReady = !isProjectLoading && project !== undefined;
 
-  const {
-    data: filters,
-    isLoading: isFiltersLoading,
-    isError: isErrorFilters,
-  } = useGetProjectFilters(projectId || "");
-
   const isManagedCloudSubscription =
     projectReady &&
     project?.type?.label === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
   const excludeS0 = projectReady ? !isManagedCloudSubscription : false;
 
-  const { incidentId, queryId } = useMemo(
-    () => getIncidentAndQueryIds(filters?.caseTypes),
-    [filters?.caseTypes],
-  );
-
   const {
-    data: casesStats,
-    isLoading: isCasesLoading,
-    isError: isErrorCases,
+    data: combinedCasesStats,
+    isLoading: isCombinedCasesLoading,
+    isError: isErrorCombinedCases,
   } = useGetProjectCasesStats(projectId || "", {
-    incidentId,
-    queryId,
-    enabled: !!projectId && !isFiltersLoading && !!incidentId && !!queryId,
+    caseTypes: [
+      CaseType.DEFAULT_CASE,
+      CaseType.SERVICE_REQUEST,
+      CaseType.ENGAGEMENT,
+    ],
+    enabled: !!projectId,
   });
 
-  const isDashboardLoading =
-    isAuthLoading ||
-    isProjectLoading ||
-    isFiltersLoading ||
-    isCasesLoading ||
-    (!filters && !isErrorFilters) ||
-    (!casesStats && !isErrorCases);
+  const {
+    data: defaultCaseStats,
+    isLoading: isDefaultCaseLoading,
+    isError: isErrorDefaultCase,
+  } = useGetProjectCasesStats(projectId || "", {
+    caseTypes: [CaseType.DEFAULT_CASE],
+    enabled: !!projectId,
+  });
+
+  const {
+    data: serviceRequestStats,
+    isLoading: isServiceRequestLoading,
+    isError: isErrorServiceRequest,
+  } = useGetProjectCasesStats(projectId || "", {
+    caseTypes: [CaseType.SERVICE_REQUEST],
+    enabled: !!projectId,
+  });
+
+  const {
+    data: engagementStats,
+    isLoading: isEngagementLoading,
+    isError: isErrorEngagement,
+  } = useGetProjectCasesStats(projectId || "", {
+    caseTypes: [CaseType.ENGAGEMENT],
+    enabled: !!projectId,
+  });
+
+  const {
+    data: changeRequestStats,
+    isLoading: isChangeRequestStatsLoading,
+    isError: isErrorChangeRequestStats,
+  } = useGetProjectChangeRequestsStats(projectId || "", {
+    enabled: !!projectId,
+  });
+
+  const isDashboardLoading = isAuthLoading || isProjectLoading;
 
   useEffect(() => {
     if (isDashboardLoading) {
@@ -96,89 +116,76 @@ export default function DashboardPage(): JSX.Element {
   }, [isDashboardLoading, showLoader, hideLoader]);
 
   useEffect(() => {
-    if (filters && casesStats) {
+    if (combinedCasesStats || defaultCaseStats) {
       logger.debug(`Dashboard data loaded for project ID: ${projectId}`);
     }
-  }, [filters, casesStats, logger, projectId]);
+  }, [combinedCasesStats, defaultCaseStats, logger, projectId]);
 
   const { showError } = useErrorBanner();
   const hasShownErrorRef = useRef(false);
 
   useEffect(() => {
     if (
-      (isErrorCases || isErrorFilters) &&
+      isErrorCombinedCases &&
+      isErrorDefaultCase &&
+      isErrorServiceRequest &&
+      isErrorEngagement &&
+      isErrorChangeRequestStats &&
       !hasShownErrorRef.current
     ) {
       hasShownErrorRef.current = true;
       showError("Could not load dashboard statistics.");
-
-      if (isErrorCases) {
-        logger.error(`Failed to load cases stats for project ID: ${projectId}`);
-      }
-      if (isErrorFilters) {
-        logger.error(`Failed to load case filters for project ID: ${projectId}`);
-      }
+      logger.error(
+        `Failed to load dashboard stats for project ID: ${projectId}`,
+      );
     }
-    if (!isErrorCases && !isErrorFilters) {
+    if (
+      !isErrorCombinedCases ||
+      !isErrorDefaultCase ||
+      !isErrorServiceRequest ||
+      !isErrorEngagement ||
+      !isErrorChangeRequestStats
+    ) {
       hasShownErrorRef.current = false;
     }
-  }, [isErrorCases, isErrorFilters, showError, logger, projectId]);
-
-  const activeCases = useMemo(() => {
-    const open = casesStats?.stateCount.find((s) => s.label === "Open")?.count ?? 0;
-    const workInProgress = casesStats?.stateCount.find((s) => s.label === "Work In Progress")?.count ?? 0;
-    const awaitingInfo = casesStats?.stateCount.find((s) => s.label === "Awaiting Info")?.count ?? 0;
-    const waitingOnWso2 = casesStats?.stateCount.find((s) => s.label === "Waiting On WSO2")?.count ?? 0;
-    const solutionProposed = casesStats?.stateCount.find((s) => s.label === "Solution Proposed")?.count ?? 0;
-    const reopened = casesStats?.stateCount.find((s) => s.label === "Reopened")?.count ?? 0;
-    const total = open + workInProgress + awaitingInfo + waitingOnWso2 + solutionProposed + reopened;
-
-    return {
-      open,
-      workInProgress,
-      awaitingInfo,
-      waitingOnWso2,
-      solutionProposed,
-      reopened,
-      total,
-    };
-  }, [casesStats]);
+  }, [
+    isErrorCombinedCases,
+    isErrorDefaultCase,
+    isErrorServiceRequest,
+    isErrorEngagement,
+    isErrorChangeRequestStats,
+    showError,
+    logger,
+    projectId,
+  ]);
 
   const outstandingCases = useMemo(() => {
-    const severityByKey: Record<string, number> = {};
-    for (const item of OUTSTANDING_ENGAGEMENTS_CHART_DATA) {
-      if (item.key === "serviceRequest" || item.key === "securityReportAnalysis") break;
-      severityByKey[item.key] =
-        casesStats?.outstandingSeverityCount.find((s) => s.label === item.label)
-          ?.count ?? 0;
-    }
-    const serviceRequest =
-      casesStats?.caseTypeCount.find(
-        (c) => /service\s*request/i.test(c.label),
+    const source = defaultCaseStats;
+    const outstanding = source?.outstandingSeverityCount ?? [];
+
+    const catastrophicCount =
+      outstanding.find(
+        (s) => s.label === SEVERITY_API_LABELS[0],
       )?.count ?? 0;
-    const securityReportAnalysis =
-      casesStats?.caseTypeCount.find(
-        (c) => /security\s*report\s*analysis/i.test(c.label),
+    const critical =
+      outstanding.find(
+        (s) => s.label === SEVERITY_API_LABELS[1],
+      )?.count ?? 0;
+    const high =
+      outstanding.find(
+        (s) => s.label === SEVERITY_API_LABELS[2],
+      )?.count ?? 0;
+    const medium =
+      outstanding.find(
+        (s) => s.label === SEVERITY_API_LABELS[3],
+      )?.count ?? 0;
+    const low =
+      outstanding.find(
+        (s) => s.label === SEVERITY_API_LABELS[4],
       )?.count ?? 0;
 
-    let catastrophic = severityByKey.catastrophic ?? 0;
-    const critical = severityByKey.critical ?? 0;
-    const high = severityByKey.high ?? 0;
-    const medium = severityByKey.medium ?? 0;
-    const low = severityByKey.low ?? 0;
-
-    if (!isManagedCloudSubscription) {
-      catastrophic = 0;
-    }
-
-    const total =
-      catastrophic +
-      critical +
-      high +
-      medium +
-      low +
-      serviceRequest +
-      securityReportAnalysis;
+    const catastrophic = isManagedCloudSubscription ? catastrophicCount : 0;
+    const total = catastrophic + critical + high + medium + low;
 
     return {
       catastrophic,
@@ -186,77 +193,208 @@ export default function DashboardPage(): JSX.Element {
       high,
       medium,
       low,
-      serviceRequest,
-      securityReportAnalysis,
       total,
     };
-  }, [casesStats, isManagedCloudSubscription]);
+  }, [defaultCaseStats, isManagedCloudSubscription]);
 
-  const casesTrend = useMemo(() => {
-    const catastrophicCount = isManagedCloudSubscription
-      ? (s: { label: string; count?: number }[]) =>
-          s.find((x) => x.label === SEVERITY_API_LABELS[0])?.count ?? 0
-      : () => 0;
-    const mapped = (casesStats?.casesTrend ?? []).map(({ period, severities }) => ({
-      period,
-      catastrophic: catastrophicCount(severities),
-      critical: severities.find((s) => s.label === SEVERITY_API_LABELS[1])?.count ?? 0,
-      high: severities.find((s) => s.label === SEVERITY_API_LABELS[2])?.count ?? 0,
-      medium: severities.find((s) => s.label === SEVERITY_API_LABELS[3])?.count ?? 0,
-      low: severities.find((s) => s.label === SEVERITY_API_LABELS[4])?.count ?? 0,
-    }));
-    return mapped.sort((a, b) => {
-      const parse = (p: string) => {
-        const m = p.match(/(\d{4})\D*[Qq](\d)/);
-        return m ? Number(m[1]) * 4 + Number(m[2]) : 0;
-      };
-      return parse(a.period) - parse(b.period);
-    });
-  }, [casesStats, isManagedCloudSubscription]);
+  const outstandingOperations = useMemo(() => {
+    const hasServiceRequests =
+      !!serviceRequestStats && !isErrorServiceRequest;
+    const hasChangeRequests =
+      !!changeRequestStats && !isErrorChangeRequestStats;
+
+    const serviceRequestsCount = hasServiceRequests
+      ? serviceRequestStats?.totalCount ??
+        serviceRequestStats?.totalCases ??
+        0
+      : 0;
+    const changeRequestsCount = hasChangeRequests
+      ? changeRequestStats?.totalCount ?? 0
+      : 0;
+
+    const total = serviceRequestsCount + changeRequestsCount;
+
+    return {
+      serviceRequests: serviceRequestsCount,
+      changeRequests: changeRequestsCount,
+      total,
+    };
+  }, [serviceRequestStats, changeRequestStats, isErrorServiceRequest, isErrorChangeRequestStats]);
+
+  const outstandingEngagements = useMemo(() => {
+    const source = engagementStats;
+    const outstanding =
+      source?.outstandingEngagementTypeCount ?? [];
+
+    const getCount = (label: string) =>
+      outstanding.find((item) => item.label === label)?.count ?? 0;
+
+    const onboarding = getCount("Onboarding");
+    const migration = getCount("Migration");
+    const improvements = getCount("New Feature / Improvement");
+    const services = getCount("Consultancy");
+
+    const total = onboarding + migration + improvements + services;
+
+    return {
+      onboarding,
+      migration,
+      services,
+      improvements,
+      total,
+    };
+  }, [engagementStats]);
+
+  const isChartsLoading =
+    isDashboardLoading ||
+    isDefaultCaseLoading ||
+    isServiceRequestLoading ||
+    isEngagementLoading ||
+    isChangeRequestStatsLoading;
 
   return (
     <Box sx={{ width: "100%", pt: 0, position: "relative" }}>
       {/* Dashboard stats grid */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {DASHBOARD_STATS.map((stat) => {
-          const changeRate = casesStats?.changeRate;
-          let trend: { value: string; direction: "up" | "down"; color: "success" | "error" | "info" | "warning" } | undefined;
-          if (stat.id === "resolvedCases" && typeof changeRate?.resolvedEngagements === "number") {
-            const rate = changeRate.resolvedEngagements;
-            trend = {
-              value: `${rate >= 0 ? "+" : ""}${rate}%`,
-              direction: rate >= 0 ? "up" : "down",
-              color: rate >= 0 ? "success" : "error",
-            };
-          } else if (stat.id === "avgResponseTime" && typeof changeRate?.averageResponseTime === "number") {
-            const rate = changeRate.averageResponseTime;
-            trend = {
-              value: `${rate >= 0 ? "+" : ""}${rate}%`,
-              direction: rate >= 0 ? "up" : "down",
-              color: "success",
-            };
-          }
-
           let value: string | number = 0;
-          if (casesStats) {
-            switch (stat.id) {
-              case "totalCases":
-                value = casesStats.totalCases;
-                break;
-              case "openCases":
-                value = casesStats.stateCount
-                  .filter((state) => state.label !== "Closed")
-                  .reduce((sum, state) => sum + state.count, 0);
-                break;
-              case "resolvedCases":
-                value = casesStats.resolvedCases.currentMonth;
-                break;
-              case "avgResponseTime":
-                value = `${casesStats.averageResponseTime} hrs`;
-                break;
-              default:
-                break;
+          let trend:
+            | {
+                value: string;
+                direction: "up" | "down";
+                color: "success" | "error" | "info" | "warning";
+              }
+            | undefined;
+          let isCardLoading = false;
+          let isCardError = false;
+
+          switch (stat.id) {
+            case "totalCases": {
+              const hasCombined =
+                !!combinedCasesStats && !isErrorCombinedCases;
+              const hasChange =
+                !!changeRequestStats && !isErrorChangeRequestStats;
+
+              const combinedTotal = hasCombined
+                ? combinedCasesStats?.totalCount ??
+                  combinedCasesStats?.totalCases ??
+                  0
+                : 0;
+              const changeTotal = hasChange
+                ? changeRequestStats?.totalCount ?? 0
+                : 0;
+
+              value = combinedTotal + changeTotal;
+
+              isCardError =
+                !hasCombined &&
+                !hasChange &&
+                (isErrorCombinedCases || isErrorChangeRequestStats);
+              isCardLoading =
+                !isCardError &&
+                ((isCombinedCasesLoading && !combinedCasesStats) ||
+                  (isChangeRequestStatsLoading && !changeRequestStats));
+              break;
             }
+            case "openCases": {
+              const hasCombined =
+                !!combinedCasesStats && !isErrorCombinedCases;
+              const hasChange =
+                !!changeRequestStats && !isErrorChangeRequestStats;
+
+              const combinedActive = hasCombined
+                ? combinedCasesStats?.activeCount ??
+                  combinedCasesStats?.stateCount
+                    ?.filter((state) => state.label !== "Closed")
+                    .reduce((sum, state) => sum + state.count, 0) ??
+                  0
+                : 0;
+
+              const changeActive = hasChange
+                ? changeRequestStats?.activeCount ??
+                  changeRequestStats?.stateCount
+                    ?.filter(
+                      (state) =>
+                        state.label !== "Closed" &&
+                        state.label !== "Canceled",
+                    )
+                    .reduce((sum, state) => sum + state.count, 0) ??
+                  0
+                : 0;
+
+              value = combinedActive + changeActive;
+
+              isCardError =
+                !hasCombined &&
+                !hasChange &&
+                (isErrorCombinedCases || isErrorChangeRequestStats);
+              isCardLoading =
+                !isCardError &&
+                ((isCombinedCasesLoading && !combinedCasesStats) ||
+                  (isChangeRequestStatsLoading && !changeRequestStats));
+              break;
+            }
+            case "resolvedCases": {
+              const hasDefault =
+                !!defaultCaseStats && !isErrorDefaultCase;
+              const resolved =
+                hasDefault && defaultCaseStats
+                  ? defaultCaseStats.resolvedCases.pastThirtyDays ??
+                    defaultCaseStats.resolvedCases.currentMonth ??
+                    0
+                  : 0;
+
+              value = resolved;
+              isCardError = isErrorDefaultCase;
+              isCardLoading =
+                !isCardError &&
+                isDefaultCaseLoading &&
+                !defaultCaseStats;
+
+              const changeRate = defaultCaseStats?.changeRate;
+              if (
+                typeof changeRate?.resolvedEngagements === "number"
+              ) {
+                const rate = changeRate.resolvedEngagements;
+                trend = {
+                  value: `${rate >= 0 ? "+" : ""}${rate}%`,
+                  direction: rate >= 0 ? "up" : "down",
+                  color: rate >= 0 ? "success" : "error",
+                };
+              }
+              break;
+            }
+            case "avgResponseTime": {
+              const hasCombined =
+                !!combinedCasesStats && !isErrorCombinedCases;
+              const avg =
+                hasCombined && combinedCasesStats
+                  ? combinedCasesStats.averageResponseTime
+                  : 0;
+
+              value = `${avg} hrs`;
+              isCardError = isErrorCombinedCases;
+              isCardLoading =
+                !isCardError &&
+                isCombinedCasesLoading &&
+                !combinedCasesStats;
+
+              const changeRate = combinedCasesStats?.changeRate;
+              if (
+                typeof changeRate?.averageResponseTime === "number"
+              ) {
+                const rate = changeRate.averageResponseTime;
+                trend = {
+                  value: `${rate >= 0 ? "+" : ""}${rate}%`,
+                  direction: rate >= 0 ? "up" : "down",
+                  color: "success",
+                };
+              }
+
+              break;
+            }
+            default:
+              break;
           }
 
           const showTrend = stat.id !== "totalCases" && stat.id !== "openCases";
@@ -271,11 +409,8 @@ export default function DashboardPage(): JSX.Element {
                 tooltipText={stat.tooltipText}
                 trend={trend}
                 showTrend={showTrend}
-                isLoading={
-                  (isDashboardLoading || !casesStats) &&
-                  !isErrorCases
-                }
-                isError={isErrorCases}
+                isLoading={isCardLoading}
+                isError={isCardError}
                 isTrendError={false}
               />
             </Grid>
@@ -285,14 +420,14 @@ export default function DashboardPage(): JSX.Element {
       {/* Charts row */}
       <ChartLayout
         outstandingCases={outstandingCases}
-        activeCases={activeCases}
-        casesTrend={casesTrend || []}
-        isLoading={
-          (isDashboardLoading || !casesStats) && !isErrorCases
+        activeCases={outstandingOperations}
+        engagements={outstandingEngagements}
+        isLoading={isChartsLoading}
+        isErrorOutstanding={isErrorDefaultCase}
+        isErrorActiveCases={
+          isErrorServiceRequest && isErrorChangeRequestStats
         }
-        isErrorOutstanding={isErrorCases}
-        isErrorActiveCases={isErrorCases}
-        isErrorTrend={isErrorCases}
+        isErrorEngagements={isErrorEngagement}
         excludeS0={excludeS0}
       />
       {/* Cases Table */}

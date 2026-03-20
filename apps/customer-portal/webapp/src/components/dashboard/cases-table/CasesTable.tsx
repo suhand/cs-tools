@@ -14,25 +14,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { ListingTable } from "@wso2/oxygen-ui";
-import { type JSX, useState, useMemo, useCallback, useEffect } from "react";
+import { ListingTable, Divider, Box } from "@wso2/oxygen-ui";
+import { type JSX, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useAsgardeo } from "@asgardeo/react";
-import { getNoveraChatEnabled } from "@utils/settingsStorage";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { useGetProjectCasesPage } from "@api/useGetProjectCasesPage";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import { useGetDeployments } from "@api/useGetDeployments";
-import FilterPopover, {
-  type FilterField,
-} from "@components/common/filter-panel/FilterPopover";
+import type { FilterField } from "@components/common/filter-panel/FilterPopover";
 import CasesTableHeader from "@components/dashboard/cases-table/CasesTableHeader";
+import CasesFilters from "@components/dashboard/cases-table/CasesFilters";
 import CasesList from "@components/dashboard/cases-table/CasesList";
-import {
-  normalizeCaseTypeOptions,
-  mapSeverityToDisplay,
-  isS0Case,
-} from "@utils/support";
+import { mapSeverityToDisplay, isS0Case } from "@utils/support";
 import { isS0SeverityLabel } from "@constants/dashboardConstants";
 import type { CaseListItem, CaseSearchResponse } from "@models/responses";
 
@@ -58,8 +52,6 @@ const CasesTable = ({
 
   const {
     data: filtersMetadata,
-    isFetching: isFetchingFilters,
-    isError: isErrorFilters,
   } = useGetProjectFilters(projectId);
 
   // Fetch deployments for the deployment filter
@@ -109,12 +101,6 @@ const CasesTable = ({
           value: d.id,
         })) || [],
     },
-    {
-      id: "caseTypes",
-      label: "Case Type",
-      type: "select",
-      options: normalizeCaseTypeOptions(filtersMetadata?.caseTypes || []),
-    },
   ];
 
   const caseSearchRequest = useMemo(
@@ -125,7 +111,6 @@ const CasesTable = ({
         severityId: filters.severityId ? Number(filters.severityId) : undefined,
         issueId: filters.issueTypes ? Number(filters.issueTypes) : undefined,
         deploymentId: filters.deploymentId || undefined,
-        caseTypes: filters.caseTypes?.length ? [filters.caseTypes] : undefined,
       },
       sortBy: {
         field: "createdOn",
@@ -199,10 +184,9 @@ const CasesTable = ({
     : pageQuery.isFetching;
   const isError = showAll ? infiniteQuery.isError : pageQuery.isError;
 
-  const handleFilterSearch = (newFilters: Record<string, any>) => {
-    setFilters(newFilters);
+  const handleClearFilters = () => {
+    setFilters({});
     setPage(0);
-    setShowAll(false);
     setIsLoadingAll(false);
   };
 
@@ -216,28 +200,6 @@ const CasesTable = ({
     setIsLoadingAll(false);
   };
 
-  const handleRemoveFilter = (field: string) => {
-    const newFilters = { ...filters };
-    delete newFilters[field];
-    setFilters(newFilters);
-    setPage(0);
-    setShowAll(false);
-    setIsLoadingAll(false);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({});
-    setPage(0);
-    setIsLoadingAll(false);
-  };
-
-  const handleAllCases = () => {
-    setShowAll(true);
-    setIsLoadingAll(true);
-    setFilters({});
-    setPage(0);
-  };
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -249,58 +211,38 @@ const CasesTable = ({
     setPage(0);
   };
 
-  const activeFilterFields = dynamicFilterFields.map((field) => ({
-    id: field.id,
-    label: field.label,
-    options: field.options,
-  }));
-
-  const handleCreateCase = useCallback(() => {
-    if (getNoveraChatEnabled()) {
-      navigate(`/${projectId}/support/chat/describe-issue`);
-    } else {
-      navigate(`/${projectId}/support/chat/create-case`, {
-        state: { skipChat: true },
-      });
-    }
-  }, [navigate, projectId]);
-
-  const getDisplayValue = (fieldId: string, value: any): string => {
-    if (!value) return "";
-    const field = dynamicFilterFields.find((f) => f.id === fieldId);
-    if (field?.options) {
-      const option = field.options.find((opt) =>
-        typeof opt === "string" ? opt === value : opt.value === value,
-      );
-      if (option) {
-        return typeof option === "string" ? option : option.label;
-      }
-    }
-    return String(value);
+  const getActiveFiltersCount = () => {
+    return Object.values(filters).filter((v) => v !== "" && v != null).length;
   };
-
-  const mappedAppliedFilters = Object.entries(filters).reduce(
-    (acc, [key, value]) => {
-      acc[key] = getDisplayValue(key, value);
-      return acc;
-    },
-    {} as Record<string, string>,
-  );
 
   return (
     <ListingTable.Container sx={{ width: "100%", mb: 4, p: 3 }}>
       {/* Header */}
       <CasesTableHeader
-        activeFiltersCount={Object.keys(filters).length}
-        appliedFilters={mappedAppliedFilters}
-        filterFields={activeFilterFields}
-        onRemoveFilter={handleRemoveFilter}
-        onUpdateFilter={handleUpdateFilter}
-        onClearAll={handleClearFilters}
-        onFilterClick={() => setIsFilterOpen(true)}
-        onAllCases={handleAllCases}
-        onCreateCase={handleCreateCase}
+        activeFiltersCount={getActiveFiltersCount()}
+        isFiltersOpen={isFilterOpen}
+        onFilterToggle={() => {
+          if (getActiveFiltersCount() > 0) {
+            handleClearFilters();
+          } else {
+            setIsFilterOpen(!isFilterOpen);
+          }
+        }}
       />
+
+      {/* Filter dropdowns section */}
+      {isFilterOpen && (
+        <>
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ mb: 3 }}>
+            <CasesFilters
+              filters={filters}
+              filterFields={dynamicFilterFields as any}
+              onFilterChange={handleUpdateFilter}
+            />
+          </Box>
+        </>
+      )}
 
       {/* Cases list */}
       <CasesList
@@ -311,20 +253,8 @@ const CasesTable = ({
         rowsPerPage={rowsPerPage}
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
-        onCaseClick={(c) => navigate(`/${projectId}/support/cases/${c.id}`)}
+        onCaseClick={(c) => navigate(`/projects/${projectId}/support/cases/${c.id}`)}
         showPagination={!showAll}
-      />
-
-      {/* Filter popover */}
-      <FilterPopover
-        open={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-        onSearch={handleFilterSearch}
-        initialFilters={filters}
-        fields={dynamicFilterFields}
-        title="Filter Cases"
-        isLoading={isFetchingFilters || isAuthLoading}
-        isError={isErrorFilters}
       />
     </ListingTable.Container>
   );

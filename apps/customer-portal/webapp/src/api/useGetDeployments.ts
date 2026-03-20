@@ -19,10 +19,7 @@ import { useAsgardeo } from "@asgardeo/react";
 import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
-import type {
-  ProjectDeploymentItem,
-  ProjectDeploymentsListResponse,
-} from "@models/responses";
+import type { ProjectDeploymentsListResponse } from "@models/responses";
 
 /**
  * Fetches deployments for a project.
@@ -61,10 +58,7 @@ export function useGetDeployments(
           throw new Error(`Error fetching deployments: ${response.statusText}`);
         }
 
-        const raw = await response.json();
-        const data: ProjectDeploymentsListResponse = Array.isArray(raw)
-          ? { deployments: raw as ProjectDeploymentItem[] }
-          : (raw as ProjectDeploymentsListResponse);
+        const data: ProjectDeploymentsListResponse = await response.json();
         logger.debug("[useGetDeployments] Data received:", data);
         return data;
       } catch (error) {

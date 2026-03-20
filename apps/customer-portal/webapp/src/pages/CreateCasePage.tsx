@@ -120,7 +120,8 @@ export default function CreateCasePage(): JSX.Element {
   // Check if creating a security report analysis case
   const searchParams = new URLSearchParams(location.search);
   const caseType = searchParams.get("type");
-  const isSecurityReport = caseType === CaseType.SECURITY_REPORT_ANALYSIS;
+  const isSecurityReportPath = location.pathname.includes("security-report");
+  const isSecurityReport = caseType === CaseType.SECURITY_REPORT_ANALYSIS || isSecurityReportPath;
   const skipChat = !!locationStateRaw?.skipChat || isSecurityReport;
   const { showLoader, hideLoader } = useLoader();
   const { data: projectDetails, isLoading: isProjectLoading } =
@@ -160,13 +161,11 @@ export default function CreateCasePage(): JSX.Element {
     isLoading: deploymentProductsLoading,
     isError: deploymentProductsError,
   } = useGetDeploymentsProducts(selectedDeploymentId);
-  const allDeploymentProducts = useMemo(
-    () =>
-      (deploymentProductsData ?? []).filter((item) =>
-        item.product?.label?.trim(),
-      ),
-    [deploymentProductsData],
-  );
+  const allDeploymentProducts = useMemo(() => {
+    if (!deploymentProductsData) return [];
+
+    return deploymentProductsData.filter((item) => item.product?.label?.trim());
+  }, [deploymentProductsData]);
   const baseProductOptions = getBaseProductOptions(allDeploymentProducts);
 
   // Sort product options in ascending order by label
@@ -568,7 +567,7 @@ export default function CreateCasePage(): JSX.Element {
     if (window.history.length > 1) {
       navigate(-1);
     } else if (projectId) {
-      navigate(`/${projectId}/support/cases`);
+      navigate(`/projects/${projectId}/support/cases`);
     } else {
       navigate("/");
     }
@@ -702,7 +701,7 @@ export default function CreateCasePage(): JSX.Element {
         ? CaseType.SECURITY_REPORT_ANALYSIS
         : CaseType.DEFAULT_CASE,
       deploymentId: String(deploymentMatch.id),
-      description: descriptionPlain,
+      description,
       issueTypeKey,
       deployedProductId: String(productId),
       projectId,
@@ -745,10 +744,10 @@ export default function CreateCasePage(): JSX.Element {
             queryKey: [ApiQueryKeys.PROJECT_CASES, projectId],
           });
           navigate(
-            `/${projectId}/security-center/security-report-analysis/${caseId}?tab=${SecurityTab.VULNERABILITIES}`,
+            `/projects/${projectId}/security-center/security-report-analysis/${caseId}?tab=${SecurityTab.VULNERABILITIES}`,
           );
         } else {
-          navigate(`/${projectId}/support/cases/${caseId}`);
+          navigate(`/projects/${projectId}/support/cases/${caseId}`);
         }
       },
       onError: (error) => {

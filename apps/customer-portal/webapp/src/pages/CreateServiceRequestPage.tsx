@@ -35,7 +35,7 @@ import {
   type FormEvent,
   type JSX,
 } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { useGetProjectDeployments } from "@api/useGetProjectDeployments";
 import { useGetDeploymentsProducts } from "@api/useGetDeploymentsProducts";
 import { useSearchCatalogs } from "@api/useSearchCatalogs";
@@ -70,7 +70,9 @@ import UploadAttachmentModal from "@components/support/case-details/attachments-
  */
 export default function CreateServiceRequestPage(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId } = useParams<{ projectId: string }>();
+  const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
   const { showLoader, hideLoader } = useLoader();
   const { showError } = useErrorBanner();
   const { showSuccess } = useSuccessBanner();
@@ -206,7 +208,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
     if (window.history.length > 1) {
       navigate(-1);
     } else if (projectId) {
-      navigate(`/${projectId}/support/service-requests`);
+      navigate(`/projects/${projectId}/${basePath}/service-requests`);
     } else {
       navigate("/");
     }
@@ -310,7 +312,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
             ? `Service request ${srNumber} created successfully`
             : "Service request created successfully",
         );
-        navigate(`/${projectId}/support/service-requests/${data.id}`);
+        navigate(`/projects/${projectId}/${basePath}/service-requests/${data.id}`);
       },
       onError: (error) => {
         const msg =

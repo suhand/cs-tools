@@ -27,11 +27,16 @@ export interface ProjectListItem {
     id: string;
     label: string;
   };
+  hasAgent: boolean;
+  activeCasesCount: number;
+  activeChatsCount: number;
+  slaStatus: string;
 }
 
 /** Account nested in project details response. */
 export interface ProjectDetailsAccount {
   id: string;
+  hasAgent?: boolean;
   name: string;
   activationDate?: string | null;
   deactivationDate?: string | null;
@@ -48,6 +53,7 @@ export interface ProjectDetails {
   name: string;
   description: string;
   createdOn: string;
+  hasAgent?: boolean;
   type: {
     id: string;
     label: string;
@@ -57,6 +63,16 @@ export interface ProjectDetails {
   startDate?: string;
   endDate?: string;
   account?: ProjectDetailsAccount;
+  totalQueryHours?: number;
+  consumedQueryHours?: number;
+  remainingQueryHours?: number;
+  goLiveDate?: string | null;
+  goLivePlanDate?: string | null;
+  totalOnboardingHours?: number;
+  consumedOnboardingHours?: number;
+  remainingOnboardingHours?: number;
+  onboardingExpiryDate?: string | null;
+  onboardingStatus?: string | null;
 }
 
 // Project Search Response.
@@ -154,9 +170,9 @@ export interface CaseCreationMetadata {
 // Project support statistics.
 export interface ProjectSupportStats {
   ongoingCases: number;
-  activeChats: number;
-  sessionChats: number;
+  resolvedRecently: number;
   resolvedChats: number;
+  activeChats: number;
 }
 
 export interface CaseSeverity {
@@ -177,6 +193,12 @@ export interface CaseType {
   count: number;
 }
 
+export interface EngagementTypeCount {
+  id: string;
+  label: string;
+  count: number;
+}
+
 export interface CasesTrendPeriod {
   period: string;
   severities: CaseSeverity[];
@@ -184,6 +206,9 @@ export interface CasesTrendPeriod {
 
 export interface ProjectCasesStats {
   totalCases: number;
+  totalCount?: number;
+  activeCount?: number;
+  outstandingCount?: number;
   averageResponseTime: number;
   resolvedCases: {
     total: number;
@@ -200,6 +225,8 @@ export interface ProjectCasesStats {
   outstandingSeverityCount: CaseSeverity[];
   caseTypeCount: CaseType[];
   casesTrend: CasesTrendPeriod[];
+  engagementTypeCount?: EngagementTypeCount[];
+  outstandingEngagementTypeCount?: EngagementTypeCount[];
 }
 
 // Project time tracking statistics.
@@ -389,6 +416,8 @@ export interface PatchChangeRequestResponse {
 // Change Request Stats API Response
 export interface ChangeRequestStatsResponse {
   totalCount: number;
+  activeCount?: number;
+  outstandingCount?: number;
   stateCount: Array<{
     id: string;
     label: string;
@@ -703,6 +732,7 @@ export interface DeploymentAttachmentsResponse {
 export interface DeploymentDocument {
   id: string;
   name: string;
+  description?: string | null;
   category?: string;
   sizeBytes?: number;
   size?: number;
@@ -710,6 +740,7 @@ export interface DeploymentDocument {
   createdOn?: string;
   uploadedBy?: string;
   createdBy?: string;
+  content?: string | null;
   downloadUrl?: string;
 }
 
@@ -736,14 +767,11 @@ export interface Deployment {
   uptimePercent: number;
 }
 
-// Response for project deployments list.
-export interface DeploymentsResponse {
-  deployments: Deployment[];
-}
-
-// Response for GET /projects/:projectId/deployments (real API).
 export interface ProjectDeploymentsListResponse {
   deployments: ProjectDeploymentItem[];
+  totalRecords?: number;
+  offset?: number;
+  limit?: number;
 }
 
 // Product from GET /products.
@@ -764,17 +792,24 @@ export interface ProductVersionItem {
   product?: { id: string; label: string };
 }
 
-// Response for GET /products.
 export interface ProductsResponse {
-  products?: ProductItem[];
-  totalRecords?: number;
-  offset?: number;
-  limit?: number;
+  products: ProductItem[];
+  totalRecords: number;
+  offset: number;
+  limit: number;
 }
 
-// Response for POST /products/:productId/versions/search.
 export interface ProductVersionsSearchResponse {
   versions: ProductVersionItem[];
+  totalRecords: number;
+  offset: number;
+  limit: number;
+}
+
+export interface ProductUpdate {
+  updateLevel: number;
+  date: string;
+  details?: string | null;
 }
 
 // Single item from GET /projects/:projectId/deployments (array response).
@@ -787,6 +822,35 @@ export interface ProjectDeploymentItem {
   url: string | null;
   project: { id: string; label: string };
   type: { id: string; label: string };
+}
+
+// Response for GET /deployments/:deploymentId/products (paginated).
+export interface DeployedProductsResponse {
+  deployedProducts: DeploymentProductItem[];
+  totalRecords: number;
+  offset: number;
+  limit: number;
+}
+
+/**
+ * Union type for the deployment products endpoint response.
+ * Some backend versions return a paginated object, others return a plain array.
+ */
+export type DeployedProductsResponsePayload =
+  | DeploymentProductItem[]
+  | DeployedProductsResponse;
+
+/**
+ * Type guard for DeployedProductsResponse.
+ */
+export function isDeployedProductsResponse(
+  payload: unknown,
+): payload is DeployedProductsResponse {
+  return (
+    typeof payload === "object" &&
+    payload !== null &&
+    Array.isArray((payload as { deployedProducts?: unknown }).deployedProducts)
+  );
 }
 
 // Single item from GET /deployments/:deploymentId/products (array response).
@@ -802,7 +866,7 @@ export interface DeploymentProductItem {
   tps?: number | null;
   releasedOn?: string | null;
   endOfLifeOn?: string | null;
-  updateLevel?: string | null;
+  updates?: ProductUpdate[] | null;
 }
 
 // Case attachment item (GET /cases/:id/attachments).
@@ -810,8 +874,10 @@ export interface CaseAttachment {
   id: string;
   name: string;
   type: string;
+  description?: string | null;
   size?: number;
   sizeBytes?: string;
+  content?: string | null;
   downloadUrl: string;
   createdOn: string;
   createdBy: string;
@@ -996,7 +1062,6 @@ export interface CallRequest {
   state: { id: string; label: string };
 }
 
-// Response for case call requests list (POST /cases/:caseId/call-requests/search).
 export interface CallRequestsResponse {
   callRequests: CallRequest[];
   totalRecords?: number;

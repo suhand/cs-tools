@@ -16,18 +16,15 @@
 
 import { useParams, useNavigate } from "react-router";
 import { useEffect, type JSX } from "react";
-import { Box, Grid, Stack } from "@wso2/oxygen-ui";
+import { Grid, Stack } from "@wso2/oxygen-ui";
 import { FileText, MessageSquare } from "@wso2/oxygen-ui-icons-react";
 import { useAsgardeo } from "@asgardeo/react";
 import CasesOverviewStatCard from "@components/support/cases-overview-stats/CasesOverviewStatCard";
 import SupportOverviewCard from "@components/support/support-overview-cards/SupportOverviewCard";
 import OutstandingCasesList from "@components/support/support-overview-cards/OutstandingCasesList";
-import ServiceRequestCard from "@components/support/request-cards/ServiceRequestCard";
-import ChangeRequestCard from "@components/support/request-cards/ChangeRequestCard";
 import ChatHistoryList from "@components/support/support-overview-cards/ChatHistoryList";
 import { useGetProjectSupportStats } from "@api/useGetProjectSupportStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
-import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { useSearchConversations } from "@api/useSearchConversations";
 import { useLogger } from "@hooks/useLogger";
@@ -37,7 +34,7 @@ import {
   CaseType,
 } from "@constants/supportConstants";
 import { PROJECT_TYPE_LABELS } from "@constants/projectDetailsConstants";
-import { getIncidentAndQueryIds, isS0Case } from "@utils/support";
+import { isS0Case } from "@utils/support";
 import type { ChatHistoryItem } from "@models/responses";
 
 /**
@@ -59,26 +56,13 @@ export default function SupportPage(): JSX.Element {
     isProjectLoaded &&
     project?.type?.label === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
 
-  const { data: filterMetadata } = useGetProjectFilters(projectId || "");
-
-  const { incidentId, queryId } = getIncidentAndQueryIds(
-    filterMetadata?.caseTypes,
-  );
-
-  const hasFilterIds = !!(incidentId || queryId);
-
   const {
     data: stats,
     isFetching,
     isError,
-  } = useGetProjectSupportStats(
-    projectId || "",
-    {
-      incidentId,
-      queryId,
-    },
-    hasFilterIds,
-  );
+  } = useGetProjectSupportStats(projectId || "", {
+    caseTypes: [CaseType.DEFAULT_CASE],
+  });
 
   const {
     data,
@@ -172,7 +156,7 @@ export default function SupportPage(): JSX.Element {
               isLoading={isCasesLoading}
               onCaseClick={
                 projectId
-                  ? (c) => navigate(`/${projectId}/support/cases/${c.id}`)
+                  ? (c) => navigate(`/projects/${projectId}/support/cases/${c.id}`)
                   : undefined
               }
             />
@@ -211,10 +195,10 @@ export default function SupportPage(): JSX.Element {
                       }
 
                       if (action === "resume") {
-                        navigate(`/${projectId}/support/chat/${chatId}`);
+                        navigate(`/projects/${projectId}/support/chat/${chatId}`);
                       } else {
                         navigate(
-                          `/${projectId}/support/conversations/${chatId}`,
+                          `/projects/${projectId}/support/conversations/${chatId}`,
                           {
                             state: { conversationSummary: summary },
                           },
@@ -227,18 +211,6 @@ export default function SupportPage(): JSX.Element {
           </SupportOverviewCard>
         </Grid>
       </Grid>
-      {isProjectLoaded && isManagedCloudSubscription && (
-        <Box sx={{ mt: 3 }}>
-          <Grid container spacing={2}>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <ServiceRequestCard />
-            </Grid>
-            <Grid size={{ xs: 12, lg: 6 }}>
-              <ChangeRequestCard />
-            </Grid>
-          </Grid>
-        </Box>
-      )}
     </Stack>
   );
 }

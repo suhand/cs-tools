@@ -24,12 +24,14 @@ import {
   DialogTitle,
   IconButton,
   MenuItem,
+  Skeleton,
   TextField,
   Typography,
 } from "@wso2/oxygen-ui";
 import { X } from "@wso2/oxygen-ui-icons-react";
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
   type ChangeEvent,
@@ -38,6 +40,7 @@ import {
 import { useGetProducts } from "@api/useGetProducts";
 import { useSearchProductVersions } from "@api/useSearchProductVersions";
 import { usePostDeploymentProduct } from "@api/usePostDeploymentProduct";
+import type { ProductItem, ProductVersionItem } from "@models/responses";
 
 export interface AddProductModalProps {
   open: boolean;
@@ -82,13 +85,150 @@ export default function AddProductModal({
   onError,
 }: AddProductModalProps): JSX.Element {
   const [form, setForm] = useState(INITIAL_FORM);
+  const [productOffset, setProductOffset] = useState(0);
+  const [versionOffset, setVersionOffset] = useState(0);
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [versions, setVersions] = useState<ProductVersionItem[]>([]);
 
-  const { data: products = [], isLoading: isLoadingProducts } = useGetProducts({
-    offset: 0,
+  const {
+    data: productsPage,
+    isLoading: isLoadingProducts,
+    isFetching: isFetchingProducts,
+  } = useGetProducts({
+    offset: productOffset,
     limit: 10,
   });
-  const { data: versions = [], isLoading: isLoadingVersions } =
-    useSearchProductVersions(form.productId, { limit: 10, offset: 0 });
+
+  const {
+    data: versionsPage,
+    isLoading: isLoadingVersions,
+    isFetching: isFetchingVersions,
+  } = useSearchProductVersions(form.productId, {
+    limit: 10,
+    offset: versionOffset,
+  });
+
+  useEffect(() => {
+    if (!productsPage) return;
+    const pageItems = productsPage.products ?? [];
+    const offset = productsPage.offset ?? 0;
+
+    Promise.resolve().then(() => {
+      if (offset === 0) {
+        setProducts(pageItems);
+        return;
+      }
+      setProducts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const next = [...prev];
+        pageItems.forEach((item) => {
+          if (!existingIds.has(item.id)) {
+            next.push(item);
+            existingIds.add(item.id);
+          }
+        });
+        return next;
+      });
+    });
+  }, [productsPage]);
+
+  const productsTotalRecords = productsPage?.totalRecords ?? products.length;
+  const canLoadMoreProducts = products.length < productsTotalRecords;
+
+  const handleProductsScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const target = event.currentTarget;
+      if (
+        !canLoadMoreProducts ||
+        isLoadingProducts ||
+        isFetchingProducts ||
+        products.length === 0
+      ) {
+        return;
+      }
+
+      const threshold = 24; // px from bottom to trigger load
+      if (
+        target.scrollHeight - target.scrollTop - target.clientHeight <
+        threshold
+      ) {
+        setProductOffset((prev) => prev + 10);
+      }
+    },
+    [
+      canLoadMoreProducts,
+      isLoadingProducts,
+      isFetchingProducts,
+      products.length,
+    ],
+  );
+
+  useEffect(() => {
+    if (!versionsPage) return;
+    const pageItems = versionsPage.versions ?? [];
+    const offset = versionsPage.offset ?? 0;
+
+    if (pageItems.length === 0) {
+      return;
+    }
+
+    Promise.resolve().then(() => {
+      if (offset === 0) {
+        setVersions(pageItems);
+        return;
+      }
+      setVersions((prev) => {
+        const existingIds = new Set(prev.map((v) => v.id));
+        const next = [...prev];
+        pageItems.forEach((item) => {
+          if (!existingIds.has(item.id)) {
+            next.push(item);
+            existingIds.add(item.id);
+          }
+        });
+        return next;
+      });
+    });
+  }, [versionsPage]);
+
+  // Reset versions when product changes.
+  useEffect(() => {
+    Promise.resolve().then(() => {
+      setVersions([]);
+      setVersionOffset(0);
+    });
+  }, [form.productId]);
+
+  const versionsTotalRecords = versionsPage?.totalRecords ?? versions.length;
+  const canLoadMoreVersions = versions.length < versionsTotalRecords;
+
+  const handleVersionsScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const target = event.currentTarget;
+      if (
+        !canLoadMoreVersions ||
+        isLoadingVersions ||
+        isFetchingVersions ||
+        versions.length === 0
+      ) {
+        return;
+      }
+
+      const threshold = 24;
+      if (
+        target.scrollHeight - target.scrollTop - target.clientHeight <
+        threshold
+      ) {
+        setVersionOffset((prev) => prev + 10);
+      }
+    },
+    [
+      canLoadMoreVersions,
+      isLoadingVersions,
+      isFetchingVersions,
+      versions.length,
+    ],
+  );
 
   // Sort versions in ascending order
   const sortedVersions = useMemo(() => {
@@ -240,6 +380,13 @@ export default function AddProductModal({
                 color: !form.productId ? "text.secondary" : undefined,
               },
             }}
+            SelectProps={{
+              MenuProps: {
+                PaperProps: {
+                  onScroll: handleProductsScroll,
+                },
+              },
+            }}
           >
             <MenuItem value="">Select</MenuItem>
             {products.map((p) => (
@@ -247,6 +394,12 @@ export default function AddProductModal({
                 {p.label ?? p.name ?? p.id}
               </MenuItem>
             ))}
+            {(isLoadingProducts || isFetchingProducts) &&
+              products.length === 0 && (
+                <MenuItem disabled>
+                  <Skeleton variant="text" width="100%" />
+                </MenuItem>
+              )}
           </TextField>
           <TextField
             select
@@ -262,6 +415,13 @@ export default function AddProductModal({
                 color: !form.versionId ? "text.secondary" : undefined,
               },
             }}
+            SelectProps={{
+              MenuProps: {
+                PaperProps: {
+                  onScroll: handleVersionsScroll,
+                },
+              },
+            }}
           >
             <MenuItem value="">Select</MenuItem>
             {sortedVersions.map((v) => (
@@ -269,6 +429,12 @@ export default function AddProductModal({
                 {v.version}
               </MenuItem>
             ))}
+            {(isLoadingVersions || isFetchingVersions) &&
+              versions.length === 0 && (
+                <MenuItem disabled>
+                  <Skeleton variant="text" width="100%" />
+                </MenuItem>
+              )}
           </TextField>
         </Box>
 

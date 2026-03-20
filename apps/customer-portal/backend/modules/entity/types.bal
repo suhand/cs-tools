@@ -105,6 +105,14 @@ public type Project record {|
     string? description;
     # Project type
     ReferenceTableItem 'type;
+    # Agent enabled status for the project
+    boolean hasAgent;
+    # Active cases count
+    int activeCasesCount;
+    # Active chats/conversations count
+    int activeChatsCount;
+    # SLA status (e.g., "Needs Attention")
+    string slaStatus;
     json...;
 |};
 
@@ -116,7 +124,7 @@ public type ProjectSearchPayload record {|
         string searchQuery?;
     } filters?;
     # Pagination details
-    Pagination pagination = {};
+    Pagination pagination?;
 |};
 
 # Projects response.
@@ -131,7 +139,18 @@ public type ProjectsResponse record {|
 
 # Project information.
 public type ProjectResponse record {|
-    *Project;
+    # ID
+    IdString id;
+    # Name
+    string name;
+    # Project key
+    string key;
+    # Created date and time
+    string createdOn;
+    # Description
+    string? description;
+    # Project type
+    ReferenceTableItem 'type;
     # Salesforce ID
     string sfId;
     # Indicates if the project has service requests
@@ -142,6 +161,26 @@ public type ProjectResponse record {|
     Date? endDate;
     # Account information
     Account account;
+    # Query hour information
+    decimal? totalQueryHours;
+    # Consumed query hours
+    decimal? consumedQueryHours;
+    # Remaining query hours
+    decimal? remainingQueryHours;
+    # Go-live date
+    Date? goLiveDate;
+    # Go-live plan date
+    Date? goLivePlanDate;
+    # Onboarding hour information
+    decimal? totalOnboardingHours;
+    # Consumed onboarding hours
+    decimal? consumedOnboardingHours;
+    # Remaining onboarding hours
+    decimal? remainingOnboardingHours;
+    # Onboarding expiry date
+    Date? onboardingExpiryDate;
+    # Onboarding status
+    string? onboardingStatus;
     json...;
 |};
 
@@ -306,6 +345,8 @@ public type Case record {|
     string? title;
     # Case description
     string? description;
+    # Duration
+    string? duration;
     # issue type of the case
     ChoiceListItem? issueType;
     # Status information
@@ -313,11 +354,15 @@ public type Case record {|
     # Severity information
     ChoiceListItem? severity;
     # Catalog information (if the case is a service request)
-    ReferenceTableItem? catalog;
+    ReferenceTableItem? catalog?;
     # Catalog item information (if the case is a service request)
-    ReferenceTableItem? catalogItem;
+    ReferenceTableItem? catalogItem?;
     # Assigned team
     ReferenceTableItem? assignedTeam;
+    # WSO2 product information
+    ReferenceTableItem? product;
+    # Engagement type information
+    ChoiceListItem engagementType?;
     json...;
 |};
 
@@ -457,6 +502,12 @@ public type CaseResponse record {|
     ReferenceTableItem[]? changeRequests?;
     # Variables for service request
     ServiceRequestVariable[]? variables?;
+    # Engagement payment type information
+    ChoiceListItem engagementPaymentType?;
+    # Engagement start date
+    Date? engagementStartDate?;
+    # Engagement end date
+    Date? engagementEndDate?;
     json...;
 |};
 
@@ -501,6 +552,10 @@ public type ProjectMetadataResponse record {|
     ChoiceListItem[] conversationStates;
     # List of available case types
     ReferenceTableItem[] caseTypes;
+    # List of available engagement types
+    ChoiceListItem[] engagementTypes;
+    # List of available engagement payment types
+    ChoiceListItem[] engagementPaymentTypes;
     # Severity based allocation time mapping (severity ID to allocation time in minutes)
     map<int> severityBasedAllocationTime;
     json...;
@@ -554,8 +609,12 @@ public type CasesTrend record {|
 
 # Project cases statistics response.
 public type ProjectCaseStatsResponse record {|
-    # Total case count
+    # Total count
     int totalCount;
+    # Active case count (cases that are not in closed state)
+    int activeCount;
+    # Outstanding case count (cases that are not solution proposed or closed)
+    int outstandingCount;
     # Average response time
     decimal averageResponseTime;
     # Resolved case count breakdown
@@ -582,6 +641,10 @@ public type ProjectCaseStatsResponse record {|
     ChoiceListItem[] severityCount;
     # Outstanding cases count by severity
     ChoiceListItem[] outstandingSeverityCount;
+    # Count of cases by engagement type
+    ChoiceListItem[] engagementTypeCount;
+    # Count of Outstanding cases by engagement type
+    ChoiceListItem[] outstandingEngagementTypeCount;
     # Count of cases by type
     ReferenceTableItem[] caseTypeCount;
     # Cases trend
@@ -591,6 +654,10 @@ public type ProjectCaseStatsResponse record {|
 
 # Project conversation statistics response.
 public type ProjectConversationStatsResponse record {|
+    # Total conversation count
+    int totalCount;
+    # Active conversation count
+    int activeCount;
     # Count of conversations by state
     ChoiceListItem[] stateCount;
     json...;
@@ -670,9 +737,7 @@ public type Attachment record {|
     # Created date and time
     string createdOn;
     # Download URL
-    string downloadUrl;
-    # Base64 encoded file content (data URI format: data:@file/<type>;base64,<content>)
-    string content;
+    string? downloadUrl;
     # Description of the attachment
     string? description;
     json...;
@@ -735,6 +800,25 @@ public type AttachmentDeleteResponse record {|
     |} attachment;
 |};
 
+# Attachment details response.
+public type AttachmentResponse record {|
+    *Attachment;
+    # Base64 encoded file content (data URI format: data:@file/<type>;base64,<content>)
+    string content;
+    json...;
+|};
+
+# Product update information.
+public type ProductUpdate record {|
+    # Update level
+    int updateLevel;
+    # Update date
+    Date date;
+    # Update details
+    string? details?;
+    json...;
+|};
+
 # Deployed product data.
 public type DeployedProduct record {|
     # ID
@@ -753,6 +837,8 @@ public type DeployedProduct record {|
     ReferenceTableItem? product;
     # Product version
     ReferenceTableItem? version;
+    # Product updates
+    ProductUpdate[]? updates;
     # Cores allocated for the product
     int? cores;
     # TPS allocated for the product
@@ -761,8 +847,6 @@ public type DeployedProduct record {|
     string? releasedOn;
     # End of life date of the product
     string? endOfLifeOn;
-    # Update level of the product
-    string? updateLevel;
     json...;
 |};
 
@@ -770,6 +854,10 @@ public type DeployedProduct record {|
 public type DeployedProductsResponse record {|
     # List of deployed products
     DeployedProduct[] deployedProducts;
+    # Total records count
+    int totalRecords;
+    *Pagination;
+    json...;
 |};
 
 # Request payload for creating a deployed product.
@@ -818,6 +906,8 @@ public type DeployedProductUpdatePayload record {|
     decimal? tps?;
     # Description of the deployed product
     string? description?;
+    # Product updates
+    ProductUpdate[]? updates?;
     # Active status (can only be set to false to deactivate deployed product)
     boolean active?;
 |};
@@ -863,6 +953,15 @@ public type Deployment record {|
     json...;
 |};
 
+# Request payload for searching deployed products by deployment ID.
+public type DeployedProductSearchPayload record {|
+    # Deployment ID
+    IdString deploymentId;
+    # Pagination details
+    Pagination pagination?;
+    json...;
+|};
+
 # Payload for creating a deployment.
 public type DeploymentCreatePayload record {|
     # Project ID
@@ -899,6 +998,10 @@ public type CreatedDeployment record {|
 public type DeploymentsResponse record {|
     # List of deployments
     Deployment[] deployments;
+    # Total records count
+    int totalRecords;
+    *Pagination;
+    json...;
 |};
 
 # Payload for creating a comment.
@@ -1109,6 +1212,9 @@ public type CallRequest record {|
 public type CallRequestsResponse record {|
     # List of call requests
     CallRequest[] callRequests;
+    # Total records count
+    int totalRecords;
+    *Pagination;
     json...;
 |};
 
@@ -1221,7 +1327,7 @@ public type UpdatedDeployment record {|
 # Request payload for searching products.
 public type ProductSearchPayload record {|
     # Pagination details
-    Pagination pagination = {};
+    Pagination pagination?;
 |};
 
 # Product data.
@@ -1237,13 +1343,16 @@ public type Product record {|
 public type ProductsResponse record {|
     # List of products
     Product[] products;
-    json...; // TODO: Remove after adding pagination
+    # Total records count
+    int totalRecords;
+    *Pagination;
+    json...;
 |};
 
 # Request payload for searching product versions.
 public type ProductVersionSearchPayload record {|
     # Pagination details
-    Pagination pagination = {};
+    Pagination pagination?;
 |};
 
 # Product version data.
@@ -1269,7 +1378,10 @@ public type ProductVersion record {|
 public type ProductVersionsResponse record {|
     # List of product versions
     ProductVersion[] versions;
-    json...; // TODO: Add pagination
+    # Total records count
+    int totalRecords;
+    *Pagination;
+    json...;
 |};
 
 # Date.
@@ -1664,6 +1776,10 @@ public type ChangeRequestResponse record {|
 public type ProjectChangeRequestStatsResponse record {|
     # Total change request count
     int totalCount;
+    # Active change request count (change requests that are not in rollback or closed or cancelled state)
+    int activeCount;
+    # Outstanding change request count
+    int outstandingCount;
     # Count of change requests by state
     ChoiceListItem[] stateCount;
     json...;

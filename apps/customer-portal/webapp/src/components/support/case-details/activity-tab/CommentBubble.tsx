@@ -16,13 +16,12 @@
 
 import {
   Avatar,
-  Chip,
   Stack,
   Typography,
   alpha,
   useTheme,
 } from "@wso2/oxygen-ui";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { CaseComment } from "@models/responses";
 import {
   getInitials,
@@ -41,8 +40,8 @@ import ChatMessageCard from "@case-details-activity/ChatMessageCard";
 export interface CommentBubbleProps {
   comment: CaseComment;
   isCurrentUser: boolean;
-  isSupportEngineer: boolean;
   primaryBg: string;
+  onImageClick?: (src: string) => void;
   userDetails?: {
     email?: string;
     firstName?: string;
@@ -59,12 +58,11 @@ export interface CommentBubbleProps {
 export default function CommentBubble({
   comment,
   isCurrentUser,
-  isSupportEngineer,
   primaryBg,
+  onImageClick,
   userDetails,
 }: CommentBubbleProps): import("react").JSX.Element {
   const theme = useTheme();
-  const [expanded, setExpanded] = useState(false);
   const rawContent = comment.content ?? "";
   const isFullCodeWrap = hasSingleCodeWrapper(rawContent);
   const codeBlockCount = rawContent.match(/\[code\]/gi)?.length ?? 0;
@@ -75,12 +73,24 @@ export default function CommentBubble({
       : convertCodeTagsToHtml(rawContent);
   const trimmedBr = trimLeadingBr(afterCode);
   const withoutLabel = stripCustomerCommentAddedLabel(trimmedBr);
-  const withImages = replaceInlineImageSources(
-    withoutLabel,
-    comment.inlineAttachments,
-  );
+  const withImages = replaceInlineImageSources(withoutLabel, comment.inlineAttachments);
   const htmlContent = DOMPurify.sanitize(withImages);
-  const displayName = isCurrentUser ? null : comment.createdBy || "Unknown";
+  const displayName = useMemo(() => {
+    if (isCurrentUser && userDetails) {
+      const { firstName, lastName, email } = userDetails;
+      const fromName =
+        firstName != null || lastName != null
+          ? [firstName, lastName].filter(Boolean).join(" ").trim()
+          : "";
+      if (fromName) return fromName;
+      if (email) return email;
+    }
+    if (!isCurrentUser) {
+      return comment.createdBy || "Unknown";
+    }
+    return null;
+  }, [isCurrentUser, comment.createdBy, userDetails]);
+
   const initials = useMemo(() => {
     if (isCurrentUser && userDetails) {
       const { firstName, lastName, email } = userDetails;
@@ -143,12 +153,7 @@ export default function CommentBubble({
             minHeight: 32,
           }}
         >
-          {isCurrentUser && (
-            <Typography variant="body2" color="text.primary" fontWeight={500}>
-              You
-            </Typography>
-          )}
-          {displayName && !isCurrentUser && (
+          {displayName && (
             <Typography variant="body2" color="text.primary" fontWeight={500}>
               {displayName}
             </Typography>
@@ -156,24 +161,12 @@ export default function CommentBubble({
           <Typography variant="caption" color="text.secondary">
             {formatCommentDate(comment.createdOn)}
           </Typography>
-          {isSupportEngineer && (
-            <Chip
-              label="Support Engineer"
-              size="small"
-              variant="outlined"
-              sx={{
-                height: 20,
-                fontSize: "0.75rem",
-              }}
-            />
-          )}
         </Stack>
         <ChatMessageCard
           htmlContent={htmlContent}
-          isExpanded={expanded}
-          onToggleExpand={() => setExpanded((prev) => !prev)}
           isCurrentUser={isCurrentUser}
           primaryBg={primaryBg}
+          onImageClick={onImageClick}
         />
       </Stack>
     </Stack>

@@ -8,10 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@asgardeo/react": "^0.13.2",
+    "@asgardeo/react": "^0.14.2",
     "@asgardeo/react-router": "^1.1.0",
     "@lexical/code": "^0.40.0",
     "@lexical/html": "^0.40.0",
@@ -23,9 +24,9 @@
     "@lexical/utils": "^0.40.0",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-query-devtools": "^5.91.2",
-    "@wso2/oxygen-ui": "^0.6.0",
-    "@wso2/oxygen-ui-charts-react": "^0.6.0",
-    "@wso2/oxygen-ui-icons-react": "^0.6.0",
+    "@wso2/oxygen-ui": "^0.8.2",
+    "@wso2/oxygen-ui-charts-react": "^0.8.2",
+    "@wso2/oxygen-ui-icons-react": "^0.8.2",
     "dompurify": "^3.3.1",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.7",
@@ -58,6 +59,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "@playwright/test": "^1.49.0"
   }
 }

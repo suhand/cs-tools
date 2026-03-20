@@ -27,54 +27,46 @@ interface ChartLayoutProps {
     high: number;
     critical: number;
     catastrophic: number;
-    serviceRequest: number;
-    securityReportAnalysis: number;
     total: number;
   };
   activeCases: {
-    open: number;
-    workInProgress: number;
-    awaitingInfo: number;
-    waitingOnWso2: number;
-    solutionProposed: number;
-    reopened: number;
+    serviceRequests: number;
+    changeRequests: number;
     total: number;
   };
-  casesTrend: Array<{
-    period: string;
-    critical: number;
-    high: number;
-    medium: number;
-    low: number;
-    catastrophic: number;
-  }>;
+  engagements: {
+    onboarding: number;
+    migration: number;
+    services: number;
+    improvements: number;
+    total: number;
+  };
   isLoading?: boolean;
   isErrorOutstanding?: boolean;
   isErrorActiveCases?: boolean;
-  isErrorTrend?: boolean;
+  isErrorEngagements?: boolean;
   excludeS0?: boolean;
 }
 
 /**
- * ChartLayout component displays multiple chart sections including
- * outstanding engagements (severities + case types), active cases, and cases trend.
+ * ChartLayout component displays the three dashboard charts:
+ * outstanding support cases, outstanding operations, and outstanding engagements.
  *
  * @param {ChartLayoutProps} props - Component props
- * @param {Object} props.outstandingCases - Severity and case type counts for Outstanding Engagements chart.
- * @param {Object} props.activeCases - State counts for Active Engagements chart.
- * @param {Array} props.casesTrend - Array of trend data for Cases Trend chart.
+ * @param {Object} props.outstandingCases - Severity counts for Outstanding Support Cases chart.
+ * @param {Object} props.activeCases - Counts for Outstanding Operations chart.
  * @param {boolean} props.isLoading - Flag indicating if the data is loading.
  * @returns {JSX.Element} The chart layout element.
  */
 const ChartLayout = ({
   outstandingCases,
   activeCases,
-  casesTrend,
   isLoading,
   isErrorOutstanding,
   isErrorActiveCases,
-  isErrorTrend,
+  isErrorEngagements,
   excludeS0 = false,
+  engagements,
 }: ChartLayoutProps): JSX.Element => {
   return (
     <Grid container spacing={3} sx={{ mb: 3 }}>
@@ -100,10 +92,9 @@ const ChartLayout = ({
       {/* Cases Trend */}
       <Grid size={{ xs: 12, md: 4 }}>
         <CasesTrendChart
-          data={casesTrend}
+          data={engagements}
           isLoading={isLoading}
-          isError={isErrorTrend}
-          excludeS0={excludeS0}
+          isError={isErrorEngagements}
         />
       </Grid>
     </Grid>

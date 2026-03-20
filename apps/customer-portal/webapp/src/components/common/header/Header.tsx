@@ -18,7 +18,6 @@ import { useEffect, type JSX, useMemo, useCallback } from "react";
 import { Header as HeaderUI } from "@wso2/oxygen-ui";
 import { useNavigate, useLocation, useParams } from "react-router";
 import useInfiniteProjects, { flattenProjectPages } from "@api/useGetProjects";
-import useGetProjectDetails from "@api/useGetProjectDetails";
 import { useLogger } from "@hooks/useLogger";
 import Brand from "@components/common/header/Brand";
 import Actions from "@components/common/header/Actions";
@@ -49,24 +48,13 @@ export default function Header({ onToggleSidebar }: HeaderProps): JSX.Element {
 
   const isProjectHub = location.pathname === "/";
 
-  const {
-    data,
-    isLoading,
-    isError,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useInfiniteProjects({ pageSize: 50 });
+  const { data, isLoading, isError } = useInfiniteProjects({
+    pageSize: 20,
+    enabled: !isProjectHub,
+  });
 
   // Flatten all pages into a single projects array
   const projects = useMemo(() => flattenProjectPages(data), [data]);
-
-  // Auto-fetch all pages on mount to populate dropdown
-  useEffect(() => {
-    if (hasNextPage && !isFetchingNextPage && !isLoading && !isError) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, isLoading, isError, fetchNextPage]);
 
   useEffect(() => {
     if (isError) {
@@ -85,9 +73,9 @@ export default function Header({ onToggleSidebar }: HeaderProps): JSX.Element {
     return projects.find((p) => p.id === projectId);
   }, [projectId, projects]);
 
-  const { data: projectDetails } = useGetProjectDetails(projectId || "");
   const isManagedCloudSubscription =
-    projectDetails?.type?.label === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
+    selectedProject?.type?.label ===
+    PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
   const excludeS0 = !isManagedCloudSubscription;
 
   /**
@@ -101,14 +89,12 @@ export default function Header({ onToggleSidebar }: HeaderProps): JSX.Element {
       if (project) {
         logger.debug(`Switching to project: ${project.name} (${project.id})`);
 
-        const subPath = location.pathname.split("/").slice(2).join("/");
-
-        navigate(`/${project.id}/${subPath || "dashboard"}`);
+        navigate(`/projects/${project.id}/dashboard`);
       } else {
         logger.warn(`Project with ID ${id} not found for switching`);
       }
     },
-    [projects, logger, location.pathname, navigate],
+    [projects, logger, navigate],
   );
 
   return (

@@ -82,7 +82,7 @@ export default function NoveraChatPage(): JSX.Element {
 
   const handleBack = () => {
     if (projectId) {
-      navigate(`/${projectId}/support`);
+      navigate(`/projects/${projectId}/support`);
     } else {
       navigate(-1);
     }
@@ -105,13 +105,17 @@ export default function NoveraChatPage(): JSX.Element {
     () => urlConversationId ?? conversationResponse?.conversationId ?? null,
   );
 
-  const { data: conversationHistory, isLoading: isLoadingHistory } =
-    useGetConversationMessages(urlConversationId || "", { pageSize: 50 });
+  const {
+    data: conversationHistory,
+    isLoading: isLoadingHistory,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetConversationMessages(urlConversationId || "", { pageSize: 10 });
   const [isCreateCaseLoading, setIsCreateCaseLoading] = useState(false);
   const [isWaitingForClassification, setIsWaitingForClassification] =
     useState(false);
   const [messages, setMessages] = useState<Message[]>(() => {
-    
     if (urlConversationId) {
       return [];
     }
@@ -168,7 +172,14 @@ export default function NoveraChatPage(): JSX.Element {
         (page) => page.comments,
       );
 
-      const convertedMessages: Message[] = allMessages.map((msg, index) => {
+      const convertedMessages: Message[] = allMessages
+        .slice()
+        .sort((a, b) => {
+          const aT = a.createdOn ? new Date(a.createdOn).getTime() : 0;
+          const bT = b.createdOn ? new Date(b.createdOn).getTime() : 0;
+          return aT - bT;
+        })
+        .map((msg, index) => {
         // Determine if message is from bot (same logic as ConversationDetailsPage)
         const isBot =
           msg.type?.toLowerCase() === "bot" ||
@@ -195,7 +206,7 @@ export default function NoveraChatPage(): JSX.Element {
       projectId
     ) {
       navigate(
-        `/${projectId}/support/chat/${conversationResponse.conversationId}`,
+        `/projects/${projectId}/support/chat/${conversationResponse.conversationId}`,
         { replace: true },
       );
     }
@@ -221,16 +232,16 @@ export default function NoveraChatPage(): JSX.Element {
             region: DEFAULT_CONVERSATION_REGION,
             tier: DEFAULT_CONVERSATION_TIER,
           });
-          navigate(`/${projectId}/support/chat/create-case`, {
+          navigate(`/projects/${projectId}/support/chat/create-case`, {
             state: { messages, classificationResponse, conversationId },
           });
         } catch {
-          navigate(`/${projectId}/support/chat/create-case`, {
+          navigate(`/projects/${projectId}/support/chat/create-case`, {
             state: { messages, conversationId },
           });
         }
       } else {
-        navigate(`/${projectId}/support/chat/create-case`, {
+        navigate(`/projects/${projectId}/support/chat/create-case`, {
           state: { messages, conversationId },
         });
       }
@@ -336,7 +347,7 @@ export default function NoveraChatPage(): JSX.Element {
         setConversationId(response.conversationId);
         // Update URL with conversationId so it persists on refresh
         if (!urlConversationId && projectId) {
-          navigate(`/${projectId}/support/chat/${response.conversationId}`, {
+          navigate(`/projects/${projectId}/support/chat/${response.conversationId}`, {
             replace: true,
           });
         }
@@ -399,8 +410,12 @@ export default function NoveraChatPage(): JSX.Element {
           overflow: "visible",
         }}
       >
-        <Box sx={{ mt: -3, mx: -3 }}>
-          <ChatHeader onBack={handleBack} />
+        <Box sx={{ mt: -1.5, mx: -3 }}>
+          <ChatHeader
+            onBack={handleBack}
+            onCreateCase={handleCreateCase}
+            isCreateCaseLoading={isCreateCaseLoading}
+          />
         </Box>
 
         {/* Chat window */}
@@ -419,7 +434,12 @@ export default function NoveraChatPage(): JSX.Element {
               messages={messages}
               messagesEndRef={messagesEndRef}
               onCreateCase={handleCreateCase}
-              isCreateCaseLoading={isCreateCaseLoading}
+              onFetchOlder={
+                urlConversationId && hasNextPage && !isFetchingNextPage
+                  ? () => fetchNextPage()
+                  : undefined
+              }
+              isFetchingOlder={isFetchingNextPage}
             />
           )}
 
@@ -429,6 +449,8 @@ export default function NoveraChatPage(): JSX.Element {
             onSend={handleSendMessage}
             inputValue={inputValue}
             setInputValue={setInputValueAndRef}
+            onCreateCase={handleCreateCase}
+            isCreateCaseLoading={isCreateCaseLoading}
             isSending={isSending || isLoadingHistory}
             resetTrigger={resetTrigger}
           />

@@ -26,7 +26,7 @@ import {
 import ProjectInformationCard from "@components/project-details/project-overview/project-information/ProjectInformationCard";
 import ProjectStatisticsCard from "@components/project-details/project-overview/project-statistics/ProjectStatisticsCard";
 import ContactInfoCard from "@components/project-details/project-overview/contact-info/ContactInfoCard";
-import RecentActivityCard from "@components/project-details/project-overview/recent-activity/RecentActivityCard";
+import ServiceHoursAllocationsCard from "@components/project-details/project-overview/service-hours-allocations/ServiceHoursAllocationsCard";
 import ProjectDeployments from "@components/project-details/deployments/ProjectDeployments";
 import ProjectTimeTracking from "@components/project-details/time-tracking/ProjectTimeTracking";
 import useGetProjectDetails from "@api/useGetProjectDetails";
@@ -95,6 +95,7 @@ export default function ProjectDetails(): JSX.Element {
   const hideDeploymentsAndTimeTracking =
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
     projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
+  const hideServiceHoursAllocations = hideDeploymentsAndTimeTracking;
 
   const visibleTabs = useMemo(
     () =>
@@ -153,14 +154,15 @@ export default function ProjectDetails(): JSX.Element {
                   isError={!!projectError}
                 />
               </Grid>
-              <Grid size={{ xs: 12, md: 6 }}>
-                <RecentActivityCard
-                  activity={stats?.recentActivity}
-                  projectTypeLabel={projectTypeLabel}
-                  isLoading={(isDetailsLoading || !stats) && !statsError}
-                  isError={!!statsError}
-                />
-              </Grid>
+              {!hideServiceHoursAllocations && (
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <ServiceHoursAllocationsCard
+                    project={project}
+                    isLoading={(isDetailsLoading || !project) && !projectError}
+                    isError={!!projectError}
+                  />
+                </Grid>
+              )}
             </Grid>
           </Box>
         );
@@ -171,7 +173,14 @@ export default function ProjectDetails(): JSX.Element {
           </Box>
         );
       case "time-tracking":
-        return <ProjectTimeTracking projectId={projectId || ""} />;
+        return (
+          <ProjectTimeTracking
+            projectId={projectId || ""}
+            project={project}
+            isProjectLoading={(isDetailsLoading || !project) && !projectError}
+            isProjectError={!!projectError}
+          />
+        );
       default:
         return null;
     }

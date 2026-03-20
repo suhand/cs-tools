@@ -960,7 +960,7 @@ export function getStatusColor(label?: string): string {
     case CaseStatus.WAITING_ON_WSO2:
       return colors.green[500];
     case CaseStatus.SOLUTION_PROPOSED:
-      return colors.yellow[800];
+      return colors.yellow[900];
     case CaseStatus.CLOSED:
       return colors.red[500];
     case CaseStatus.REOPENED:
@@ -1105,11 +1105,14 @@ export function replaceInlineImageSources(
   inlineAttachments?: InlineAttachment[] | null,
 ): string {
   if (!html || typeof html !== "string") return "";
+
+  const normalizedHtml = html.replace(/\\\//g, "/");
+
   if (!inlineAttachments?.length) {
-    return DOMPurify.sanitize(html);
+    return DOMPurify.sanitize(normalizedHtml);
   }
 
-  const replaced = html.replace(
+  const replaced = normalizedHtml.replace(
     /<img([^>]*?)\s+src\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))([^>]*)>/gi,
     (_match, before, doubleSrc, singleSrc, bareSrc, after) => {
       const src = (doubleSrc ?? singleSrc ?? bareSrc ?? "") as string;
@@ -1265,7 +1268,7 @@ export function getAvailableCaseActions(
       return ["Open Related Case"];
 
     case CaseStatus.SOLUTION_PROPOSED.toLowerCase():
-      return ["Closed", "Accept Solution", "Reject Solution"];
+      return ["Accept Solution", "Reject Solution"];
 
     case CaseStatus.AWAITING_INFO.toLowerCase():
       return ["Closed", "Waiting on WSO2"];

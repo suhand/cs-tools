@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { useParams, useNavigate, useSearchParams } from "react-router";
+import { useParams, useNavigate, useSearchParams, useLocation } from "react-router";
 import {
   useState,
   useMemo,
@@ -85,9 +85,11 @@ export type ServiceRequestStatusFilter =
  */
 export default function ServiceRequestsPage(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
   const { projectId } = useParams<{ projectId: string }>();
   const [searchParams] = useSearchParams();
   const createdByMe = searchParams.get("createdByMe") === "true";
+  const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] =
@@ -216,7 +218,7 @@ export default function ServiceRequestsPage(): JSX.Element {
   };
 
   const handleNewServiceRequest = () => {
-    navigate(`/${projectId}/support/service-requests/create`);
+    navigate(`/projects/${projectId}/${basePath}/service-requests/create`);
   };
 
   if (isCasesQueryError) {
@@ -229,7 +231,7 @@ export default function ServiceRequestsPage(): JSX.Element {
             sx={{ mb: 2 }}
             variant="text"
           >
-            Back to Support Center
+            Back
           </Button>
           <ErrorIndicator
             entityName="service requests"
@@ -256,10 +258,10 @@ export default function ServiceRequestsPage(): JSX.Element {
             sx={{ mb: 2 }}
             variant="text"
           >
-            Back to Support Center
+            Back
           </Button>
           <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            {createdByMe ? "My Service Requests" : "Service Requests"}
+            {createdByMe ? "My Service Requests" : "All Service Requests"}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {createdByMe
@@ -310,7 +312,7 @@ export default function ServiceRequestsPage(): JSX.Element {
         serviceRequests={paginatedServiceRequests}
         isLoading={isCasesAreaLoading}
         onServiceRequestClick={(sr) =>
-          navigate(`/${projectId}/support/service-requests/${sr.id}`)
+          navigate(`/projects/${projectId}/${basePath}/service-requests/${sr.id}`)
         }
       />
 
