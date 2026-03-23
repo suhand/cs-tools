@@ -100,7 +100,7 @@ export default function CaseDetailsPage(): JSX.Element {
         `/projects/${projectId}/security-center?tab=${SecurityTab.VULNERABILITIES}`,
       );
     } else {
-      navigate(`/projects/${projectId}/support/cases`);
+      navigate(-1);
     }
   };
 
