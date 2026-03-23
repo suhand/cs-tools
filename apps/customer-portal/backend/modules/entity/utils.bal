@@ -298,3 +298,22 @@ public isolated function validateAttachmentUpdatePayload(AttachmentUpdatePayload
 
     return;
 }
+
+# Validate change request update payload.
+#
+# + payload - Change request update payload
+# + return - Validation error message or null if valid
+public isolated function validateChangeRequestUpdatePayload(ChangeRequestUpdatePayload payload) returns string? {
+    DateTimeWithoutTimezone? plannedStartOn = payload?.plannedStartOn;
+    boolean? isCustomerApproved = payload?.isCustomerApproved;
+    boolean? isCustomerReviewed = payload?.isCustomerReviewed;
+
+    if plannedStartOn !is () && isCustomerApproved !is () && isCustomerReviewed !is () {
+        return "Only one field can be updated at a time.";
+    }
+    if plannedStartOn is () && isCustomerApproved is () && isCustomerReviewed is () {
+        return "At least one field must be provided for update.";
+    }
+
+    return;
+}

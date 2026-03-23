@@ -16,14 +16,14 @@
 import ballerina/http;
 
 configurable string productConsumptionBaseUrl = ?;
-configurable ClientAuthConfig clientAuthConfig = ?;
+configurable ClientAuthConfig clientCredentialsOauth2Config = ?;
 
 @display {
     label: "Product Consumption Subscription",
     id: "product-consumption-subscription"
 }
 final http:Client productConsumptionClient = check new (productConsumptionBaseUrl, {
-    auth: {...clientAuthConfig},
+    auth: {...clientCredentialsOauth2Config},
     httpVersion: http:HTTP_1_1,
     http1Settings: {keepAlive: http:KEEPALIVE_NEVER},
     timeout: 300.0,

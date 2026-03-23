@@ -1796,7 +1796,11 @@ public type DateTimeWithoutTimezone string;
 # Request payload for updating a change request.
 public type ChangeRequestUpdatePayload record {|
     # Planned start date and time (format: YYYY-MM-DD HH:MM:SS)
-    DateTimeWithoutTimezone plannedStartOn;
+    DateTimeWithoutTimezone plannedStartOn?;
+    # Customer approval status
+    boolean isCustomerApproved?;
+    # Customer review status
+    boolean isCustomerReviewed?;
 |};
 
 # Response from updating a change request.
