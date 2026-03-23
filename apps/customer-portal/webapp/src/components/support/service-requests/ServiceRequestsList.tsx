@@ -23,12 +23,7 @@ import {
   alpha,
   useTheme,
 } from "@wso2/oxygen-ui";
-import {
-  Calendar,
-  Layers,
-  Package,
-  Users,
-} from "@wso2/oxygen-ui-icons-react";
+import { Calendar, Layers, Package, Users } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
 import type { CaseListItem } from "@models/responses";
 import {
@@ -70,7 +65,7 @@ export default function ServiceRequestsList({
     return (
       <Box sx={{ textAlign: "center", py: 6 }}>
         <Typography variant="body1" color="text.secondary">
-          No service requests found.
+          No service requests found. Try adjusting your filters or search query.
         </Typography>
       </Box>
     );

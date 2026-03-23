@@ -44,6 +44,10 @@ export interface SupportOverviewCardProps {
   }>;
   sx?: SxProps<Theme>;
   isError?: boolean;
+  headerAction?: {
+    label: string;
+    onClick?: () => void;
+  };
 }
 
 /**
@@ -63,6 +67,7 @@ export default function SupportOverviewCard({
   footerButtons,
   sx,
   isError,
+  headerAction,
 }: SupportOverviewCardProps): JSX.Element {
   const theme = useTheme();
   const paletteKey = iconVariant === "blue" ? "info" : "warning";
@@ -98,7 +103,7 @@ export default function SupportOverviewCard({
         >
           <Icon size={20} color={iconColor} />
         </Paper>
-        <Box>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography variant="h6" color="text.primary">
             {title}
           </Typography>
@@ -106,6 +111,16 @@ export default function SupportOverviewCard({
             {subtitle}
           </Typography>
         </Box>
+        {headerAction && (
+          <Button
+            variant="outlined"
+            color="warning"
+            onClick={headerAction.onClick}
+            sx={{textTransform: "none", flexShrink: 0 }}
+          >
+            {headerAction.label}
+          </Button>
+        )}
       </Box>
 
       <Box

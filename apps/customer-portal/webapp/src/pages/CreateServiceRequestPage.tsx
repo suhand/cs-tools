@@ -36,6 +36,7 @@ import {
   type JSX,
 } from "react";
 import { useNavigate, useParams, useLocation } from "react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { useGetProjectDeployments } from "@api/useGetProjectDeployments";
 import { useGetDeploymentsProducts } from "@api/useGetDeploymentsProducts";
 import { useSearchCatalogs } from "@api/useSearchCatalogs";
@@ -61,6 +62,7 @@ import type { CreateServiceRequestPayload } from "@models/requests";
 import CatalogSelector from "@components/support/service-requests/CatalogSelector";
 import VariableFormFields from "@components/support/service-requests/VariableFormFields";
 import UploadAttachmentModal from "@components/support/case-details/attachments-tab/UploadAttachmentModal";
+import { ApiQueryKeys } from "@constants/apiConstants";
 
 /**
  * CreateServiceRequestPage - multi-step form to create a service request.
@@ -76,6 +78,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
   const { showLoader, hideLoader } = useLoader();
   const { showError } = useErrorBanner();
   const { showSuccess } = useSuccessBanner();
+  const queryClient = useQueryClient();
 
   const [deployment, setDeployment] = useState("");
   const [product, setProduct] = useState("");
@@ -305,13 +308,31 @@ export default function CreateServiceRequestPage(): JSX.Element {
     };
 
     postCase(payload, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         const srNumber = (data as { number?: string }).number;
         showSuccess(
           srNumber
             ? `Service request ${srNumber} created successfully`
             : "Service request created successfully",
         );
+
+        await Promise.all([
+          queryClient.refetchQueries({
+            queryKey: [ApiQueryKeys.CASES_STATS, projectId],
+            type: "active",
+          }),
+          queryClient.refetchQueries({
+            queryKey: [ApiQueryKeys.PROJECT_CASES],
+            type: "active",
+          }),
+          queryClient.invalidateQueries({
+            queryKey: [ApiQueryKeys.CASES_STATS, projectId],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: [ApiQueryKeys.PROJECT_CASES],
+          }),
+        ]);
+
         navigate(`/projects/${projectId}/${basePath}/service-requests/${data.id}`);
       },
       onError: (error) => {

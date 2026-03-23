@@ -184,6 +184,13 @@ export default function OperationsPage(): JSX.Element {
                   subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} service requests`}
                   icon={FileText}
                   iconVariant="orange"
+                  headerAction={{
+                    label: "Create Service Request",
+                    onClick: () =>
+                      navigate(
+                        `/projects/${projectId}/operations/service-requests/create`,
+                      ),
+                  }}
                   footerButtons={[
                     {
                       label: "View my requests",
