@@ -14,8 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { type JSX } from "react";
-import { Navigate } from "react-router";
+import { type JSX, useEffect } from "react";
 import { useAsgardeo } from "@asgardeo/react";
 import AppLayout from "@layouts/AppLayout";
 
@@ -27,10 +26,16 @@ import AppLayout from "@layouts/AppLayout";
  * @returns {JSX.Element} AppLayout or redirect to home.
  */
 export default function AuthGuard(): JSX.Element {
-  const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
+  const { isSignedIn, isLoading: isAuthLoading, signIn } = useAsgardeo();
+
+  useEffect(() => {
+    if (!isSignedIn && !isAuthLoading) {
+      void signIn();
+    }
+  }, [isSignedIn, isAuthLoading, signIn]);
 
   if (!isSignedIn && !isAuthLoading) {
-    return <Navigate to="/home" replace />;
+    return <AppLayout />;
   }
 
   return <AppLayout />;
