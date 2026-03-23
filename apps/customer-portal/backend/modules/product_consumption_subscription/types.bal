@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Client authentication configuration structure.
-public type ClientAuthConfig record {|
+# [Configurable] Client credentials grant type oauth2 configuration.
+public type ClientCredentialsOauth2Config record {|
     # Token URL
     string tokenUrl;
     # Client ID
@@ -24,7 +24,7 @@ public type ClientAuthConfig record {|
     string clientSecret;
 |};
 
-# ServiceNow response structure.
+# Result.
 public type Result record {|
     # Response message
     string message?;
@@ -34,7 +34,7 @@ public type Result record {|
     Data result;
 |};
 
-# ServiceNow response structure.
+# Data.
 public type Data record {|
     # Response message
     int status;

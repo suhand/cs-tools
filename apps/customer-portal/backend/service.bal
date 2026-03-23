@@ -3625,6 +3625,16 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
+        string? validateChangeRequestPayload = entity:validateChangeRequestUpdatePayload(payload);
+        if validateChangeRequestPayload is string {
+            log:printWarn(validateChangeRequestPayload);
+            return <http:BadRequest>{
+                body: {
+                    message: validateChangeRequestPayload
+                }
+            };
+        }
+
         entity:ChangeRequestUpdateResponse|error response = entity:updateChangeRequest(userInfo.idToken, id, payload);
         if response is error {
             if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
