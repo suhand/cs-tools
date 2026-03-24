@@ -5131,6 +5131,7 @@ components:
           phoneNumber:
             type: string
             description: Phone number of the user
+            nullable: true
           lastPasswordUpdateTime:
             type: string
             description: Last password update time
