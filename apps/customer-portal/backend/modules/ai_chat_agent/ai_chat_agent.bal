@@ -94,12 +94,12 @@ public isolated function getSummary(string projectId, string conversationId) ret
 # + sessionId - Conversation/session ID used to route to the upstream Python session
 # + payload - Raw JSON string (user_message) to forward to the upstream agent
 # + caller - The browser WebSocket caller to forward events back to
-# + return - The final event payload as JSON for further processing, or error
-public isolated function streamChat(string sessionId, string payload, websocket:Caller caller) returns json|error {
+# + return - The final event payload as a map of JSON for further processing, or error
+public isolated function streamChat(string sessionId, string payload, websocket:Caller caller) returns map<json>|error {
     websocket:Client agentClient = check createAiChatAgentWsClient(sessionId);
     check agentClient->writeTextMessage(payload);
     boolean upstreamClosed = false;
-    json finalPayload = ();
+    map<json> finalPayload = {};
     while true {
         string|error event = agentClient->readTextMessage();
         if event is error {
@@ -125,12 +125,13 @@ public isolated function streamChat(string sessionId, string payload, websocket:
             log:printError("Failed to parse upstream event as JSON", parsed);
         }
         if parsed is map<json> {
-            string evtType = (parsed["type"] ?: "").toString();
-            if evtType == "final" {
-                finalPayload = parsed["payload"] ?: parsed;
+            string evtType = (parsed[EVENT_TYPE_KEY] ?: "").toString();
+            if evtType == EVENT_FINAL {
+                json eventPayload = parsed[EVENT_PAYLOAD_KEY] ?: parsed;
+                finalPayload = eventPayload is map<json> ? eventPayload : parsed;
                 break;
             }
-            if evtType == "error" {
+            if evtType == EVENT_ERROR {
                 break;
             }
         }

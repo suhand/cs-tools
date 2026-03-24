@@ -4591,7 +4591,6 @@ isolated service class WsProxyService {
             existingConversationId = self.conversationId;
         }
         if existingConversationId is () {
-
             string clientConvId = (parsed is map<json> ? (parsed["conversationId"] ?: "").toString() : "");
             log:printDebug(string `Parsed conversationId from payload: '${clientConvId}'`);
             if clientConvId.length() > 0 {
@@ -4641,9 +4640,9 @@ isolated service class WsProxyService {
         } else {
             enrichedPayload = data;
         }
-
-        log:printInfo(string `Streaming chat for session: ${sessionId}`);
-        json|error result = ai_chat_agent:streamChat(sessionId, enrichedPayload, caller);
+        
+        // Stream the conversation message to the upstream AI chat agent and get the final response
+        map<json>|error result = ai_chat_agent:streamChat(sessionId, enrichedPayload, caller);
         lock {
             self.streaming = false;
         }
@@ -4656,53 +4655,55 @@ isolated service class WsProxyService {
             }
             return;
         }
-        if result is map<json> {
-            entity:CommentCreateResponse|error userCommentResponse = entity:createComment(self.idToken,
+        // Post-stream processing: persist conversation comments and update state based on the final AI response
+
+        // Save the user query under comments
+        entity:CommentCreateResponse|error userCommentResponse = entity:createComment(self.idToken,
+                {
+                    referenceId: conversationId,
+                    referenceType: entity:CONVERSATION,
+                    content: userMessage,
+                    'type: entity:COMMENTS,
+                    createdBy: self.userEmail
+                });
+        if userCommentResponse is error {
+            log:printError("Failed to save user message as comment.", userCommentResponse);
+        } else {
+            log:printDebug(string `Saved user message as comment for conversation ID: ${conversationId}`);
+        }
+
+        // Save the AI agent response under comments
+        string responseMessage = (result["message"] ?: "").toString();
+        if responseMessage.length() > 0 {
+            entity:CommentCreateResponse|error agentCommentResponse = entity:createComment(self.idToken,
                     {
                         referenceId: conversationId,
                         referenceType: entity:CONVERSATION,
-                        content: userMessage,
+                        content: responseMessage,
                         'type: entity:COMMENTS,
-                        createdBy: self.userEmail
+                        createdBy: entity:CHAT_SENT_AGENT
                     });
-            if userCommentResponse is error {
-                log:printError("Failed to save user message as comment.", userCommentResponse);
+            if agentCommentResponse is error {
+                log:printError("Failed to save chat response as comment.", agentCommentResponse);
             } else {
-                log:printDebug(string `Saved user message as comment for conversation ID: ${conversationId}`);
+                log:printDebug(string `Saved AI agent response as comment for conversation ID: ${
+                        conversationId}`);
             }
+        }
 
-            string responseMessage = (result["message"] ?: "").toString();
-            if responseMessage.length() > 0 {
-                entity:CommentCreateResponse|error agentCommentResponse = entity:createComment(self.idToken,
-                        {
-                            referenceId: conversationId,
-                            referenceType: entity:CONVERSATION,
-                            content: responseMessage,
-                            'type: entity:COMMENTS,
-                            createdBy: entity:CHAT_SENT_AGENT
-                        });
-                if agentCommentResponse is error {
-                    log:printError("Failed to save chat response as comment.", agentCommentResponse);
-                } else {
-                    log:printDebug(string `Saved AI agent response as comment for conversation ID: ${
-                            conversationId}`);
-                }
-            }
-
-            // Update conversation state if issue is resolved
-            json resolvedVal = result["resolved"] ?: ();
-            if resolvedVal is boolean && resolvedVal {
-                log:printInfo(string `Issue resolved for conversation ID: ${conversationId}, updating state`);
-                entity:ConversationUpdateResponse|error conversationUpdateResponse =
-                        entity:updateConversation(self.idToken, conversationId,
-                        {stateKey: entity:RESOLVED});
-                if conversationUpdateResponse is error {
-                    string customError = "Failed to update conversation state to resolved.";
-                    log:printError(customError, conversationUpdateResponse);
-                } else {
-                    log:printDebug(string `Updated conversation state to resolved for conversation ID: ${
-                            conversationId}`);
-                }
+        // Update conversation state if issue is resolved
+        json resolvedVal = result["resolved"] ?: ();
+        if resolvedVal is boolean && resolvedVal {
+            log:printInfo(string `Issue resolved for conversation ID: ${conversationId}, updating state`);
+            entity:ConversationUpdateResponse|error conversationUpdateResponse =
+                    entity:updateConversation(self.idToken, conversationId,
+                    {stateKey: entity:RESOLVED});
+            if conversationUpdateResponse is error {
+                string customError = "Failed to update conversation state to resolved.";
+                log:printError(customError, conversationUpdateResponse);
+            } else {
+                log:printDebug(string `Updated conversation state to resolved for conversation ID: ${
+                        conversationId}`);
             }
         }
     }
