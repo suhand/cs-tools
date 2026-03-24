@@ -101,6 +101,13 @@ export type CaseStatus = (typeof CaseStatus)[keyof typeof CaseStatus];
 export const SUPPORT_STATE_CLOSED = CaseStatus.CLOSED;
 export const SUPPORT_STATE_AWAITING_INFO = CaseStatus.AWAITING_INFO;
 export const SUPPORT_STATE_WAITING_ON_WSO2 = CaseStatus.WAITING_ON_WSO2;
+export const CALL_SCHEDULABLE_CASE_STATUSES: CaseStatus[] = [
+  CaseStatus.WORK_IN_PROGRESS,
+  CaseStatus.AWAITING_INFO,
+  CaseStatus.WAITING_ON_WSO2,
+  CaseStatus.SOLUTION_PROPOSED,
+  CaseStatus.REOPENED,
+];
 
 // Call request status types.
 export const CallRequestStatus = {

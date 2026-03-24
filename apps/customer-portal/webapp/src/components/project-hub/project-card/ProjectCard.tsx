@@ -22,6 +22,7 @@ import ProjectCardActions from "@components/project-hub/project-card/ProjectCard
 import ProjectCardBadges from "@components/project-hub/project-card/ProjectCardBadges";
 import ProjectCardInfo from "@components/project-hub/project-card/ProjectCardInfo";
 import ProjectCardStats from "@components/project-hub/project-card/ProjectCardStats";
+import { setLastSelectedProjectId } from "@utils/settingsStorage";
 
 // Props for the ProjectCard component.
 export interface ProjectCardProps {
@@ -58,6 +59,7 @@ export default function ProjectCard({
   const { hideLoader } = useLoader();
 
   const handleViewDashboard = () => {
+    setLastSelectedProjectId(id);
     if (onViewDashboard) {
       onViewDashboard();
     } else {

@@ -34,13 +34,18 @@ import MissingTimezoneDialog from "@case-details-calls/MissingTimezoneDialog";
 import UserProfileModal from "@components/common/header/UserProfileModal";
 import ErrorBanner from "@components/common/error-banner/ErrorBanner";
 import SuccessBanner from "@components/common/success-banner/SuccessBanner";
-import { CALL_REQUEST_STATE_CANCELLED } from "@constants/supportConstants";
+import {
+  CALL_REQUEST_STATE_CANCELLED,
+  CALL_SCHEDULABLE_CASE_STATUSES,
+  type CaseStatus,
+} from "@constants/supportConstants";
 import { ERROR_BANNER_TIMEOUT_MS } from "@constants/errorBannerConstants";
 
 export interface CallsPanelProps {
   projectId: string;
   caseId: string;
   isCaseClosed?: boolean;
+  caseStatusLabel?: string;
 }
 
 /**
@@ -53,7 +58,15 @@ export default function CallsPanel({
   projectId,
   caseId,
   isCaseClosed = false,
+  caseStatusLabel,
 }: CallsPanelProps): JSX.Element {
+  const isSchedulingAllowed = useMemo(() => {
+    if (!caseStatusLabel) return false;
+    return CALL_SCHEDULABLE_CASE_STATUSES.includes(caseStatusLabel as CaseStatus);
+  }, [caseStatusLabel]);
+
+  const disableCallActions = isCaseClosed || !isSchedulingAllowed;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editCall, setEditCall] = useState<CallRequest | null>(null);
   const [deleteCall, setDeleteCall] = useState<CallRequest | null>(null);
@@ -180,7 +193,7 @@ export default function CallsPanel({
       patchCallRequest.mutate(
         {
           callRequestId: deleteCall.id,
-          reason: reason.trim(),
+          cancellationReason: reason.trim(),
           stateKey: cancelStateKey,
         },
       {
@@ -233,7 +246,7 @@ export default function CallsPanel({
       color="primary"
       startIcon={<PhoneCall size={16} />}
       onClick={handleOpenModal}
-      disabled={isCaseClosed}
+      disabled={disableCallActions}
     >
       Request Call
     </Button>
@@ -269,10 +282,10 @@ export default function CallsPanel({
           <CallRequestList
             requests={callRequests}
             userTimeZone={userTimeZone}
-            onEditClick={handleEditClick}
-            onDeleteClick={handleDeleteClick}
-            onApproveClick={handleApproveClick}
-            onRejectClick={handleRejectClick}
+            onEditClick={disableCallActions ? undefined : handleEditClick}
+            onDeleteClick={disableCallActions ? undefined : handleDeleteClick}
+            onApproveClick={disableCallActions ? undefined : handleApproveClick}
+            onRejectClick={disableCallActions ? undefined : handleRejectClick}
           />
           {hasNextPage && (
             <Button

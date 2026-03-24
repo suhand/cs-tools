@@ -56,7 +56,10 @@ export default function Brand({
 
   return (
     <HeaderUI.Brand
-      onClick={() => !isNavigationDisabled && navigate("/")}
+      onClick={() =>
+        !isNavigationDisabled &&
+        navigate("/", { state: { fromHeader: true } })
+      }
       sx={{ cursor: isNavigationDisabled ? "default" : "pointer" }}
     >
       {/* brand logo */}
