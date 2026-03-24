@@ -175,10 +175,13 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         scim:User[]|error userResults = scim:searchUsers(userInfo.email);
         if userResults is error {
             // Log the error and return nil
-            log:printError("Error retrieving user phone number from scim service", userResults);
+            log:printError("Error retrieving user phone number and last password update time from scim service",
+                    userResults);
         } else {
             if userResults.length() == 0 {
-                log:printError(string `No user found while searching phone number for user: ${userInfo.userId}`);
+                log:printError(string
+                        `No user found while searching phone number and last password update time for user: ${
+                        userInfo.userId}`);
             } else {
                 phoneNumber = scim:processPhoneNumber(userResults[0]);
                 lastPasswordUpdateTime = scim:processLastPasswordUpdateTime(userResults[0]);
@@ -967,7 +970,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
 
         return {
             ongoingCases: ongoingCases is int ? ongoingCases : (),
-            activeChats: 
+            activeChats:
                 conversationStats is entity:ProjectConversationStatsResponse ? conversationStats.activeCount : (),
             sessionChats: mappedConversationStats.sessionCount,
             resolvedChats: mappedConversationStats.resolvedCount
@@ -1473,7 +1476,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     }
 
     # Get Conversation summary for a project.
-    # 
+    #
     # + Id - ID of the project
     # + conversationId - ID of the conversation
     # + return - Conversation summary or error
@@ -1550,6 +1553,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
 
         return summaryResponse;
     }
+
     # Add a message to an existing conversation and get response using AI chat agent.
     #
     # + projectId - ID of the project
@@ -2204,7 +2208,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + limit - Number of products to retrieve
     # + return - Deployed products response or error response
     resource function get deployments/[entity:IdString id]/products(http:RequestContext ctx,
-        int offset = DEFAULT_OFFSET, int 'limit = DEFAULT_LIMIT)
+            int offset = DEFAULT_OFFSET, int 'limit = DEFAULT_LIMIT)
         returns types:DeployedProductsResponse|http:BadRequest|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
@@ -4323,7 +4327,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             }
             if getStatusCode(projectResponse) == http:STATUS_NOT_FOUND {
                 log:printWarn(string `Project with ID: ${tokenInformation.snProjectId} not found for user: ${
-                    userInfo.userId}`);
+                        userInfo.userId}`);
                 return <http:NotFound>{
                     body: {
                         message: "The requested token does not exist or you don't have access to it."
@@ -4454,7 +4458,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + deploymentId - ID of the deployment
     # + return - Change request details object or Error
     isolated resource function post projects/[string projectId]/deployments/[string deploymentId]/license
-        (http:RequestContext ctx)returns product_consumption_subscription:License|http:InternalServerError
+            (http:RequestContext ctx) returns product_consumption_subscription:License|http:InternalServerError
             |http:Unauthorized|http:Forbidden|http:NotFound {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);

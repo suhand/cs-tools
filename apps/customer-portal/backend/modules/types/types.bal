@@ -207,7 +207,7 @@ public type CaseSearchResponse record {|
 public type User record {|
     *entity:UserResponse;
     # Phone number of the user
-    string phoneNumber?;
+    string? phoneNumber?;
     # Last password update time
     string? lastPasswordUpdateTime?;
 |};
