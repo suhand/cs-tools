@@ -394,6 +394,8 @@ public type ReferenceTableItem record {|
     string? number?;
     # Count value
     int count?;
+    # Abbreviation
+    string? abbreviation?;
     json...;
 |};
 

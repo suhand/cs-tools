@@ -173,6 +173,8 @@ public type ReferenceItem record {|
     int count?;
     # Number
     string? number?;
+    # Abbreviation
+    string? abbreviation?;
 |};
 
 # Case metadata information.
