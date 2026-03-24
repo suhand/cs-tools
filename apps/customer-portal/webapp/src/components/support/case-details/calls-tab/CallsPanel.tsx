@@ -180,7 +180,7 @@ export default function CallsPanel({
       patchCallRequest.mutate(
         {
           callRequestId: deleteCall.id,
-          reason: reason.trim(),
+          cancellationReason: reason.trim(),
           stateKey: cancelStateKey,
         },
       {
