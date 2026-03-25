@@ -2706,6 +2706,7 @@ components:
           slaResponseTime:
             type: string
             description: SLA response time
+            nullable: true
           project:
             description: Project
             nullable: true
@@ -4674,9 +4675,9 @@ components:
           type: integer
           description: Active chats count
           format: int64
-        sessionChats:
+        resolvedPast30DaysCasesCount:
           type: integer
-          description: Session chats count
+          description: Resolved past 30 days cases count
           format: int64
         resolvedChats:
           type: integer
