@@ -415,7 +415,7 @@ public type ProjectSupportStats record {|
     # Active chats count
     int activeChats?;
     # Resolved past 30 days cases count
-    int resolvedPast30DaysChatsCount?;
+    int resolvedPast30DaysCasesCount?;
     # Resolved chats count
     int resolvedChats?;
 |};

@@ -970,7 +970,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             ongoingCases: caseStats is entity:ProjectCaseStatsResponse ? caseStats.activeCount : (),
             activeChats:
                 conversationStats is entity:ProjectConversationStatsResponse ? conversationStats.activeCount : (),
-            resolvedPast30DaysChatsCount:
+            resolvedPast30DaysCasesCount:
                 caseStats is entity:ProjectCaseStatsResponse ? caseStats.resolvedCount.pastThirtyDays : (),
             resolvedChats: mappedConversationStats.resolvedCount
         };
