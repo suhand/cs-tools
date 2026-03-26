@@ -25,3 +25,5 @@ export const NOVERA_INITIAL_WELCOME_TEXT =
 
 export const CHAT_TYPING_INTERVAL_MS = 165;
 export const CHAT_TYPING_CHARS_PER_TICK = 6;
+
+export const VISIBILITY_EVENT_LISTENER = "visibilitychange";
