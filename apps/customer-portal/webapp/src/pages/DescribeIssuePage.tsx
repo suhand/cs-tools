@@ -19,7 +19,6 @@ import {
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Stack,
   Typography,
 } from "@wso2/oxygen-ui";
@@ -52,6 +51,7 @@ export default function DescribeIssuePage(): JSX.Element {
   const { showError } = useErrorBanner();
   const [value, setValue] = useState("");
   const [isLoadingAfterClick, setIsLoadingAfterClick] = useState(false);
+  const [isCreatingCase, setIsCreatingCase] = useState(false);
 
   const { data: projectDeployments } = useGetProjectDeployments(
     projectId || "",
@@ -113,13 +113,13 @@ export default function DescribeIssuePage(): JSX.Element {
 
   const handleCreateCase = useCallback(() => {
     if (!projectId) return;
+    setIsCreatingCase(true);
     navigate(`/projects/${projectId}/support/chat/create-case`, {
       state: { skipChat: true },
     });
   }, [projectId, navigate]);
 
-  const isSubmitDisabled =
-    !projectId || !plainText.trim();
+  const isSubmitDisabled = !projectId || !plainText.trim();
 
   return (
     <Box
@@ -215,24 +215,21 @@ export default function DescribeIssuePage(): JSX.Element {
                 color="primary"
                 startIcon={<PlusCircle size={18} />}
                 onClick={handleCreateCase}
-                disabled={!projectId}
+                loading={isCreatingCase}
+                loadingPosition="start"
               >
                 Create Case
               </Button>
               <Button
                 variant="contained"
                 color="warning"
-                startIcon={
-                  isLoadingAfterClick ? (
-                    <CircularProgress color="inherit" size={18} />
-                  ) : (
-                    <Send size={18} />
-                  )
-                }
+                startIcon={<Send size={18} />}
                 onClick={handleSubmit}
+                loading={isLoadingAfterClick}
+                loadingPosition="start"
                 disabled={isSubmitDisabled}
               >
-                {isLoadingAfterClick ? "Getting help…" : "Submit & Get Help"}
+                Submit & Get Help
               </Button>
             </Box>
           </Stack>
