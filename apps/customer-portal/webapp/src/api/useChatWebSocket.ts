@@ -210,12 +210,6 @@ export function useChatWebSocket(options: UseChatWebSocketOptions) {
         ws.onmessage = (event) => {
           void (async () => {
             let raw = await decodeWebSocketData(event.data);
-
-            // Some gateways batch multiple JSON events into a single WS message:
-            // - newline delimited:  {...}\n{...}\n{...}
-            // - CRLF delimited:     {...}\r\n{...}
-            // - concatenated:       {...}{...}{...}
-            // Normalize common delimiters to "\n" to allow splitting.
             raw = raw.replace(/\r\n/g, "\n");
             raw = raw.replace(/\}\s*\{/g, "}\n{");
 
