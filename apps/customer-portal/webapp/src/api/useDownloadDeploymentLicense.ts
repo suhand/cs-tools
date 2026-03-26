@@ -56,7 +56,10 @@ export function useDownloadDeploymentLicense(): UseMutationResult<
     window.URL.revokeObjectURL(url);
   };
 
-  const extractBackendError = (response: Response, responseText: string): string => {
+  const extractBackendError = (
+    response: Response,
+    responseText: string,
+  ): string => {
     try {
       const jsonError = JSON.parse(responseText);
       if (jsonError.message) {
@@ -121,7 +124,8 @@ export function useDownloadDeploymentLicense(): UseMutationResult<
       }
     },
     onError: (error) => {
-      const errorMessage = error instanceof Error ? error.message : "Failed to download license";
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to download license";
       showError(errorMessage);
     },
   });
