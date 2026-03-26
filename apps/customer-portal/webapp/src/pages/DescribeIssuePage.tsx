@@ -22,7 +22,7 @@ import {
   Stack,
   Typography,
 } from "@wso2/oxygen-ui";
-import { ArrowLeft, Send, PlusCircle } from "@wso2/oxygen-ui-icons-react";
+import { ArrowLeft, Send } from "@wso2/oxygen-ui-icons-react";
 import { useState, useRef, useCallback, useMemo, type JSX } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import Editor from "@components/common/rich-text-editor/Editor";
@@ -51,7 +51,6 @@ export default function DescribeIssuePage(): JSX.Element {
   const { showError } = useErrorBanner();
   const [value, setValue] = useState("");
   const [isLoadingAfterClick, setIsLoadingAfterClick] = useState(false);
-  const [isCreatingCase, setIsCreatingCase] = useState(false);
 
   const { data: projectDeployments } = useGetProjectDeployments(
     projectId || "",
@@ -110,14 +109,6 @@ export default function DescribeIssuePage(): JSX.Element {
     navigate,
     showError,
   ]);
-
-  const handleCreateCase = useCallback(() => {
-    if (!projectId) return;
-    setIsCreatingCase(true);
-    navigate(`/projects/${projectId}/support/chat/create-case`, {
-      state: { skipChat: true },
-    });
-  }, [projectId, navigate]);
 
   const isSubmitDisabled = !projectId || !plainText.trim();
 
@@ -210,16 +201,6 @@ export default function DescribeIssuePage(): JSX.Element {
                 flexShrink: 0,
               }}
             >
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<PlusCircle size={18} />}
-                onClick={handleCreateCase}
-                loading={isCreatingCase}
-                loadingPosition="start"
-              >
-                Create Case
-              </Button>
               <Button
                 variant="contained"
                 color="warning"
