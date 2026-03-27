@@ -264,8 +264,7 @@ export const SUPPORT_STAT_CONFIGS: SupportStatConfig[] = [
     icon: FileCheck,
     iconColor: "success",
     key: "resolvedRecently",
-    label: "Resolved Recently",
-    secondaryIcon: Bot,
+    label: "Resolved Recently (Last 30d)",
   },
   {
     icon: CircleCheck,
