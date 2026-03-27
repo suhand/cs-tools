@@ -177,7 +177,7 @@ export interface CaseCreationMetadata {
 export interface ProjectSupportStats {
   ongoingCases: number;
   resolvedRecently: number;
-  resolvedChats: number;
+  resolvedPast30DaysCasesCount: number;
   activeChats: number;
 }
 

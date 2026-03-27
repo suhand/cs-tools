@@ -43,6 +43,7 @@ import {
   CHAT_TYPING_INTERVAL_MS,
   NOVERA_ANALYZING_PLACEHOLDER_TEXT,
   NOVERA_INITIAL_WELCOME_TEXT,
+  VISIBILITY_EVENT_LISTENER,
 } from "@constants/chatConstants";
 import {
   formatChatHistoryForClassification,
@@ -191,10 +192,10 @@ export default function NoveraChatPage(): JSX.Element {
     };
 
     // Listen for visibility changes (when user returns to tab)
-    document.addEventListener("visibilitychange", handleRefetch);
+    document.addEventListener(VISIBILITY_EVENT_LISTENER, handleRefetch);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleRefetch);
+      document.removeEventListener(VISIBILITY_EVENT_LISTENER, handleRefetch);
     };
   }, [urlConversationId, refetchMessages]);
 
