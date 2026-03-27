@@ -263,7 +263,7 @@ export const SUPPORT_STAT_CONFIGS: SupportStatConfig[] = [
   {
     icon: FileCheck,
     iconColor: "success",
-    key: "resolvedRecently",
+    key: "resolvedPast30DaysCasesCount",
     label: "Resolved Recently (Last 30d)",
   },
   {
@@ -458,11 +458,6 @@ export const ALL_CASES_FILTER_DEFINITIONS: AllCasesFilterDefinition[] = [
     filterKey: "issueTypes",
     id: "category",
     metadataKey: "issueTypes",
-  },
-  {
-    filterKey: "caseTypeId",
-    id: "caseType",
-    metadataKey: "caseTypes",
   },
   {
     filterKey: "deploymentId",

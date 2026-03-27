@@ -95,9 +95,7 @@ export default function AllCasesPage(): JSX.Element {
   const caseSearchRequest = useMemo(
     () => ({
       filters: {
-        caseTypes: filters.caseTypeId
-          ? [filters.caseTypeId]
-          : [CaseType.DEFAULT_CASE],
+        caseTypes: [CaseType.DEFAULT_CASE],
         statusIds: filters.statusId ? [Number(filters.statusId)] : undefined,
         severityId: filters.severityId ? Number(filters.severityId) : undefined,
         issueId: filters.issueTypes ? Number(filters.issueTypes) : undefined,
@@ -162,7 +160,7 @@ export default function AllCasesPage(): JSX.Element {
       return [];
     }
     return data.pages[requestedPageIndex]?.cases ?? [];
-  }, [data, page, isFetchingNextPage]);
+  }, [data, page]);
 
   const apiTotalRecords = data?.pages?.[0]?.totalRecords ?? 0;
 
