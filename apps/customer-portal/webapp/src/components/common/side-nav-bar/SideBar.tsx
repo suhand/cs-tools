@@ -60,12 +60,12 @@ export default function SideBar({
   );
 
   const navItems = useMemo(() => {
-    if (projectTypeLabel && !permissions.hasOperations) {
+    if (!permissions.hasOperations) {
       return APP_SHELL_NAV_ITEMS.filter((item) => item.id !== "operations");
     }
 
     return APP_SHELL_NAV_ITEMS;
-  }, [projectTypeLabel, permissions.hasOperations]);
+  }, [permissions.hasOperations]);
 
   return (
     <Sidebar
