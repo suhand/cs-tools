@@ -33,7 +33,7 @@ import useGetProjectCases from "@api/useGetProjectCases";
 import useGetChangeRequests from "@api/useGetChangeRequests";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import { useGetProjectChangeRequestsStats } from "@api/useGetProjectChangeRequestsStats";
-import { PROJECT_TYPE_LABELS } from "@constants/projectDetailsConstants";
+import { getProjectPermissions } from "@utils/subscriptionUtils";
 
 /**
  * OperationsPage component. Displays operations statistics,
@@ -48,15 +48,10 @@ export default function OperationsPage(): JSX.Element {
     projectId || "",
   );
   const projectTypeLabel = project?.type?.label;
+  const permissions = getProjectPermissions(projectTypeLabel);
 
-  const isManagedCloudSubscription =
-    projectTypeLabel === PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
-  const isCloudSupport =
-    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
-    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT;
-
-  const isServiceRequestEnabled = isManagedCloudSubscription || isCloudSupport;
-  const isChangeRequestEnabled = isManagedCloudSubscription;
+  const isServiceRequestEnabled = permissions.hasSR;
+  const isChangeRequestEnabled = permissions.hasCR;
 
   const {
     data: srData,
