@@ -47,6 +47,7 @@ export default function OperationsPage(): JSX.Element {
   const { data: project, isLoading: isProjectLoading } = useGetProjectDetails(
     projectId || "",
   );
+  const permissionsResolved = !isProjectLoading && !!project;
   const projectTypeLabel = project?.type?.label;
   const permissions = getProjectPermissions(projectTypeLabel);
 
@@ -143,6 +144,9 @@ export default function OperationsPage(): JSX.Element {
     (isChangeRequestEnabled && isCrStatsError);
 
   const operationsStatConfigs = useMemo(() => {
+    if (!permissionsResolved) {
+      return OPERATIONS_STAT_CONFIGS;
+    }
     if (!isServiceRequestEnabled && !isChangeRequestEnabled) {
       return [];
     }
@@ -153,19 +157,25 @@ export default function OperationsPage(): JSX.Element {
         (isChangeRequestEnabled ||
           (c.key !== "activeChangeRequests" && c.key !== "upcomingChanges")),
     );
-  }, [isServiceRequestEnabled, isChangeRequestEnabled]);
+  }, [
+    permissionsResolved,
+    isServiceRequestEnabled,
+    isChangeRequestEnabled,
+  ]);
 
   const overviewGridSize =
     isServiceRequestEnabled && isChangeRequestEnabled
       ? { xs: 12, lg: 6 }
       : { xs: 12, lg: 12 };
 
+  const loadingOverviewGridSize = { xs: 12, lg: 6 };
+
   return (
     <Stack spacing={3}>
       <Box>
         <SupportStatGrid<OperationsStatKey>
           isLoading={
-            isProjectLoading ||
+            !permissionsResolved ||
             (stats === undefined &&
               ((isServiceRequestEnabled && isSrStatsLoading) ||
                 (isChangeRequestEnabled && isCrStatsLoading)))
@@ -176,7 +186,38 @@ export default function OperationsPage(): JSX.Element {
           configs={operationsStatConfigs}
         />
       </Box>
-      {(isServiceRequestEnabled || isChangeRequestEnabled) && (
+      {!permissionsResolved ? (
+        <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
+          <Grid size={loadingOverviewGridSize} sx={{ display: "flex" }}>
+            <SupportOverviewCard
+              title="Service Requests"
+              subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} service requests`}
+              icon={FileText}
+              iconVariant="orange"
+              footerButtons={[]}
+            >
+              <OutstandingCasesList
+                cases={[]}
+                isLoading
+              />
+            </SupportOverviewCard>
+          </Grid>
+          <Grid size={loadingOverviewGridSize} sx={{ display: "flex" }}>
+            <SupportOverviewCard
+              title="Change Requests"
+              subtitle={`Latest ${OPERATIONS_OVERVIEW_LIST_LIMIT} change requests`}
+              icon={FileText}
+              iconVariant="blue"
+              footerButtons={[]}
+            >
+              <OutstandingChangeRequestsList
+                changeRequests={[]}
+                isLoading
+              />
+            </SupportOverviewCard>
+          </Grid>
+        </Grid>
+      ) : (isServiceRequestEnabled || isChangeRequestEnabled) ? (
         <>
           <Grid container spacing={3} sx={{ alignItems: "stretch" }}>
             {isServiceRequestEnabled && (
@@ -261,7 +302,7 @@ export default function OperationsPage(): JSX.Element {
             )}
           </Grid>
         </>
-      )}
+      ) : null}
     </Stack>
   );
 }
