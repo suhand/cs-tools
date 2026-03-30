@@ -246,29 +246,29 @@ export default function AllConversationsPage(): JSX.Element {
               }
             >
               <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated date</Typography>
+                <Typography variant="body2">Updated on</Typography>
               </MenuItem>
               <MenuItem value="createdOn">
-                <Typography variant="body2">Created date</Typography>
+                <Typography variant="body2">Created on</Typography>
               </MenuItem>
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-label">Order By</InputLabel>
+            <InputLabel id="conversation-order-by-label">Order by</InputLabel>
             <Select<"desc" | "asc">
-              labelId="sort-label"
-              id="sort"
+              labelId="conversation-order-by-label"
+              id="conversation-order-by"
               value={sortOrder}
-              label="Sort"
+              label="Order by"
               onChange={(e) =>
                 handleSortChange(e.target.value as "desc" | "asc")
               }
             >
               <MenuItem value="desc">
-                <Typography variant="body2">Newest First</Typography>
+                <Typography variant="body2">Newest first</Typography>
               </MenuItem>
               <MenuItem value="asc">
-                <Typography variant="body2">Oldest First</Typography>
+                <Typography variant="body2">Oldest first</Typography>
               </MenuItem>
             </Select>
           </FormControl>
