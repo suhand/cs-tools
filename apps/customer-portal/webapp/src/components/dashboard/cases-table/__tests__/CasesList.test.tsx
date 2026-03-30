@@ -37,7 +37,7 @@ vi.mock("@wso2/oxygen-ui", async (importOriginal) => {
     TableHead: ({ children }: any) => (
       <thead data-testid="table-head">{children}</thead>
     ),
-    TableRow: ({ children, onClick, hover: _h, sx: _sx, ..._r }: any) => (
+    TableRow: ({ children, onClick, hover: _h, sx: _sx }: any) => (
       <tr data-testid="table-row" onClick={onClick}>
         {children}
       </tr>
@@ -158,9 +158,7 @@ describe("CasesList", () => {
     );
 
     expect(
-      screen.getByText(
-        "No outstanding cases.Try adjusting your filters or search query",
-      ),
+      screen.getByText("No outstanding cases."),
     ).toBeInTheDocument();
   });
 
