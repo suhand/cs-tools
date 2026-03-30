@@ -46,36 +46,23 @@ import {
   X,
 } from "@wso2/oxygen-ui-icons-react";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
+import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
 import ErrorStateIcon from "@components/common/error-state/ErrorStateIcon";
 import useGetChangeRequestDetails from "@api/useGetChangeRequestDetails";
+import { usePatchChangeRequest } from "@api/usePatchChangeRequest";
 import ScheduledMaintenanceWindowCard from "@components/support/change-requests/ScheduledMaintenanceWindowCard";
 import ProposeNewImplementationTimeModal from "@components/support/change-requests/ProposeNewImplementationTimeModal";
 import { generateChangeRequestDetailsPdf } from "@utils/changeRequestDetailsPdf";
+import {
+  buildChangeRequestWorkflowStages,
+  getChangeRequestDecisionMode,
+} from "@utils/changeRequestUtils";
 import {
   formatImpactLabel,
   getChangeRequestStateIcon,
   getChangeRequestImpactColorShades,
   getChangeRequestStateColorShades,
-  ChangeRequestStates,
-  type ChangeRequestState,
 } from "@constants/supportConstants";
-
-/**
- * State order for change request workflow
- */
-const STATE_ORDER = [
-  ChangeRequestStates.NEW,
-  ChangeRequestStates.ASSESS,
-  ChangeRequestStates.AUTHORIZE,
-  ChangeRequestStates.CUSTOMER_APPROVAL,
-  ChangeRequestStates.SCHEDULED,
-  ChangeRequestStates.IMPLEMENT,
-  ChangeRequestStates.REVIEW,
-  ChangeRequestStates.CUSTOMER_REVIEW,
-  ChangeRequestStates.ROLLBACK,
-  ChangeRequestStates.CLOSED,
-  ChangeRequestStates.CANCELED,
-];
 
 /**
  * Strip HTML tags from a string
@@ -100,6 +87,7 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
   const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
 
   const { showError } = useErrorBanner();
+  const { showSuccess } = useSuccessBanner();
   const [proposeTimeOpen, setProposeTimeOpen] = useState(false);
 
   const {
@@ -108,113 +96,15 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
     error,
     isFetching,
   } = useGetChangeRequestDetails(changeRequestId || "");
+  const patchChangeRequest = usePatchChangeRequest(changeRequestId || "");
 
-  // Workflow stages with dynamic state
-  const { workflowStages, currentStateIndex } = useMemo(() => {
-    if (!changeRequest) return { workflowStages: [], currentStateIndex: -1 };
-
-    const currentState =
-      (changeRequest.state?.label as ChangeRequestState) ||
-      ChangeRequestStates.NEW;
-    const { hasCustomerApproved, hasCustomerReviewed } = changeRequest;
-
-    const currentIndex = STATE_ORDER.indexOf(currentState);
-
-    const stages = [
-      {
-        name: ChangeRequestStates.NEW,
-        description: "Change request created",
-        completed: currentIndex > 0,
-        current: currentState === ChangeRequestStates.NEW,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.ASSESS,
-        description: "Technical assessment completed",
-        completed: currentIndex > 1,
-        current: currentState === ChangeRequestStates.ASSESS,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.AUTHORIZE,
-        description: "Internal authorization obtained",
-        completed: currentIndex > 2,
-        current: currentState === ChangeRequestStates.AUTHORIZE,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.CUSTOMER_APPROVAL,
-        description: "Customer approval received",
-        completed: currentIndex > 3 && hasCustomerApproved,
-        current: currentState === ChangeRequestStates.CUSTOMER_APPROVAL,
-        disabled:
-          (currentState === ChangeRequestStates.IMPLEMENT ||
-            currentState === ChangeRequestStates.REVIEW) &&
-          !hasCustomerApproved,
-      },
-      {
-        name: ChangeRequestStates.SCHEDULED,
-        description: "Maintenance window scheduled",
-        completed: currentIndex > 4,
-        current: currentState === ChangeRequestStates.SCHEDULED,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.IMPLEMENT,
-        description: "Change implementation",
-        completed: currentIndex > 5,
-        current: currentState === ChangeRequestStates.IMPLEMENT,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.REVIEW,
-        description: "Internal review",
-        completed: currentIndex > 6,
-        current: currentState === ChangeRequestStates.REVIEW,
-        disabled: false,
-      },
-      {
-        name: ChangeRequestStates.CUSTOMER_REVIEW,
-        description: "Customer validation",
-        completed: currentIndex > 7 && hasCustomerReviewed,
-        current: currentState === ChangeRequestStates.CUSTOMER_REVIEW,
-        disabled:
-          (currentState === ChangeRequestStates.ROLLBACK ||
-            currentState === ChangeRequestStates.CLOSED ||
-            currentState === ChangeRequestStates.CANCELED) &&
-          !hasCustomerReviewed,
-      },
-      {
-        name: ChangeRequestStates.ROLLBACK,
-        description: "Change rollback if needed",
-        completed: false,
-        current: currentState === ChangeRequestStates.ROLLBACK,
-        disabled:
-          currentState === ChangeRequestStates.CLOSED ||
-          currentState === ChangeRequestStates.CANCELED,
-      },
-      {
-        name: ChangeRequestStates.CLOSED,
-        description: "Change request completed",
-        completed: false,
-        current: currentState === ChangeRequestStates.CLOSED,
-        disabled:
-          currentState === ChangeRequestStates.CANCELED ||
-          currentState === ChangeRequestStates.ROLLBACK,
-      },
-      {
-        name: ChangeRequestStates.CANCELED,
-        description: "Change request canceled",
-        completed: false,
-        current: currentState === ChangeRequestStates.CANCELED,
-        disabled:
-          currentState === ChangeRequestStates.CLOSED ||
-          currentState === ChangeRequestStates.ROLLBACK,
-      },
-    ];
-
-    return { workflowStages: stages, currentStateIndex: currentIndex };
-  }, [changeRequest]);
+  const { workflowStages, currentStateIndex } = useMemo(
+    () => buildChangeRequestWorkflowStages(changeRequest),
+    [changeRequest],
+  );
+  const decisionMode = getChangeRequestDecisionMode(changeRequest);
+  const canShowApprovalActions = decisionMode !== "none";
+  const canShowProposeNewTime = decisionMode === "customerApproval";
 
   const impactColor = getChangeRequestImpactColorShades(
     changeRequest?.impact?.label,
@@ -224,11 +114,37 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
   );
 
   const handleApproveChange = () => {
-    // TODO: wire API action when backend flow is finalized.
+    if (!changeRequest || decisionMode === "none") return;
+    patchChangeRequest.mutate(
+      decisionMode === "customerApproval"
+        ? { isCustomerApproved: true }
+        : { isCustomerReviewed: true },
+      {
+        onSuccess: () => {
+          showSuccess("Change request approved successfully.");
+        },
+        onError: (err) => {
+          showError(err?.message ?? "Failed to approve change request.");
+        },
+      },
+    );
   };
 
   const handleRejectChange = () => {
-    // TODO: wire API action when backend flow is finalized.
+    if (!changeRequest || decisionMode === "none") return;
+    patchChangeRequest.mutate(
+      decisionMode === "customerApproval"
+        ? { isCustomerApproved: false }
+        : { isCustomerReviewed: false },
+      {
+        onSuccess: () => {
+          showSuccess("Change request rejected successfully.");
+        },
+        onError: (err) => {
+          showError(err?.message ?? "Failed to reject change request.");
+        },
+      },
+    );
   };
 
   // Render state icon based on state label
@@ -448,8 +364,17 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2, minHeight: "100vh" }}>
-      {/* Fixed Header: Back Button */}
-      <Box sx={{ flexShrink: 0 }}>
+      {/* Fixed Header: Back Button + Export */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 2,
+          flexWrap: "wrap",
+        }}
+      >
         <Button
           startIcon={<ArrowLeft size={16} />}
           onClick={() => navigate(`/projects/${projectId}/${basePath}/change-requests`)}
@@ -457,6 +382,21 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
           variant="text"
         >
           Back to Change Requests
+        </Button>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<Download size={18} />}
+          onClick={() => {
+            try {
+              generateChangeRequestDetailsPdf(changeRequest, []);
+            } catch (error) {
+              const message = error instanceof Error ? error.message : "Failed to generate PDF";
+              showError(message);
+            }
+          }}
+        >
+          Download Change Request PDF
         </Button>
       </Box>
 
@@ -557,10 +497,20 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
                   <Typography variant="body2" color="text.disabled">
                     |
                   </Typography>
-                  <Typography variant="body2">
-                    Service Request:{" "}
-                    {changeRequest.case?.number || "Not Available"}
-                  </Typography>
+                  <Button
+                    variant="text"
+                    size="small"
+                    startIcon={<ExternalLink size={14} />}
+                    onClick={() => {
+                      if (changeRequest.case?.id) {
+                        navigate(`/projects/${projectId}/support/cases/${changeRequest.case.id}`);
+                      }
+                    }}
+                    disabled={!changeRequest.case?.id}
+                    sx={{ minHeight: "unset", p: 0 }}
+                  >
+                    Service Request: {changeRequest.case?.number || "Not Available"}
+                  </Button>
                   <Typography variant="body2" color="text.disabled">
                     |
                   </Typography>
@@ -568,59 +518,65 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
                     Created {changeRequest.createdOn}
                   </Typography>
                 </Box>
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<CalendarClock size={14} aria-hidden />}
-                    onClick={() => setProposeTimeOpen(true)}
-                    sx={{
-                      height: 32,
-                      color: colors.blue[700],
-                      borderColor: colors.blue[300],
-                      "&:hover": {
-                        bgcolor: alpha(colors.blue[500], 0.08),
-                        borderColor: colors.blue[400],
-                      },
-                    }}
-                  >
-                    Propose New Time
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<FileCheck size={14} aria-hidden />}
-                    onClick={handleApproveChange}
-                    sx={{
-                      height: 32,
-                      color: colors.green[800],
-                      borderColor: colors.green[300],
-                      "&:hover": {
-                        bgcolor: alpha(colors.green[500], 0.08),
-                        borderColor: colors.green[400],
-                      },
-                    }}
-                  >
-                    Approve Change
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    startIcon={<X size={14} aria-hidden />}
-                    onClick={handleRejectChange}
-                    sx={{
-                      height: 32,
-                      color: colors.red[800],
-                      borderColor: colors.red[300],
-                      "&:hover": {
-                        bgcolor: alpha(colors.red[500], 0.08),
-                        borderColor: colors.red[400],
-                      },
-                    }}
-                  >
-                    Reject
-                  </Button>
-                </Stack>
+                {canShowApprovalActions && (
+                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    {canShowProposeNewTime && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<CalendarClock size={14} aria-hidden />}
+                        onClick={() => setProposeTimeOpen(true)}
+                        sx={{
+                          height: 32,
+                          color: colors.blue[700],
+                          borderColor: colors.blue[300],
+                          "&:hover": {
+                            bgcolor: alpha(colors.blue[500], 0.08),
+                            borderColor: colors.blue[400],
+                          },
+                        }}
+                      >
+                        Propose New Time
+                      </Button>
+                    )}
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<FileCheck size={14} aria-hidden />}
+                      onClick={handleApproveChange}
+                      disabled={patchChangeRequest.isPending}
+                      sx={{
+                        height: 32,
+                        color: colors.green[800],
+                        borderColor: colors.green[300],
+                        "&:hover": {
+                          bgcolor: alpha(colors.green[500], 0.08),
+                          borderColor: colors.green[400],
+                        },
+                      }}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<X size={14} aria-hidden />}
+                      onClick={handleRejectChange}
+                      disabled={patchChangeRequest.isPending}
+                      sx={{
+                        height: 32,
+                        color: colors.red[800],
+                        borderColor: colors.red[300],
+                        "&:hover": {
+                          bgcolor: alpha(colors.red[500], 0.08),
+                          borderColor: colors.red[400],
+                        },
+                      }}
+                    >
+                      Reject
+                    </Button>
+                  </Stack>
+                )}
               </Box>
             </Box>
           </Box>
@@ -877,38 +833,6 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
             </Box>
           </Paper>
 
-          {/* Action Buttons */}
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
-            <Button
-              variant="contained"
-              startIcon={<Download size={18} />}
-              sx={{ flex: 1 }}
-              onClick={() => {
-                try {
-                  generateChangeRequestDetailsPdf(changeRequest, []);
-                } catch (error) {
-                  const message = error instanceof Error ? error.message : "Failed to generate PDF";
-                  showError(message);
-                  console.error("PDF generation error:", error);
-                }
-              }}
-            >
-              Download Change Request PDF
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<ExternalLink size={18} />}
-              sx={{ flex: 1 }}
-              onClick={() => {
-                if (changeRequest.case?.id) {
-                  navigate(`/projects/${projectId}/support/cases/${changeRequest.case.id}`);
-                }
-              }}
-              disabled={!changeRequest.case?.id}
-            >
-              View Related Service Request
-            </Button>
-          </Box>
         </Box>
 
         {/* Right Column - Workflow (Fixed Width, Scrollable) */}
