@@ -317,10 +317,10 @@ export default function AllCasesPage(): JSX.Element {
               }
             >
               <MenuItem value="createdOn">
-                <Typography variant="body2">Created date</Typography>
+                <Typography variant="body2">Created on</Typography>
               </MenuItem>
               <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated date</Typography>
+                <Typography variant="body2">Updated on</Typography>
               </MenuItem>
               <MenuItem value="severity">
                 <Typography variant="body2">Severity</Typography>
@@ -331,21 +331,21 @@ export default function AllCasesPage(): JSX.Element {
             </Select>
           </FormControl>
           <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-label">Order By</InputLabel>
+            <InputLabel id="order-by-label">Order by</InputLabel>
             <Select<"desc" | "asc">
-              labelId="sort-label"
-              id="sort"
+              labelId="order-by-label"
+              id="order-by"
               value={sortOrder}
-              label="Sort"
+              label="Order by"
               onChange={(e) =>
                 handleSortChange(e.target.value as "desc" | "asc")
               }
             >
               <MenuItem value="desc">
-                <Typography variant="body2">Newest First</Typography>
+                <Typography variant="body2">Newest first</Typography>
               </MenuItem>
               <MenuItem value="asc">
-                <Typography variant="body2">Oldest First</Typography>
+                <Typography variant="body2">Oldest first</Typography>
               </MenuItem>
             </Select>
           </FormControl>
