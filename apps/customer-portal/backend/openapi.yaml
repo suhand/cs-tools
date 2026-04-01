@@ -180,12 +180,8 @@ paths:
               $ref: '#/components/schemas/DeploymentSearchPayload'
         required: true
       responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeploymentsResponse'
+        "200":
+          description: Ok
         "400":
           description: BadRequest
           content:
@@ -1233,12 +1229,8 @@ paths:
               $ref: '#/components/schemas/DeployedProductSearchPayload'
         required: true
       responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeployedProductsResponse'
+        "200":
+          description: Ok
         "400":
           description: BadRequest
           content:
@@ -2368,12 +2360,10 @@ components:
           type: string
           description: Allowed domain list of the account
           nullable: true
-          default: ""
         classification:
           type: string
           description: Account classification
           nullable: true
-          default: ""
         isPartner:
           type: boolean
           description: Whether the account is a partner or not
@@ -3345,7 +3335,7 @@ components:
       properties:
         include:
           type: boolean
-          description: Consumption include or not
+          description: Indicates whether to filter based on consumption (true to filter)
         startDate:
           $ref: '#/components/schemas/Date'
         endDate:
@@ -3741,92 +3731,6 @@ components:
         d:[0-5]\\d$"
       type: string
       description: DateTime string type with YYYY-MM-DD HH:MM:SS format constraint.
-    DeployedProduct:
-      required:
-      - category
-      - cores
-      - createdOn
-      - deployment
-      - description
-      - endOfLifeOn
-      - id
-      - product
-      - releasedOn
-      - tps
-      - updatedOn
-      - updates
-      - version
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID
-        createdOn:
-          type: string
-          description: Created date and time
-        updatedOn:
-          type: string
-          description: Updated date and time
-        description:
-          type: string
-          description: Description
-          nullable: true
-        category:
-          description: Category
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        product:
-          description: Product
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        deployment:
-          description: Deployment
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        version:
-          description: Product version
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        updates:
-          type: array
-          description: Product updates
-          nullable: true
-          items:
-            $ref: '#/components/schemas/ProductUpdate'
-        cores:
-          type: integer
-          description: Cores allocated for the product
-          format: int64
-          nullable: true
-        tps:
-          type: number
-          description: TPS allocated for the product
-          format: double
-          nullable: true
-        releasedOn:
-          type: string
-          description: Release date of the product
-          nullable: true
-        endOfLifeOn:
-          type: string
-          description: End of life date of the product
-          nullable: true
-        instanceCount:
-          type: integer
-          description: Instances of the deployed product
-          format: int64
-        instances:
-          type: array
-          description: Details of the instances
-          nullable: true
-          items:
-            $ref: '#/components/schemas/Instance'
-      additionalProperties: false
-      description: Deployed product data.
     DeployedProductCreatePayload:
       required:
       - productId
@@ -3901,83 +3805,6 @@ components:
             product)
       additionalProperties: false
       description: Payload for updating a deployed product.
-    DeployedProductsResponse:
-      type: object
-      description: Deployed products response.
-      allOf:
-      - $ref: '#/components/schemas/Pagination'
-      - required:
-        - deployedProducts
-        - totalRecords
-        type: object
-        properties:
-          deployedProducts:
-            type: array
-            description: List of deployed products
-            items:
-              $ref: '#/components/schemas/DeployedProduct'
-          totalRecords:
-            type: integer
-            description: Total records count
-            format: int64
-          offset:
-            type: integer
-            format: int64
-          limit:
-            type: integer
-            format: int64
-    Deployment:
-      required:
-      - createdOn
-      - description
-      - id
-      - name
-      - project
-      - type
-      - updatedOn
-      - url
-      type: object
-      properties:
-        id:
-          type: string
-          description: ID
-        name:
-          type: string
-          description: Name
-        createdOn:
-          type: string
-          description: Created date and time
-        updatedOn:
-          type: string
-          description: Updated date and time
-        description:
-          type: string
-          description: Description
-          nullable: true
-        url:
-          type: string
-          description: URL
-          nullable: true
-        project:
-          description: Associated project
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        type:
-          description: Type
-          nullable: true
-          allOf:
-          - $ref: '#/components/schemas/ReferenceItem'
-        deployedProductCount:
-          type: integer
-          description: Count of deployed products associated with the deployment
-          format: int64
-        instanceCount:
-          type: integer
-          description: Count of instances associated with the deployment
-          format: int64
-      additionalProperties: false
-      description: Deployment information.
     DeploymentCreatePayload:
       required:
       - deploymentTypeKey
@@ -4029,31 +3856,6 @@ components:
           description: Active status (can only be set to false to deactivate deployment)
       additionalProperties: false
       description: Request payload for updating a deployment.
-    DeploymentsResponse:
-      type: object
-      description: Deployments response.
-      allOf:
-      - $ref: '#/components/schemas/Pagination'
-      - required:
-        - deployments
-        - totalRecords
-        type: object
-        properties:
-          deployments:
-            type: array
-            description: List of deployments
-            items:
-              $ref: '#/components/schemas/Deployment'
-          totalRecords:
-            type: integer
-            description: Total records count
-            format: int64
-          offset:
-            type: integer
-            format: int64
-          limit:
-            type: integer
-            format: int64
     ErrorPayload:
       required:
       - message
@@ -4121,55 +3923,6 @@ components:
           description: User who created
       additionalProperties: false
       description: Inline attachment.
-    Instance:
-      required:
-      - coreUsageCount
-      - createdOn
-      - customCreatedOn
-      - customUpdatedOn
-      - id
-      - instance
-      - jdkVersion
-      - updatedOn
-      - updates
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/IdString'
-        instance:
-          type: string
-          description: Instance identifier
-        coreUsageCount:
-          type: integer
-          description: Core usage count
-          format: int64
-          nullable: true
-        updates:
-          type: integer
-          description: Update count
-          format: int64
-          nullable: true
-        jdkVersion:
-          type: string
-          description: JDK version
-          nullable: true
-        createdOn:
-          type: string
-          description: Created date and time
-          nullable: true
-        updatedOn:
-          type: string
-          description: Updated date and time
-          nullable: true
-        customCreatedOn:
-          type: string
-          description: Custom created date and time
-          nullable: true
-        customUpdatedOn:
-          type: string
-          description: Custom updated date and time
-          nullable: true
-      description: Instance information.
     IntegrationUser:
       required:
       - email

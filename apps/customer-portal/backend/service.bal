@@ -449,7 +449,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + return - Deployments response or error response
     resource function post projects/[entity:IdString id]/deployments/search(http:RequestContext ctx,
             types:DeploymentSearchPayload payload)
-        returns types:DeploymentsResponse|http:BadRequest|http:Forbidden|http:InternalServerError {
+        returns http:Ok|http:BadRequest|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
         if userInfo is error {
@@ -490,7 +490,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 }
             };
         }
-        return mapDeployments(deploymentsResponse);
+        return <http:Ok>{body: mapDeployments(deploymentsResponse)};
     }
 
     # Create a new deployment for a project.
@@ -2233,7 +2233,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
     # + return - Deployed products response or error response
     resource function post deployments/[entity:IdString id]/products/search(http:RequestContext ctx,
             types:DeployedProductSearchPayload payload)
-        returns types:DeployedProductsResponse|http:BadRequest|http:Forbidden|http:InternalServerError {
+        returns http:Ok|http:BadRequest|http:Forbidden|http:InternalServerError {
 
         authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
         if userInfo is error {
@@ -2274,7 +2274,7 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
             };
         }
 
-        return mapDeployedProducts(productsResponse);
+        return <http:Ok>{body: mapDeployedProducts(productsResponse)};
     }
 
     # Add a product to a deployment by deployment ID.
