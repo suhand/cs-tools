@@ -850,7 +850,7 @@ public type DeployedProductSearchPayload record {|
     IdString deploymentId?;
     # Filters
     record {
-        # Consumtion based filters
+        # Consumption based filters
         ConsumptionFilter consumption?;
     } filters?;
     # Pagination details
@@ -1003,7 +1003,7 @@ public type DeploymentSearchPayload record {|
     record {|
         # Project IDs
         IdString[] projectIds;
-        # Consumtion based filters
+        # Consumption based filters
         ConsumptionFilter consumption?;
     |} filters?;
     # Pagination details
