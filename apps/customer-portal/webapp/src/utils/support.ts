@@ -1529,27 +1529,6 @@ export function estimateLineCount(html: string): number {
  * @param filters - Filter object (string or numeric values).
  * @returns {boolean} True if search or any filter is active.
  */
-function isActiveFilterPrimitive(v: unknown): boolean {
-  if (v === undefined || v === null) {
-    return false;
-  }
-  if (typeof v === "string") {
-    return v.trim().length > 0;
-  }
-  if (typeof v === "number" || typeof v === "boolean") {
-    return true;
-  }
-  return false;
-}
-
-/**
- * True when the user entered search text or any filter field has a value.
- * Used to choose empty-state copy (refined vs default list).
- *
- * @param searchTerm - Current search string.
- * @param filters - Filter object (string or numeric values).
- * @returns {boolean} True if search or any filter is active.
- */
 export function hasListSearchOrFilters(
   searchTerm: string,
   filters: object,
