@@ -26,6 +26,7 @@ export interface CaseDetailsTabsProps {
   onFocusModeToggle?: () => void;
   attachmentCount?: number;
   callCount?: number;
+  hideCallsTab?: boolean;
 }
 
 /**
@@ -41,7 +42,12 @@ export default function CaseDetailsTabs({
   onFocusModeToggle,
   attachmentCount,
   callCount,
+  hideCallsTab = false,
 }: CaseDetailsTabsProps): JSX.Element {
+  const tabs = hideCallsTab
+    ? CASE_DETAILS_TABS.filter((t) => !t.label.startsWith("Calls"))
+    : CASE_DETAILS_TABS;
+
   return (
     <Box
       sx={{
@@ -70,7 +76,7 @@ export default function CaseDetailsTabs({
           "& .MuiTabs-indicator": { bgcolor: "primary.main" },
         }}
       >
-        {CASE_DETAILS_TABS.map(({ label, Icon }) => {
+        {tabs.map(({ label, Icon }) => {
           const isAttachmentsTab = label.startsWith("Attachments");
           const isCallsTab = label.startsWith("Calls");
 
