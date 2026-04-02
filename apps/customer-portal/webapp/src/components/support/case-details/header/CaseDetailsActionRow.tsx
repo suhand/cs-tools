@@ -85,10 +85,12 @@ export interface CaseDetailsActionRowProps {
   caseId?: string;
   isLoading?: boolean;
   showOnlyEngineer?: boolean;
+  /** When true, hides assigned engineer (e.g. security report analysis). */
+  hideAssignedEngineer?: boolean;
 }
 
 /**
- * Support action row: avatar, name, "Support Engineer" label, and "Manage case status" actions.
+ * Support action row: optional assigned engineer, "Manage State" label, and state action buttons.
  *
  * @param {CaseDetailsActionRowProps} props - Action display data and error state.
  * @returns {JSX.Element} The action row wrapped in Paper.
@@ -124,6 +126,7 @@ export default function CaseDetailsActionRow({
   caseId = "",
   isLoading = false,
   showOnlyEngineer = false,
+  hideAssignedEngineer = false,
 }: CaseDetailsActionRowProps): JSX.Element {
   const theme = useTheme();
   const hasEngineer = !!getAssignedEngineerLabel(assignedEngineer);
@@ -193,7 +196,7 @@ export default function CaseDetailsActionRow({
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
-          {hasEngineer && (
+          {hasEngineer && !hideAssignedEngineer && (
             <>
               {isLoading ? (
                 <Skeleton variant="circular" width={18} height={18} />
@@ -249,7 +252,7 @@ export default function CaseDetailsActionRow({
                 color="text.secondary"
                 sx={{ fontSize: "0.7rem" }}
               >
-                Manage case status
+                Manage State
               </Typography>
             </Stack>
           )}
