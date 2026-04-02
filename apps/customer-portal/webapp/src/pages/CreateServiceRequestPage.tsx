@@ -24,9 +24,10 @@ import {
   type FormEvent,
   type JSX,
 } from "react";
-import { useNavigate, useParams, useLocation } from "react-router";
+import { useNavigate, useParams, useLocation, useSearchParams } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useGetProjectDeployments } from "@api/useGetProjectDeployments";
+import type { ProjectDeploymentItem } from "@models/responses";
 import { useGetDeploymentsProducts } from "@api/useGetDeploymentsProducts";
 import { useAuthApiClient } from "@api/useAuthApiClient";
 import { useSearchCatalogs } from "@api/useSearchCatalogs";
@@ -69,6 +70,7 @@ import { CaseType } from "@constants/supportConstants";
 export default function CreateServiceRequestPage(): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const { projectId } = useParams<{ projectId: string }>();
   const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
   const { showLoader, hideLoader } = useLoader();
@@ -88,12 +90,31 @@ export default function CreateServiceRequestPage(): JSX.Element {
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const attachmentNamesRef = useRef<Map<string, string>>(new Map());
   const attachmentIdCounterRef = useRef(0);
+  const urlPrefillAppliedRef = useRef(false);
   const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
 
   const { data: projectDetails, isLoading: isProjectLoading } =
     useGetProjectDetails(projectId || "");
   const { data: projectDeployments, isLoading: isDeploymentsLoading } =
     useGetProjectDeployments(projectId || "");
+
+  useEffect(() => {
+    if (urlPrefillAppliedRef.current) return;
+    const depId = searchParams.get("deploymentId")?.trim();
+    const prodId = searchParams.get("productId")?.trim();
+    const list = projectDeployments;
+    if (!list?.length || !depId) return;
+    const dep = list.find((d: ProjectDeploymentItem) => d.id === depId);
+    if (!dep) return;
+    const depLabel = dep.name?.trim() || dep.type?.label?.trim();
+    if (depLabel) {
+      setDeployment(depLabel);
+    }
+    if (prodId) {
+      setProduct(prodId);
+    }
+    urlPrefillAppliedRef.current = true;
+  }, [searchParams, projectDeployments]);
 
   const baseDeploymentOptions = getBaseDeploymentOptions(projectDeployments);
   const selectedDeploymentMatch = useMemo(
