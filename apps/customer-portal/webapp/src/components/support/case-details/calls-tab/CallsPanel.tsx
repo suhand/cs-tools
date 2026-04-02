@@ -46,6 +46,8 @@ export interface CallsPanelProps {
   caseId: string;
   isCaseClosed?: boolean;
   caseStatusLabel?: string;
+  /** Case severity id for minimum scheduling offset from filter metadata. */
+  caseSeverityId?: string | null;
 }
 
 /**
@@ -59,6 +61,7 @@ export default function CallsPanel({
   caseId,
   isCaseClosed = false,
   caseStatusLabel,
+  caseSeverityId,
 }: CallsPanelProps): JSX.Element {
   const isSchedulingAllowed = useMemo(() => {
     if (!caseStatusLabel) return false;
@@ -89,6 +92,25 @@ export default function CallsPanel({
       .map((s) => Number(s.id))
       .filter((n) => !Number.isNaN(n));
   }, [projectFilters]);
+
+  const severityAllocationMinutes = useMemo(() => {
+    const map = projectFilters?.severityBasedAllocationTime;
+    const sid = String(caseSeverityId ?? "").trim();
+    if (!map || !sid) return undefined;
+    const direct = map[sid];
+    if (typeof direct === "number" && !Number.isNaN(direct)) return direct;
+    const altKey = String(Number(sid));
+    if (altKey !== sid) {
+      const alt = map[altKey];
+      if (typeof alt === "number" && !Number.isNaN(alt)) return alt;
+    }
+    for (const [key, val] of Object.entries(map)) {
+      if (String(key).trim() === sid && typeof val === "number" && !Number.isNaN(val)) {
+        return val;
+      }
+    }
+    return undefined;
+  }, [projectFilters?.severityBasedAllocationTime, caseSeverityId]);
 
   // Derive specific state keys from filter labels for Approve / Reject / Cancel
   const approveStateKey = useMemo<number | undefined>(() => {
@@ -306,7 +328,6 @@ export default function CallsPanel({
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
         isDeleting={patchCallRequest.isPending}
-        userTimeZone={userTimeZone}
       />
 
       <RequestCallModal
@@ -318,6 +339,7 @@ export default function CallsPanel({
         onError={handleError}
         editCall={editCall ?? undefined}
         userTimeZone={userTimeZone}
+        severityAllocationMinutes={severityAllocationMinutes}
       />
 
       <ApproveCallRequestModal
@@ -342,7 +364,6 @@ export default function CallsPanel({
         onClose={handleCloseRejectModal}
         onConfirm={handleConfirmReject}
         isRejecting={patchCallRequest.isPending}
-        userTimeZone={userTimeZone}
       />
 
       <MissingTimezoneDialog
