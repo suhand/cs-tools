@@ -57,6 +57,7 @@ import ChatMessageList from "@components/support/novera-ai-assistant/novera-chat
 import ChatSkeleton from "@components/support/novera-ai-assistant/novera-chat-page/ChatSkeleton";
 import { ROUTE_PREVIOUS_PAGE } from "@/constants/commonConstants";
 import { displayTextFromConversationContent, getFinalMessageFromPayload, sanitizeStreamToken, splitTokenForTyping } from "@/utils/chat";
+import { compareByCreatedOnThenId, dateFromApiCreatedOn } from "@utils/support";
 
 /**
  * NoveraChatPage component to provide AI-powered support assistance.
@@ -161,11 +162,7 @@ export default function NoveraChatPage(): JSX.Element {
 
     const convertedMessages: Message[] = allMessages
       .slice()
-      .sort((a, b) => {
-        const aT = a.createdOn ? new Date(a.createdOn).getTime() : 0;
-        const bT = b.createdOn ? new Date(b.createdOn).getTime() : 0;
-        return aT - bT;
-      })
+      .sort(compareByCreatedOnThenId)
       .map((msg, index) => {
         const isBot =
           msg.type?.toLowerCase() === "bot" ||
@@ -175,7 +172,7 @@ export default function NoveraChatPage(): JSX.Element {
           id: msg.id || `msg-${index}`,
           text: displayTextFromConversationContent(msg.content || "", isBot),
           sender: isBot ? CHAT_SENDER_BOT : CHAT_SENDER_USER,
-          timestamp: msg.createdOn ? new Date(msg.createdOn) : new Date(),
+          timestamp: dateFromApiCreatedOn(msg.createdOn),
           showCreateCaseAction: false,
         };
       });
