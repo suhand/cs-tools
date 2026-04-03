@@ -24,9 +24,9 @@ import UsageAndMetricsTabContent from "@components/project-details/usage-metrics
  * Standalone Usage & Metrics page (sidebar navigation).
  * Rendered only when portal metadata enables usage metrics.
  *
- * @returns {JSX.Element} Usage & Metrics view for the current project.
+ * @returns {JSX.Element | null} Usage & Metrics view, or null while redirecting when disabled.
  */
-export default function UsageMetricsPage(): JSX.Element {
+export default function UsageMetricsPage(): JSX.Element | null {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
   const { data: portalMetadata, isLoading } = useGetMetadata();
