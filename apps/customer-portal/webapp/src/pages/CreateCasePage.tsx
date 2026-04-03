@@ -797,7 +797,10 @@ export default function CreateCasePage(): JSX.Element {
   };
 
   const extraProductOptions = useMemo(() => {
-    if (!classificationProductLabel) return [];
+    const raw = classificationProductLabel?.trim() ?? "";
+    if (!raw || isUnknownPlaceholderProductLabel(raw)) {
+      return [];
+    }
     if (
       !shouldAddClassificationProductToOptions(
         classificationProductLabel,
