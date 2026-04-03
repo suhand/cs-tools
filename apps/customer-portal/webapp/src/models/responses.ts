@@ -544,6 +544,8 @@ export interface CaseComment {
   type: string;
   createdOn: string;
   createdBy: string;
+  createdByFirstName?: string | null;
+  createdByLastName?: string | null;
   isEscalated: boolean;
   /** Whether this comment has inline images. */
   hasInlineAttachments?: boolean;

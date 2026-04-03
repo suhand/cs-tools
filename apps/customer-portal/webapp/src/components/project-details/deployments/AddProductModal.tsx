@@ -32,11 +32,14 @@ import { X } from "@wso2/oxygen-ui-icons-react";
 import {
   useCallback,
   useEffect,
-  useMemo,
+  useRef,
   useState,
   type ChangeEvent,
   type JSX,
+  type UIEvent,
 } from "react";
+import { SelectMenuLoadMoreRow } from "@components/common/select-menu-load-more-row/SelectMenuLoadMoreRow";
+import { paginatedSelectMenuListProps } from "@constants/dropdownConstants";
 import { useGetProducts } from "@api/useGetProducts";
 import { useSearchProductVersions } from "@api/useSearchProductVersions";
 import { usePostDeploymentProduct } from "@api/usePostDeploymentProduct";
@@ -71,7 +74,7 @@ function parseValidNumber(value: string): number | undefined {
 
 /**
  * Modal for adding a WSO2 product to a deployment environment.
- * Product Name and Version come from APIs; Description and Initial Update Info are disabled.
+ * Product Name and Version come from paginated APIs; Description and optional metrics are user-entered.
  *
  * @param {AddProductModalProps} props - open, deploymentId, projectId, onClose, optional onSuccess/onError.
  * @returns {JSX.Element} The add product modal.
@@ -89,6 +92,7 @@ export default function AddProductModal({
   const [versionOffset, setVersionOffset] = useState(0);
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [versions, setVersions] = useState<ProductVersionItem[]>([]);
+  const previousProductIdRef = useRef<string>("");
 
   const {
     data: productsPage,
@@ -108,35 +112,24 @@ export default function AddProductModal({
     offset: versionOffset,
   });
 
+  /* eslint-disable react-hooks/set-state-in-effect -- accumulate paginated product rows for the Select menu */
   useEffect(() => {
     if (!productsPage) return;
     const pageItems = productsPage.products ?? [];
     const offset = productsPage.offset ?? 0;
 
-    Promise.resolve().then(() => {
-      if (offset === 0) {
-        setProducts(pageItems);
-        return;
-      }
-      setProducts((prev) => {
-        const existingIds = new Set(prev.map((p) => p.id));
-        const next = [...prev];
-        pageItems.forEach((item) => {
-          if (!existingIds.has(item.id)) {
-            next.push(item);
-            existingIds.add(item.id);
-          }
-        });
-        return next;
-      });
-    });
+    if (offset === 0) {
+      setProducts(pageItems);
+      return;
+    }
+    setProducts((prev) => [...prev, ...pageItems]);
   }, [productsPage]);
 
   const productsTotalRecords = productsPage?.totalRecords ?? products.length;
   const canLoadMoreProducts = products.length < productsTotalRecords;
 
   const handleProductsScroll = useCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
+    (event: UIEvent<HTMLElement>) => {
       const target = event.currentTarget;
       if (
         !canLoadMoreProducts ||
@@ -164,46 +157,43 @@ export default function AddProductModal({
   );
 
   useEffect(() => {
-    if (!versionsPage) return;
-    const pageItems = versionsPage.versions ?? [];
-    const offset = versionsPage.offset ?? 0;
+    if (previousProductIdRef.current !== form.productId) {
+      previousProductIdRef.current = form.productId;
+      setVersionOffset(0);
+      setVersions([]);
+    }
 
-    if (pageItems.length === 0) {
+    if (!form.productId) {
       return;
     }
 
-    Promise.resolve().then(() => {
-      if (offset === 0) {
-        setVersions(pageItems);
-        return;
-      }
-      setVersions((prev) => {
-        const existingIds = new Set(prev.map((v) => v.id));
-        const next = [...prev];
-        pageItems.forEach((item) => {
-          if (!existingIds.has(item.id)) {
-            next.push(item);
-            existingIds.add(item.id);
-          }
-        });
-        return next;
-      });
-    });
-  }, [versionsPage]);
+    if (!versionsPage) {
+      return;
+    }
 
-  // Reset versions when product changes.
-  useEffect(() => {
-    Promise.resolve().then(() => {
-      setVersions([]);
-      setVersionOffset(0);
-    });
-  }, [form.productId]);
+    const pageItems = versionsPage.versions ?? [];
+    const offset = versionsPage.offset ?? 0;
+
+    if (offset === 0) {
+      setVersions(pageItems);
+      return;
+    }
+
+    setVersions((prev) => [...prev, ...pageItems]);
+  }, [form.productId, versionsPage]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const versionsTotalRecords = versionsPage?.totalRecords ?? versions.length;
   const canLoadMoreVersions = versions.length < versionsTotalRecords;
 
+  /** Matches dashboard deployment filter: spinner only while fetching additional pages (offset past zero). */
+  const isFetchingMoreProducts =
+    isFetchingProducts && productOffset > 0 && products.length > 0;
+  const isFetchingMoreVersions =
+    isFetchingVersions && versionOffset > 0 && versions.length > 0;
+
   const handleVersionsScroll = useCallback(
-    (event: React.UIEvent<HTMLDivElement>) => {
+    (event: UIEvent<HTMLElement>) => {
       const target = event.currentTarget;
       if (
         !canLoadMoreVersions ||
@@ -230,16 +220,6 @@ export default function AddProductModal({
     ],
   );
 
-  // Sort versions in ascending order
-  const sortedVersions = useMemo(() => {
-    return [...versions].sort((a, b) => {
-      return a.version.localeCompare(b.version, undefined, {
-        numeric: true,
-        sensitivity: "base",
-      });
-    });
-  }, [versions]);
-
   const postProduct = usePostDeploymentProduct();
 
   const isSubmitting = postProduct.isPending;
@@ -251,6 +231,11 @@ export default function AddProductModal({
 
   const handleClose = useCallback(() => {
     setForm(INITIAL_FORM);
+    setProductOffset(0);
+    setProducts([]);
+    setVersionOffset(0);
+    setVersions([]);
+    previousProductIdRef.current = "";
     onClose();
   }, [onClose]);
 
@@ -382,8 +367,9 @@ export default function AddProductModal({
             }}
             SelectProps={{
               MenuProps: {
+                MenuListProps: paginatedSelectMenuListProps(handleProductsScroll),
                 PaperProps: {
-                  onScroll: handleProductsScroll,
+                  sx: { zIndex: 1400 },
                 },
               },
             }}
@@ -394,6 +380,11 @@ export default function AddProductModal({
                 {p.label ?? p.name ?? p.id}
               </MenuItem>
             ))}
+            <SelectMenuLoadMoreRow
+              visible={Boolean(
+                canLoadMoreProducts && isFetchingMoreProducts,
+              )}
+            />
             {(isLoadingProducts || isFetchingProducts) &&
               products.length === 0 && (
                 <MenuItem disabled>
@@ -417,18 +408,24 @@ export default function AddProductModal({
             }}
             SelectProps={{
               MenuProps: {
+                MenuListProps: paginatedSelectMenuListProps(handleVersionsScroll),
                 PaperProps: {
-                  onScroll: handleVersionsScroll,
+                  sx: { zIndex: 1400 },
                 },
               },
             }}
           >
             <MenuItem value="">Select</MenuItem>
-            {sortedVersions.map((v) => (
+            {versions.map((v) => (
               <MenuItem key={v.id} value={v.id}>
                 {v.version}
               </MenuItem>
             ))}
+            <SelectMenuLoadMoreRow
+              visible={Boolean(
+                canLoadMoreVersions && isFetchingMoreVersions,
+              )}
+            />
             {(isLoadingVersions || isFetchingVersions) &&
               versions.length === 0 && (
                 <MenuItem disabled>

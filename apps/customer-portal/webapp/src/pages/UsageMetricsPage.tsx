@@ -14,16 +14,51 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { Box, Typography } from "@wso2/oxygen-ui";
-import type { JSX } from "react";
+import { Box, Skeleton, Typography } from "@wso2/oxygen-ui";
+import { useEffect, type JSX } from "react";
+import { useNavigate, useParams } from "react-router";
+import useGetMetadata from "@api/useGetMetadata";
 import UsageAndMetricsTabContent from "@components/project-details/usage-metrics/UsageAndMetricsTabContent";
 
 /**
  * Standalone Usage & Metrics page (sidebar navigation).
+ * Rendered only when portal metadata enables usage metrics.
  *
- * @returns {JSX.Element} Usage & Metrics view for the current project.
+ * @returns {JSX.Element | null} Usage & Metrics view, or null while redirecting when disabled.
  */
-export default function UsageMetricsPage(): JSX.Element {
+export default function UsageMetricsPage(): JSX.Element | null {
+  const navigate = useNavigate();
+  const { projectId } = useParams<{ projectId: string }>();
+  const { data: portalMetadata, isLoading } = useGetMetadata();
+  const usageMetricsEnabled =
+    portalMetadata?.featureFlags?.usageMetricsEnabled === true;
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+    if (!usageMetricsEnabled) {
+      const fallback =
+        projectId != null && projectId !== ""
+          ? `/projects/${projectId}/dashboard`
+          : "/";
+      navigate(fallback, { replace: true });
+    }
+  }, [isLoading, usageMetricsEnabled, navigate, projectId]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Skeleton variant="text" width={280} height={40} />
+        <Skeleton variant="rounded" height={240} sx={{ mt: 2 }} />
+      </Box>
+    );
+  }
+
+  if (!usageMetricsEnabled) {
+    return null;
+  }
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>

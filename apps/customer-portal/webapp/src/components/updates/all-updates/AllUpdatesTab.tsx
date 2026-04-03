@@ -43,6 +43,7 @@ import type {
   ProductUpdateLevelEntry,
   ProductUpdateLevelsResponse,
 } from "@models/responses";
+import { EMPTY_DROPDOWN_PLACEHOLDER } from "@constants/dropdownConstants";
 import { getUpdateLevelsReportData } from "@utils/updateLevelsReportPdf";
 
 export interface AllUpdatesTabFilterState {
@@ -306,7 +307,7 @@ export default function AllUpdatesTab(): JSX.Element {
                       {isProductLevelsLoading
                         ? "Select Product"
                         : productNames.length === 0
-                          ? "No products available"
+                          ? EMPTY_DROPDOWN_PLACEHOLDER
                           : "Select Product"}
                     </Typography>
                   </MenuItem>
@@ -335,7 +336,7 @@ export default function AllUpdatesTab(): JSX.Element {
                         : isProductLevelsLoading
                           ? "Select Version"
                           : versionEntries.length === 0
-                            ? "No versions available"
+                            ? EMPTY_DROPDOWN_PLACEHOLDER
                             : "Select Version"}
                     </Typography>
                   </MenuItem>
@@ -362,7 +363,7 @@ export default function AllUpdatesTab(): JSX.Element {
                       {!filter.productVersion
                         ? "Select Level"
                         : startLevelOptions.length === 0
-                          ? "No starting update levels available"
+                          ? EMPTY_DROPDOWN_PLACEHOLDER
                           : "Select Level"}
                     </Typography>
                   </MenuItem>
@@ -389,7 +390,7 @@ export default function AllUpdatesTab(): JSX.Element {
                       {!filter.startLevel
                         ? "Select Level"
                         : endLevelOptions.length === 0
-                          ? "No ending update levels available"
+                          ? EMPTY_DROPDOWN_PLACEHOLDER
                           : "Select Level"}
                     </Typography>
                   </MenuItem>

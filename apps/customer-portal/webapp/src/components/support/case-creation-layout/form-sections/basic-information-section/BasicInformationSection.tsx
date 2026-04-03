@@ -28,6 +28,11 @@ import {
 } from "@wso2/oxygen-ui";
 import { Sparkles } from "@wso2/oxygen-ui-icons-react";
 import { type JSX, type UIEvent } from "react";
+import { SelectMenuLoadMoreRow } from "@components/common/select-menu-load-more-row/SelectMenuLoadMoreRow";
+import {
+  EMPTY_DROPDOWN_PLACEHOLDER,
+  paginatedSelectMenuListProps,
+} from "@constants/dropdownConstants";
 import type { ProductVersionOption } from "@utils/caseCreation";
 
 export interface BasicInformationSectionProps {
@@ -130,6 +135,22 @@ export function BasicInformationSection({
     !isProductDropdownDisabled &&
     !isProductLoading;
 
+  const showNoDeploymentsHint =
+    !isDeploymentLoading &&
+    deploymentOptions.length === 0 &&
+    !isDeploymentDisabled;
+
+  const deploymentMenuListProps = paginatedSelectMenuListProps(
+    onLoadMoreDeployments && hasMoreDeployments
+      ? handleDeploymentsMenuScroll
+      : undefined,
+  );
+  const productMenuListProps = paginatedSelectMenuListProps(
+    onLoadMoreProducts && hasMoreProducts
+      ? handleProductsMenuScroll
+      : undefined,
+  );
+
   return (
     <Paper sx={{ p: 3 }}>
       {/* section header container */}
@@ -185,23 +206,37 @@ export function BasicInformationSection({
                 value={deployment}
                 onChange={(e) => setDeployment(e.target.value)}
                 displayEmpty
-                renderValue={(value) =>
-                  value === "" ? "Select Deployment Type..." : value
-                }
+                renderValue={(value) => {
+                  if (value === "") {
+                    if (showNoDeploymentsHint) {
+                      return EMPTY_DROPDOWN_PLACEHOLDER;
+                    }
+                    return "Select Deployment Type...";
+                  }
+                  return value;
+                }}
                 MenuProps={{
-                  MenuListProps: {
-                    onScroll: handleDeploymentsMenuScroll,
-                  },
+                  MenuListProps: deploymentMenuListProps,
                 }}
               >
                 <MenuItem value="" disabled>
-                  Select Deployment Type...
+                  {showNoDeploymentsHint
+                    ? EMPTY_DROPDOWN_PLACEHOLDER
+                    : "Select Deployment Type..."}
                 </MenuItem>
                 {deploymentOptions.map((d) => (
                   <MenuItem key={d} value={d}>
                     {d}
                   </MenuItem>
                 ))}
+                <SelectMenuLoadMoreRow
+                  visible={Boolean(
+                    onLoadMoreDeployments &&
+                      hasMoreDeployments &&
+                      isFetchingMoreDeployments &&
+                      deploymentOptions.length > 0,
+                  )}
+                />
               </Select>
             </FormControl>
           )}
@@ -245,7 +280,7 @@ export function BasicInformationSection({
                       return "Select deployment first";
                     }
                     if (showNoProductsHint) {
-                      return "No products available for this deployment";
+                      return EMPTY_DROPDOWN_PLACEHOLDER;
                     }
                     return "Select Product Version...";
                   }
@@ -254,21 +289,19 @@ export function BasicInformationSection({
                     return opt?.label ?? value;
                   }
                   if (showNoProductsHint) {
-                    return "No products available for this deployment";
+                    return EMPTY_DROPDOWN_PLACEHOLDER;
                   }
                   return value;
                 }}
                 MenuProps={{
-                  MenuListProps: {
-                    onScroll: handleProductsMenuScroll,
-                  },
+                  MenuListProps: productMenuListProps,
                 }}
               >
                 <MenuItem value="" disabled>
                   {isProductDropdownDisabled
                     ? "Select deployment first"
                     : showNoProductsHint
-                      ? "No products available for this deployment"
+                      ? EMPTY_DROPDOWN_PLACEHOLDER
                       : "Select Product Version..."}
                 </MenuItem>
                 {useProductOptionList
@@ -282,6 +315,16 @@ export function BasicInformationSection({
                         {p}
                       </MenuItem>
                     ))}
+                <SelectMenuLoadMoreRow
+                  visible={Boolean(
+                    onLoadMoreProducts &&
+                      hasMoreProducts &&
+                      isFetchingMoreProducts &&
+                      (useProductOptionList
+                        ? hasProductRows
+                        : productOptionsLegacy.length > 0),
+                  )}
+                />
               </Select>
             </FormControl>
           )}

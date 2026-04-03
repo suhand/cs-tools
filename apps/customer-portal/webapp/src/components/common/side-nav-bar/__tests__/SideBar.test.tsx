@@ -148,12 +148,26 @@ vi.mock("@components/common/side-nav-bar/SubscriptionWidget", () => {
   };
 });
 
+let mockUsageMetricsEnabled = true;
+
+vi.mock("@api/useGetMetadata", () => ({
+  __esModule: true,
+  default: () => ({
+    data: {
+      timeZones: [],
+      featureFlags: { usageMetricsEnabled: mockUsageMetricsEnabled },
+    },
+    isLoading: false,
+  }),
+}));
+
 describe("SideBar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLocation.pathname = "/projects/project-1/dashboard";
     mockParams.projectId = "project-1";
     mockProjectTypeLabel = "Other";
+    mockUsageMetricsEnabled = true;
   });
 
   it("should render all navigation items except Operations when the project type is not supported", () => {
@@ -192,6 +206,14 @@ describe("SideBar", () => {
     render(<SideBar collapsed={false} />);
     expect(screen.getByText("Settings")).toBeInTheDocument();
     expect(screen.getByTestId("icon-Settings")).toBeInTheDocument();
+  });
+
+  it("should hide Usage & Metrics when featureFlags.usageMetricsEnabled is false", () => {
+    mockUsageMetricsEnabled = false;
+    mockProjectTypeLabel = PROJECT_TYPE_LABELS.MANAGED_CLOUD_SUBSCRIPTION;
+    render(<SideBar collapsed={false} />);
+
+    expect(screen.queryByText("Usage & Metrics")).not.toBeInTheDocument();
   });
 
   it("should construct correct links with projectId", () => {

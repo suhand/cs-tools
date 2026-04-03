@@ -52,9 +52,9 @@ async function postDeploymentsSearchPage(params: {
   const payload: DeploymentSearchRequest = {
     ...(request ?? {}),
     pagination: {
+      ...(request?.pagination ?? {}),
       offset,
       limit,
-      ...(request?.pagination ?? {}),
     },
   };
 

@@ -60,14 +60,13 @@ describe("BasicInformationSection", () => {
     expect(screen.getByText("Product Version")).toBeInTheDocument();
   });
 
-  it("should show no-products hint when product list is empty and deployment selected", () => {
+  it("should show Not available when product list is empty", () => {
     renderSection({
+      deployment: "Prod",
       productOptionList: [],
       isProductDropdownDisabled: false,
       isProductLoading: false,
     });
-    expect(
-      screen.getByText("No products available for this deployment"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Not available")).toBeInTheDocument();
   });
 });

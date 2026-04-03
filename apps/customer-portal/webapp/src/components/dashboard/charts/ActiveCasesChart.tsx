@@ -129,7 +129,7 @@ export const ActiveCasesChart = ({
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.color}
-                      stroke={colors.common.white}
+                      stroke="none"
                     />
                   ))}
                 </Pie>
