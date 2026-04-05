@@ -464,10 +464,18 @@ describe("CallsPanel", () => {
         caseId={mockCaseId}
         caseStatusLabel="Work In Progress"
       />);
-    expect(screen.getByText("Time Zone Not Set")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /time zone required/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Set your time zone first to request or reschedule a call/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Request Call$/ }),
+    ).not.toBeInTheDocument();
   });
 
-  it("should show required timezone dialog instead of Request Call modal when profile has no timezone", () => {
+  it("should block Request Call flow with time zone gate when profile has no timezone", () => {
     vi.mocked(useGetUserDetails).mockReturnValue({
       data: { timeZone: null },
       refetch: vi.fn().mockResolvedValue({ data: { timeZone: null } }),
@@ -494,9 +502,11 @@ describe("CallsPanel", () => {
       />,
     );
     expect(
-      screen.getByText(/must set your time zone before/i),
+      screen.getByText(/Set your time zone first to request or reschedule a call/i),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Later/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^Request Call$/ }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByPlaceholderText(
         /Describe your call request or topics you'd like to discuss/i,

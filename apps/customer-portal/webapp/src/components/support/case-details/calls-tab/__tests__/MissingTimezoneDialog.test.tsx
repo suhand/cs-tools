@@ -57,7 +57,7 @@ describe("MissingTimezoneDialog", () => {
   it("should omit Later and show required copy when variant is required", () => {
     render(<MissingTimezoneDialog {...defaultProps} variant="required" />);
     expect(
-      screen.getByText(/must set your time zone before/i),
+      screen.getByText(/Set your time zone first to request or reschedule a call/i),
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Later/i })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Set Time Zone/i })).toBeInTheDocument();

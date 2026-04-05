@@ -47,6 +47,7 @@ const useGetUserDetails = (): UseQueryResult<UserDetails, Error> => {
 
         const response = await authFetch(requestUrl, {
           method: "GET",
+          cache: "no-store",
         });
 
         logger.debug(`[useGetUserDetails] Response status: ${response.status}`);
@@ -57,18 +58,21 @@ const useGetUserDetails = (): UseQueryResult<UserDetails, Error> => {
           );
         }
 
-        const data = await response.json();
+        const data = (await response.json()) as Record<string, unknown>;
         logger.debug("[useGetUserDetails] Data received:", data);
-        return data;
+        const tzRaw = data.timeZone ?? data.timezone ?? data.time_zone;
+        const timeZone =
+          typeof tzRaw === "string" ? tzRaw : tzRaw != null ? String(tzRaw) : "";
+        return { ...data, timeZone } as UserDetails;
       } catch (error) {
         logger.error("[useGetUserDetails] Error:", error);
         throw error;
       }
     },
     enabled: isSignedIn && !isAuthLoading,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 };
 
