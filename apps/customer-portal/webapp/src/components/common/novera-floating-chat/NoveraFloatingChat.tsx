@@ -40,7 +40,8 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams } from "react-router";
+import { useLocation, useParams } from "react-router";
+import { useFloatingNoveraVisibility } from "@context/floating-novera-visibility/FloatingNoveraVisibilityContext";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import { usePostProjectDeploymentsSearchAll } from "@api/usePostProjectDeploymentsSearch";
 import { useAllDeploymentProducts } from "@hooks/useAllDeploymentProducts";
@@ -65,6 +66,8 @@ const WELCOME_MESSAGE =
  * @returns {JSX.Element | null} Floating widget, or null when not applicable.
  */
 export default function NoveraFloatingChat(): JSX.Element | null {
+  const location = useLocation();
+  const { hideForDetailsActivityTab } = useFloatingNoveraVisibility();
   const { projectId } = useParams<{ projectId: string }>();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
@@ -305,6 +308,14 @@ export default function NoveraFloatingChat(): JSX.Element | null {
   }, [messages]);
 
   if (!projectId || !hasAgent) {
+    return null;
+  }
+
+  const isSupportChatRoute =
+    /\/projects\/[^/]+\/support\/chat(\/|$)/.test(location.pathname) ||
+    /\/[^/]+\/support\/chat(\/|$)/.test(location.pathname);
+
+  if (isSupportChatRoute || hideForDetailsActivityTab) {
     return null;
   }
 
