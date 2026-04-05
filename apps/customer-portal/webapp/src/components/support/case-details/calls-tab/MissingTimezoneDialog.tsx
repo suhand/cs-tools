@@ -86,7 +86,7 @@ export default function MissingTimezoneDialog({
           color="text.secondary"
         >
           {isRequired
-            ? "You must set your time zone before you can request or reschedule a call. Open your profile to choose a time zone."
+            ? "Set your time zone first to request or reschedule a call. Go to your profile to choose your time zone."
             : "Your profile does not have a time zone configured. Please set your time zone so call request times are displayed accurately in your local time."}
         </Typography>
       </DialogContent>
