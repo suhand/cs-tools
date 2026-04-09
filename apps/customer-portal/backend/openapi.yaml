@@ -2661,12 +2661,10 @@ components:
           type: string
           description: Allowed domain list of the account
           nullable: true
-          default: ""
         classification:
           type: string
           description: Account classification
           nullable: true
-          default: ""
         isPartner:
           type: boolean
           description: Whether the account is a partner or not
@@ -2839,10 +2837,13 @@ components:
           description: Reason for the requested call cancellation
         utcTimes:
           type: array
-          description: New preferred UTC times for the call (mandatory when stateKey
-            is 2)
+          description: New preferred UTC times for the call
           items:
             $ref: '#/components/schemas/DateTime'
+        durationInMinutes:
+          type: integer
+          description: New duration in minutes for the call
+          format: int64
       additionalProperties: false
       description: Request payload for updating a call request.
     Case:
