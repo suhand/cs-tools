@@ -1145,11 +1145,11 @@ public type InstanceUsageEntry record {|
     # Associated deployed product information
     ReferenceTableItem? deployedProduct;
     # Summaries ordered by date; empty if no rows in the date range
-    InstanceSummary[] summaries;
+    InstanceSummary[] periodSummaries;
     json...;
 |};
 
-# Daily usage summary response.
+# Usage summary response.
 public type InstanceUsageResponse record {|
     # List of per-node usage entries
     InstanceUsageEntry[] usages;

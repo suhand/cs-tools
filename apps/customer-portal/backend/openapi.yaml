@@ -2511,11 +2511,11 @@ paths:
           description: InternalServerError
         "403":
           description: Forbidden
-  /products/{id}/instances/metrics/search:
+  /deployments/products/{id}/instances/metrics/search:
     post:
       summary: Search instance metrics for a specific deployed product based on provided
         filters.
-      operationId: postProductsIdInstancesMetricsSearch
+      operationId: postDeploymentsProductsIdInstancesMetricsSearch
       parameters:
       - name: id
         in: path
@@ -2612,11 +2612,11 @@ paths:
           description: InternalServerError
         "403":
           description: Forbidden
-  /products/{id}/instances/usages/search:
+  /deployments/products/{id}/instances/usages/search:
     post:
       summary: Search instance usages for a specific deployed product based on provided
         filters.
-      operationId: postProductsIdInstancesUsagesSearch
+      operationId: postDeploymentsProductsIdInstancesUsagesSearch
       parameters:
       - name: id
         in: path
@@ -2661,12 +2661,10 @@ components:
           type: string
           description: Allowed domain list of the account
           nullable: true
-          default: ""
         classification:
           type: string
           description: Account classification
           nullable: true
-          default: ""
         isPartner:
           type: boolean
           description: Whether the account is a partner or not

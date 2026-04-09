@@ -984,7 +984,7 @@ public isolated function mapInstanceUsages(entity:InstanceUsageResponse response
             deployment: deployment != () ? {id: deployment.id, label: deployment.name} : (),
             product: product != () ? {id: product.id, label: product.name} : (),
             deployedProduct: deployedProduct != () ? {id: deployedProduct.id, label: deployedProduct.name} : (),
-            summaries: usage.summaries
+            periodSummaries: usage.periodSummaries
         };
     return {
         usages,

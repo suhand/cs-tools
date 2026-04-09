@@ -1507,10 +1507,10 @@ public type InstanceUsageEntry record {|
     # Associated deployed product information
     ReferenceItem? deployedProduct;
     # Summaries ordered by date; empty if no rows in the date range
-    entity:InstanceSummary[] summaries;
+    entity:InstanceSummary[] periodSummaries;
 |};
 
-# Daily usage summary response.
+# Usage summary response.
 public type InstanceUsageResponse record {|
     # List of per-node usage entries
     InstanceUsageEntry[] usages;

@@ -52,7 +52,7 @@ service class ErrorInterceptor {
     }
 }
 
-configurable int wsPort = 9091;
+configurable int wsPort = 9095;
 
 http:ListenerConfiguration listenerConf = {
     requestLimits: {
