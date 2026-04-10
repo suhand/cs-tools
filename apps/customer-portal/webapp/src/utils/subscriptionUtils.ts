@@ -101,6 +101,49 @@ export function shouldExcludeS0(
   return !getProjectPermissions(projectTypeLabel).includeS0InSupportMetrics;
 }
 
+/** Deployment type label that represents primary production environments. */
+export const PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL = "Primary Production";
+
+/**
+ * Whether case/SR/security report flows should be restricted to primary
+ * production deployments only (Cloud Support and Cloud Evaluation Support).
+ *
+ * @param projectTypeLabel - Value from project.type.label.
+ * @returns True when only primary production deployments should be used.
+ */
+export function shouldRestrictToPrimaryProductionDeployments(
+  projectTypeLabel: string | null | undefined,
+): boolean {
+  return (
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_SUPPORT ||
+    projectTypeLabel === PROJECT_TYPE_LABELS.CLOUD_EVALUATION_SUPPORT
+  );
+}
+
+/**
+ * Filters a deployment list to only primary production entries when the
+ * project type requires it; otherwise returns the list unchanged.
+ *
+ * @param deployments - Project deployments.
+ * @param projectTypeLabel - Value from project.type.label.
+ * @returns Deployments narrowed per project type rules.
+ */
+export function filterDeploymentsForCaseCreation<
+  T extends { type?: { label?: string | null } | null },
+>(
+  deployments: T[] | undefined,
+  projectTypeLabel: string | null | undefined,
+): T[] {
+  const list = deployments ?? [];
+  if (!shouldRestrictToPrimaryProductionDeployments(projectTypeLabel)) {
+    return list;
+  }
+  const target = PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL.toLowerCase();
+  return list.filter(
+    (d) => (d.type?.label ?? "").trim().toLowerCase() === target,
+  );
+}
+
 export interface ProjectOperationsStatsResult {
   total: number;
   serviceRequests: number;
