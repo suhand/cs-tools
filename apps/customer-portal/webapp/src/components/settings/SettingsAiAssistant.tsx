@@ -246,6 +246,15 @@ export default function SettingsAiAssistant({
         <Typography variant="h6" color="text.primary" sx={{ mb: 2 }}>
           Support Capabilities
         </Typography>
+        {!canEdit && (
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mb: 1.5, fontStyle: "italic" }}
+          >
+            Only customer admins can update AI assistant settings.
+          </Typography>
+        )}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           <Paper sx={{ p: 2.5 }}>
             <Box
