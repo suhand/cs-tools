@@ -258,7 +258,12 @@ export default function AnnouncementDetailsPanel({
           caseId={caseId}
           statusLabel={data.status?.label}
           assignedEngineer={data.assignedEngineer}
-          engineerInitials={data.assignedEngineer?.name?.split(" ")?.[0]?.[0] ?? ""}
+          engineerInitials={
+            typeof data.assignedEngineer === "object" &&
+            data.assignedEngineer?.name
+              ? data.assignedEngineer.name.split(" ")[0]?.[0] ?? ""
+              : ""
+          }
           closedOn={data.closedOn}
           restrictToCloseOnly={true}
         />
