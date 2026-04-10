@@ -68,7 +68,5 @@ public enum StatsFilter {
 
 # Valid product class values.
 public enum ProductClass {
-    SERVICE_MODEL = "service_model",
-    SOFTWARE_MODEL = "software_model",
     PRODUCT_MODEL = "product_model"
 }

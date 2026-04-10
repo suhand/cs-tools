@@ -4338,7 +4338,7 @@ components:
           description: Name
         class:
           type: string
-          description: "Product class (service_model, software_model, or product_model)"
+          description: "Product class (product_model)"
       description: Product data.
     ProductUpdate:
       required:
