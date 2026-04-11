@@ -267,7 +267,7 @@ public type CaseCreatePayload record {|
     # Severity key (required for DEFAULT_CASE)
     int severityKey?;
     # Related case ID (if the case is related to an existing case)
-    IdString parentCaseId?;
+    IdString relatedCaseId?;
     # Conversation ID (if the case is related to a conversation)
     IdString conversationId?;
     # Catalog ID (required for SERVICE_REQUEST)
@@ -440,8 +440,10 @@ public type CaseMetaData record {|
     ReferenceTableItem? deployedProduct;
     # Assigned engineer
     ReferenceTableItem? assignedEngineer;
-    # Related case information (if the case is related to an existing case)
+    # Parent case information
     ReferenceTableItem? parentCase;
+    # Related case information
+    ReferenceTableItem? relatedCase;
     # Conversation information (if the case is related to a conversation)
     ReferenceTableItem? conversation;
 |};
@@ -479,9 +481,11 @@ public type CaseResponse record {|
     ReferenceTableItem? caseType;
     # Assigned engineer
     ReferenceTableItem? assignedEngineer;
-    # Related case information (if the case is related to an existing case)
+    # Parent case information
     ReferenceTableItem? parentCase;
-    # Conversation information (if the case is related to a conversation)
+    # Related case information
+    ReferenceTableItem? relatedCase;
+    # Conversation information
     ReferenceTableItem? conversation;
     # Deployment information
     record {

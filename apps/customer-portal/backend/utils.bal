@@ -57,6 +57,7 @@ public isolated function searchCases(string idToken, string projectId, types:Cas
         let entity:ReferenceTableItem? deployment = case.deployment
         let entity:ReferenceTableItem? assignedEngineer = case.assignedEngineer
         let entity:ReferenceTableItem? parentCase = case.parentCase
+        let entity:ReferenceTableItem? relatedCase = case.relatedCase
         let entity:ReferenceTableItem? conversation = case.conversation
         let entity:ChoiceListItem? severity = case.severity
         let entity:ChoiceListItem? state = case.state
@@ -81,6 +82,7 @@ public isolated function searchCases(string idToken, string projectId, types:Cas
             deployment: deployment != () ? {id: deployment.id, label: deployment.name} : (),
             assignedEngineer: assignedEngineer != () ? {id: assignedEngineer.id, label: assignedEngineer.name} : (),
             parentCase: parentCase != () ? {id: parentCase.id, label: parentCase.name} : (),
+            relatedCase: relatedCase != () ? {id: relatedCase.id, label: relatedCase.name} : (),
             conversation: conversation != () ? {id: conversation.id, label: conversation.name} : (),
             severity: severity != () ? {id: severity.id.toString(), label: severity.label} : (),
             status: state != () ? {id: state.id.toString(), label: state.label} : (),
@@ -543,6 +545,7 @@ public isolated function mapCaseResponse(entity:CaseResponse response) returns t
     entity:ChoiceListItem? issueType = response.issueType;
     entity:ReferenceTableItem? assignedEngineer = response.assignedEngineer;
     entity:ReferenceTableItem? parentCase = response.parentCase;
+    entity:ReferenceTableItem? relatedCase = response.relatedCase;
     entity:ReferenceTableItem? conversation = response.conversation;
     entity:ChoiceListItem? severity = response.severity;
     entity:ChoiceListItem? state = response.state;
@@ -570,6 +573,7 @@ public isolated function mapCaseResponse(entity:CaseResponse response) returns t
         issueType: issueType != () ? {id: issueType.id.toString(), label: issueType.label} : (),
         assignedEngineer: assignedEngineer != () ? {id: assignedEngineer.id, label: assignedEngineer.name} : (),
         parentCase: parentCase != () ? {id: parentCase.id, label: parentCase.name} : (),
+        relatedCase: relatedCase != () ? {id: relatedCase.id, label: relatedCase.name} : (),
         conversation: conversation != () ? {id: conversation.id, label: conversation.name} : (),
         severity: severity != () ? {id: severity.id.toString(), label: severity.label} : (),
         status: state != () ? {id: state.id.toString(), label: state.label} : (),

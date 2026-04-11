@@ -3019,7 +3019,7 @@ components:
           type: integer
           description: Severity key (required for DEFAULT_CASE)
           format: int64
-        parentCaseId:
+        relatedCaseId:
           $ref: '#/components/schemas/IdString'
         conversationId:
           $ref: '#/components/schemas/IdString'
@@ -3053,6 +3053,7 @@ components:
         - deployment
         - parentCase
         - project
+        - relatedCase
         - slaResponseTime
         - type
         - updatedOn
@@ -3081,13 +3082,17 @@ components:
             allOf:
             - $ref: '#/components/schemas/ReferenceItem'
           parentCase:
-            description: Related case information (if the case is related to an existing
-              case)
+            description: Parent case information
+            nullable: true
+            allOf:
+            - $ref: '#/components/schemas/ReferenceItem'
+          relatedCase:
+            description: Related case information
             nullable: true
             allOf:
             - $ref: '#/components/schemas/ReferenceItem'
           conversation:
-            description: Conversation information (if the case is related to a conversation)
+            description: Conversation information
             nullable: true
             allOf:
             - $ref: '#/components/schemas/ReferenceItem'

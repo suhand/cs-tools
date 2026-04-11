@@ -125,9 +125,11 @@ public type CaseResponse record {|
     ReferenceItem? 'type;
     # Assigned engineer
     ReferenceItem? assignedEngineer;
-    # Related case information (if the case is related to an existing case)
+    # Parent case information
     ReferenceItem? parentCase;
-    # Conversation information (if the case is related to a conversation)
+    # Related case information
+    ReferenceItem? relatedCase;
+    # Conversation information
     ReferenceItem? conversation;
     # Deployment information
     record {
@@ -200,9 +202,11 @@ public type CaseMetaData record {|
     ReferenceItem? deployedProduct;
     # Assigned engineer
     ReferenceItem? assignedEngineer;
-    # Related case information (if the case is related to an existing case)
+    # Parent case information
     ReferenceItem? parentCase;
-    # Conversation information (if the case is related to a conversation)
+    # Related case information
+    ReferenceItem? relatedCase;
+    # Conversation information
     ReferenceItem? conversation;
 |};
 
