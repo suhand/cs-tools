@@ -30,7 +30,7 @@ import { useGetConversationMessages } from "@api/useGetConversationMessages";
 import { usePostCaseClassifications } from "@api/usePostCaseClassifications";
 import { useChatWebSocket } from "@api/useChatWebSocket";
 import useGetProjectDetails from "@api/useGetProjectDetails";
-import type { SlotState } from "@models/responses";
+import type { SlotState } from "@/types/conversations";
 import { useAllDeploymentProducts } from "@hooks/useAllDeploymentProducts";
 import {
   DEFAULT_CONVERSATION_REGION,
@@ -51,7 +51,7 @@ import {
 } from "@utils/caseCreation";
 import { filterDeploymentsForCaseCreation } from "@utils/subscriptionUtils";
 import { htmlToPlainText } from "@utils/richTextEditor";
-import type { ChatNavState, Message } from "@models/chatTypes";
+import type { ChatNavState, Message } from "@/types/conversations";
 import ChatHeader from "@components/support/novera-ai-assistant/novera-chat-page/ChatHeader";
 import ChatInput from "@components/support/novera-ai-assistant/novera-chat-page/ChatInput";
 import ChatMessageList from "@components/support/novera-ai-assistant/novera-chat-page/ChatMessageList";

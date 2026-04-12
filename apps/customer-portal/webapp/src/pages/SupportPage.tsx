@@ -35,7 +35,7 @@ import {
 } from "@constants/supportConstants";
 import { getProjectPermissions } from "@utils/subscriptionUtils";
 import { isS0Case } from "@utils/support";
-import type { ChatHistoryItem } from "@models/responses";
+import type { ChatHistoryItem } from "@/types/conversations";
 
 /**
  * SupportPage component to display case details for a project.
@@ -99,8 +99,8 @@ export default function SupportPage(): JSX.Element {
     []
   ).map((c) => ({
     chatId: c.id,
-    chatNumber: c.number,
-    title: c.initialMessage || c.number,
+    chatNumber: c.number ?? undefined,
+    title: c.initialMessage || c.number || "",
     startedTime: c.createdOn,
     messages: c.messageCount,
     kbArticles: 0,

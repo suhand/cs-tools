@@ -47,7 +47,7 @@ import {
   getProjectPermissions,
   shouldExcludeS0,
 } from "@utils/subscriptionUtils";
-import type { AllCasesFilterValues } from "@models/responses";
+import type { AllCasesFilterValues } from "@/types/cases";
 import AllCasesStatCards from "@components/support/all-cases/AllCasesStatCards";
 import AllCasesSearchBar from "@components/support/all-cases/AllCasesSearchBar";
 import AllCasesList from "@components/support/all-cases/AllCasesList";
