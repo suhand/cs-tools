@@ -56,7 +56,7 @@ import { useNavigate, useParams } from "react-router";
 import { CaseType } from "@constants/supportConstants";
 import useGetProjectCases from "@api/useGetProjectCases";
 import useGetProjectFilters from "@api/useGetProjectFilters";
-import type { AllCasesFilterValues, CaseListItem } from "@models/responses";
+import type { AllCasesFilterValues, CaseListItem } from "@/types/cases";
 import SecurityReportAnalysisSkeleton from "@components/security/SecurityReportAnalysisSkeleton";
 import TabBar from "@components/common/tab-bar/TabBar";
 import {
