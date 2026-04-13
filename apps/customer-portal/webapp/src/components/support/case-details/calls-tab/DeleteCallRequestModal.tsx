@@ -95,7 +95,9 @@ export default function DeleteCallRequestModal({
 
   const canConfirm = reason.trim() !== "";
 
-  const firstPreferredTime = call?.preferredTimes?.find((t) => t?.trim())?.trim();
+  const firstPreferredTime = call?.preferredTimes
+    ?.find((t) => t?.trim())
+    ?.trim();
   const promptWhen =
     userTimeZone && firstPreferredTime
       ? formatUtcToLocal(firstPreferredTime, "short", false, userTimeZone)
@@ -139,7 +141,10 @@ export default function DeleteCallRequestModal({
         Confirm Action
       </DialogTitle>
       <DialogContent>
-        <Typography id="delete-call-request-modal-description" color="text.secondary">
+        <Typography
+          id="delete-call-request-modal-description"
+          color="text.secondary"
+        >
           {cancelDescription}
         </Typography>
         <TextField
@@ -166,7 +171,11 @@ export default function DeleteCallRequestModal({
           color="warning"
           onClick={handleConfirm}
           disabled={isDeleting || !canConfirm}
-          startIcon={isDeleting ? <CircularProgress size={16} color="inherit" /> : undefined}
+          startIcon={
+            isDeleting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
+          }
         >
           {isDeleting ? "Cancelling..." : "Confirm"}
         </Button>

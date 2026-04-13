@@ -133,7 +133,8 @@ describe("CaseDetailsAttachmentsPanel", () => {
   });
 
   it("should show EmptyIcon and no attachments found when attachments list is empty", async () => {
-    const { useGetCaseAttachments } = await import("@api/useGetCaseAttachments");
+    const { useGetCaseAttachments } =
+      await import("@api/useGetCaseAttachments");
     vi.mocked(useGetCaseAttachments).mockReturnValueOnce({
       data: {
         pages: [

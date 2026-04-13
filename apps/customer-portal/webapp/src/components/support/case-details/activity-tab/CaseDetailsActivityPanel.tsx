@@ -130,10 +130,7 @@ export default function CaseDetailsActivityPanel({
       }}
     >
       {content}
-      <ActivityCommentInput
-        caseId={caseId}
-        caseStatus={caseStatus}
-      />
+      <ActivityCommentInput caseId={caseId} caseStatus={caseStatus} />
     </Box>
   );
 }
@@ -151,7 +148,9 @@ interface ActivityContentProps {
   onImageClick?: (src: string) => void;
 }
 
-function ActivityContentWithImageModal(props: ActivityContentProps): JSX.Element {
+function ActivityContentWithImageModal(
+  props: ActivityContentProps,
+): JSX.Element {
   const [fullscreenImageSrc, setFullscreenImageSrc] = useState<string | null>(
     null,
   );

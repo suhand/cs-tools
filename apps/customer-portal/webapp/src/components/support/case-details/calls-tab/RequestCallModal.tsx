@@ -117,16 +117,13 @@ export default function RequestCallModal({
     return () => clearInterval(id);
   }, [open]);
 
-  const minDatetimeLocal = useMemo(
-    () => {
-      void minDatetimeTick;
-      return computeMinScheduleDatetimeLocalForTimeZone(
-        severityAllocationMinutes,
-        userTimeZone,
-      );
-    },
-    [severityAllocationMinutes, minDatetimeTick, userTimeZone],
-  );
+  const minDatetimeLocal = useMemo(() => {
+    void minDatetimeTick;
+    return computeMinScheduleDatetimeLocalForTimeZone(
+      severityAllocationMinutes,
+      userTimeZone,
+    );
+  }, [severityAllocationMinutes, minDatetimeTick, userTimeZone]);
 
   const stateKey = CALL_REQUEST_STATE_PENDING_ON_WSO2;
 
@@ -152,7 +149,8 @@ export default function RequestCallModal({
         : editCall.scheduleTime
           ? [editCall.scheduleTime]
           : [""];
-    const preferredUtcTimes = sortCallRequestPreferredTimeStringsAsc(rawPreferred);
+    const preferredUtcTimes =
+      sortCallRequestPreferredTimeStringsAsc(rawPreferred);
     queueMicrotask(() => {
       setForm({
         preferredDateTimesLocal: preferredUtcTimes.map((time) =>
@@ -244,7 +242,8 @@ export default function RequestCallModal({
 
   const handleAddPreferredTime = useCallback(() => {
     setForm((prev) => {
-      if (prev.preferredDateTimesLocal.length >= MAX_PREFERRED_TIMES) return prev;
+      if (prev.preferredDateTimesLocal.length >= MAX_PREFERRED_TIMES)
+        return prev;
       return {
         ...prev,
         preferredDateTimesLocal: [
@@ -412,7 +411,11 @@ export default function RequestCallModal({
           >
             <TextField
               id={`preferred-time-${index}`}
-              label={index === 0 ? "Preferred Time *" : `Preferred Time ${index + 1} *`}
+              label={
+                index === 0
+                  ? "Preferred Time *"
+                  : `Preferred Time ${index + 1} *`
+              }
               type="datetime-local"
               value={value}
               onChange={handlePreferredTimeChange(index)}
@@ -463,7 +466,15 @@ export default function RequestCallModal({
           </Box>
         ))}
         {userTimeZone && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5, mb: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              mt: 0.5,
+              mb: 2,
+            }}
+          >
             <Typography variant="caption" color="text.secondary">
               Your current time zone is {userTimeZone}
             </Typography>
@@ -512,11 +523,7 @@ export default function RequestCallModal({
       <DialogActions
         sx={{ px: 3, pb: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}
       >
-        <Button
-          variant="outlined"
-          onClick={handleClose}
-          disabled={isPending}
-        >
+        <Button variant="outlined" onClick={handleClose} disabled={isPending}>
           Cancel
         </Button>
         {isPending ? (

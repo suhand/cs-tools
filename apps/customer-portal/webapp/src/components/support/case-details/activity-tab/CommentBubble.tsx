@@ -14,13 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import {
-  Avatar,
-  Stack,
-  Typography,
-  alpha,
-  useTheme,
-} from "@wso2/oxygen-ui";
+import { Avatar, Stack, Typography, alpha, useTheme } from "@wso2/oxygen-ui";
 import { useMemo } from "react";
 import type { CaseComment } from "@/types/cases";
 import {
@@ -85,8 +79,14 @@ export default function CommentBubble({
       : convertCodeTagsToHtml(rawContent);
   const trimmedBr = trimLeadingBr(afterCode);
   const withoutLabel = stripCustomerCommentAddedLabel(trimmedBr);
-  const withImages = replaceInlineImageSources(withoutLabel, comment.inlineAttachments);
-  const htmlContent = DOMPurify.sanitize(withImages, INLINE_COMMENT_HTML_PURIFY);
+  const withImages = replaceInlineImageSources(
+    withoutLabel,
+    comment.inlineAttachments,
+  );
+  const htmlContent = DOMPurify.sanitize(
+    withImages,
+    INLINE_COMMENT_HTML_PURIFY,
+  );
   const displayName = useMemo(() => {
     if (isCurrentUser && userDetails) {
       const { firstName, lastName, email } = userDetails;

@@ -119,13 +119,10 @@ export default function ApproveCallRequestModal({
     });
   }, [open, call, userTimeZone]);
 
-  const minDatetimeLocal = useMemo(
-    () => {
-      void minTick;
-      return computeMinScheduleDatetimeLocalForTimeZone(null, userTimeZone);
-    },
-    [userTimeZone, minTick],
-  );
+  const minDatetimeLocal = useMemo(() => {
+    void minTick;
+    return computeMinScheduleDatetimeLocalForTimeZone(null, userTimeZone);
+  }, [userTimeZone, minTick]);
   const isValid =
     preferredDateTimes.every((value) => value.trim() !== "") &&
     approveStateKey !== undefined;
@@ -284,7 +281,11 @@ export default function ApproveCallRequestModal({
           >
             <TextField
               id={`approve-preferred-time-${index}`}
-              label={index === 0 ? "Preferred Time *" : `Preferred Time ${index + 1} *`}
+              label={
+                index === 0
+                  ? "Preferred Time *"
+                  : `Preferred Time ${index + 1} *`
+              }
               type="datetime-local"
               value={value}
               onChange={handleDateTimeChange(index)}
@@ -315,7 +316,9 @@ export default function ApproveCallRequestModal({
               <IconButton
                 aria-label="Add preferred time"
                 onClick={handleAddPreferredTime}
-                disabled={isPending || preferredDateTimes.length >= MAX_PREFERRED_TIMES}
+                disabled={
+                  isPending || preferredDateTimes.length >= MAX_PREFERRED_TIMES
+                }
                 size="small"
               >
                 <Plus size={18} />
@@ -345,7 +348,9 @@ export default function ApproveCallRequestModal({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}>
+      <DialogActions
+        sx={{ px: 3, pb: 3, pt: 1, justifyContent: "flex-end", gap: 1 }}
+      >
         <Button variant="outlined" onClick={handleClose} disabled={isPending}>
           Cancel
         </Button>
