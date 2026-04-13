@@ -24,7 +24,8 @@ import {
 } from "@constants/changeRequestConstants";
 import type { ChangeRequestDetails, ChangeRequestStats, ChangeRequestStatsResponse } from "@/types/changeRequests";
 import type { CaseComment } from "@/types/cases";
-import type { ChangeRequestDecisionMode, ChangeRequestWorkflowStage } from "@/types/changeRequests";
+import { ChangeRequestDecisionMode } from "@/types/changeRequests";
+import type { ChangeRequestWorkflowStage } from "@/types/changeRequests";
 
 // --- Change request stats (API → card counts) --------------------------------
 
@@ -236,12 +237,12 @@ export function getChangeRequestDecisionMode(
 ): ChangeRequestDecisionMode {
   const canonical = resolveChangeRequestCanonicalState(changeRequest?.state);
   if (canonical === ChangeRequestStates.CUSTOMER_APPROVAL) {
-    return "customerApproval";
+    return ChangeRequestDecisionMode.CUSTOMER_APPROVAL;
   }
   if (canonical === ChangeRequestStates.CUSTOMER_REVIEW) {
-    return "customerReview";
+    return ChangeRequestDecisionMode.CUSTOMER_REVIEW;
   }
-  return "none";
+  return ChangeRequestDecisionMode.NONE;
 }
 
 export function buildChangeRequestWorkflowStages(

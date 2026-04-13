@@ -16,6 +16,7 @@
 
 import type { DeploymentProductItem } from "@/types/deployments";
 import type { CaseClassificationResponse } from "@/types/cases";
+import { ChatSender } from "@/types/conversations";
 
 // Deployment list item with id and label.
 export interface DeploymentOption {
@@ -342,13 +343,13 @@ export function getBaseProductOptions(
  * @returns {string} Formatted string: "User: ...\nAssistant: ..."
  */
 export function formatChatHistoryForClassification(
-  messages: Array<{ text: string; sender: string }>,
+  messages: Array<{ text: string; sender: ChatSender }>,
 ): string {
   return messages
     .map((m) => {
       const text = (m.text || "").trim();
       if (!text) return "";
-      const role = m.sender === "user" ? "User" : "Assistant";
+      const role = m.sender === ChatSender.USER ? "User" : "Assistant";
       return `${role}: ${text}`;
     })
     .filter((line) => line.length > 0)
