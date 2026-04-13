@@ -79,7 +79,6 @@ export type ConversationMessagesResponse = PaginationResponse & {
 
 // Model type for all conversations search filter values state.
 export type AllConversationsFilterValues = {
-  [key: string]: string | undefined;
   stateId?: string;
 };
 

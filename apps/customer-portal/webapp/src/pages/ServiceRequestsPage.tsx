@@ -310,6 +310,7 @@ export default function ServiceRequestsPage(): JSX.Element {
 
       <ListSearchPanel
         searchTerm={searchTerm}
+        searchPlaceholder="Search service requests by ID, title, or description..."
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -361,6 +362,7 @@ export default function ServiceRequestsPage(): JSX.Element {
         isLoading={isCasesAreaLoading && !isCasesError}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="service requests"
         onCaseClick={(c) =>
           navigate(
             `/projects/${projectId}/${basePath}/service-requests/${c.id}`,

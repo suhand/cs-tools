@@ -204,6 +204,7 @@ export default function EngagementsPage(): JSX.Element {
 
       <ListSearchPanel
         searchTerm={searchTerm}
+        searchPlaceholder="Search engagements by ID, title, or description..."
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -241,6 +242,7 @@ export default function EngagementsPage(): JSX.Element {
         isLoading={isCasesAreaLoading}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="engagements"
         onCaseClick={
           projectId
             ? (caseItem) =>

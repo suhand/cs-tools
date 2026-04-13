@@ -114,7 +114,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
     projectId || "",
     {
       pageSize: 10,
-      enabled: !!projectId,
+      enabled: !!projectId && !isProjectLoading,
     },
   );
   const allProjectDeployments = useMemo(

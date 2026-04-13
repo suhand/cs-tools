@@ -152,7 +152,7 @@ export default function AllCasesPage(): JSX.Element {
   const isStatsLoading =
     isProjectContextLoading ||
     isStatsQueryLoading ||
-    (!!projectId && !hasStatsResponse);
+    (!!projectId && !hasStatsResponse && !isStatsError);
 
   const isCasesAreaLoading =
     isCasesQueryLoading ||
@@ -318,6 +318,7 @@ export default function AllCasesPage(): JSX.Element {
         isLoading={isCasesAreaLoading && !isCasesError}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="cases"
         onCaseClick={(c) =>
           navigate(`/projects/${projectId}/support/cases/${c.id}`)
         }

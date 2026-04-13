@@ -156,9 +156,10 @@ export default function AllConversationsPage(): JSX.Element {
   };
 
   const handleFilterChange = (field: string, value: string) => {
+    const key = field as keyof AllConversationsFilterValues;
     setFilters((prev) => ({
       ...prev,
-      [field]: value || undefined,
+      [key]: value || undefined,
     }));
     setPage(1);
   };
