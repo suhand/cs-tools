@@ -15,21 +15,22 @@
 // under the License.
 
 import { type TimeTrackingBadgeType } from "@constants/projectDetailsConstants";
-import type { IdLabelRef } from "./common";
+import type { IdLabelRef, PaginationResponse, SearchRequestBase } from "@/types/common";
 
-// Project time tracking statistics.
+// Response type for project time tracking statistics.
 export type ProjectTimeTrackingStats = {
   totalHours: number;
   billableHours: number;
   nonBillableHours: number;
 }
 
-// Interface for items in the time tracking logs.
+// Item type for a time tracking log badge.
 export type TimeTrackingLogBadge = {
   text: string;
   type: TimeTrackingBadgeType;
 }
 
+// Item type for a single time tracking log.
 export type TimeTrackingLog = {
   id: string;
   badges: TimeTrackingLogBadge[];
@@ -40,15 +41,12 @@ export type TimeTrackingLog = {
   hours: number | null;
 }
 
-// Response for project time tracking details.
+// Response type for project time tracking details.
 export type TimeTrackingDetailsResponse = {
   timeLogs: TimeTrackingLog[];
 }
 
-// Time card from projects/:projectId/time-cards/search.
-// Backend: modules/types/types.bal `TimeCard` — `state`, `approvedBy`, and
-// `project` are all `ReferenceItem?` (nullable). `case` is non-null and
-// carries a required `number` in addition to the base ref shape.
+// Item type for a time card from projects/:projectId/time-cards/search.
 export type TimeCard = {
   id: string;
   totalTime: number;
@@ -60,23 +58,19 @@ export type TimeCard = {
   case: IdLabelRef & { number: string };
 };
 
-// Response for project time cards search.
-export type TimeCardSearchResponse = {
+// Response type for project time cards search results.
+export type TimeCardSearchResponse = PaginationResponse & {
   timeCards: TimeCard[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
-}
+};
 
-// Request body for project time cards search (POST /projects/:projectId/time-cards/search).
-export type TimeCardSearchRequest = {
-  filters?: {
-    startDate?: string;
-    endDate?: string;
-    states?: string[];
-  };
-  pagination?: {
-    limit?: number;
-    offset?: number;
-  };
-}
+// Filter type for project time cards search filters.
+export type TimeCardSearchFilters = {
+  startDate?: string;
+  endDate?: string;
+  states?: string[];
+};
+
+// Request type for project time cards search.
+export type TimeCardSearchRequest = SearchRequestBase & {
+  filters?: TimeCardSearchFilters;
+};

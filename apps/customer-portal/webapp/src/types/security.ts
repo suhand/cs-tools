@@ -14,16 +14,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import type { IdLabelRef, PaginationRequest, SortBy } from "./common";
+import type {
+  IdLabelRef,
+  MetadataItem,
+  PaginationResponse,
+  SearchRequestBase,
+} from "@/types/common";
 
-// Product vulnerability item from search response.
-// Note: severity/status ids come back as string or number from the backend;
-// callers should normalize via String(...).
+// Item type for a product vulnerability.
 export type ProductVulnerability = {
   id: string;
   cveId: string;
   vulnerabilityId: string;
-  severity: { id: string | number; label: string };
+  severity: MetadataItem;
   componentName: string;
   version: string;
   type: string;
@@ -32,30 +35,28 @@ export type ProductVulnerability = {
   resolution: string | null;
   componentType?: string;
   updateLevel?: string;
-  /** Optional status/state if returned by API. */
   status?: { id: string | number; label: string } | null;
 };
 
-// Response for product vulnerabilities metadata (GET /products/vulnerabilities/meta).
+// Response type for product vulnerabilities metadata.
 export type VulnerabilitiesMetaResponse = {
   severities: IdLabelRef[];
 };
 
-// Response for product vulnerabilities search.
-export type ProductVulnerabilitiesSearchResponse = {
+// Response type for product vulnerabilities search results.
+export type ProductVulnerabilitiesSearchResponse = PaginationResponse & {
   productVulnerabilities: ProductVulnerability[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
 };
 
-// Request body for product vulnerabilities search.
-export type ProductVulnerabilitiesSearchRequest = {
-  filters?: {
-    searchQuery?: string;
-    severityId?: number;
-    statusId?: number;
-  };
-  pagination?: PaginationRequest;
-  sortBy?: SortBy;
+// Filter type for product vulnerabilities search filters.
+export type ProductVulnerabilitiesSearchFilters = {
+  searchQuery?: string;
+  severityId?: number;
+  statusId?: number;
 };
+
+// Request type for searching product vulnerabilities.
+export type ProductVulnerabilitiesSearchRequest = SearchRequestBase & {
+  filters?: ProductVulnerabilitiesSearchFilters;
+};
+
