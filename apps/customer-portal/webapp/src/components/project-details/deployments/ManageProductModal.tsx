@@ -188,7 +188,7 @@ export default function ManageProductModal({
     const newDescription = description.trim();
     const originalDescription = (product.description ?? "").trim();
     if (newDescription !== originalDescription) {
-      body.description = newDescription || undefined;
+      body.description = newDescription;
     }
 
     if (Object.keys(body).length === 0) {

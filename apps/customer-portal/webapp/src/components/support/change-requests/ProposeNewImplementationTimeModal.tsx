@@ -73,7 +73,10 @@ export default function ProposeNewImplementationTimeModal({
     }
   }, [open, changeRequest, resetFromChangeRequest]);
 
+  const isModalBusy = patchMutation.isPending;
+
   const handleClose = () => {
+    if (isModalBusy) return;
     onClose();
   };
 
@@ -212,7 +215,7 @@ export default function ProposeNewImplementationTimeModal({
       <DialogActions
         sx={{ px: 3, py: 2, borderTop: 1, borderColor: "divider" }}
       >
-        <Button variant="outlined" color="inherit" onClick={handleClose}>
+        <Button variant="outlined" color="inherit" onClick={handleClose} disabled={isModalBusy}>
           Cancel
         </Button>
         <Button

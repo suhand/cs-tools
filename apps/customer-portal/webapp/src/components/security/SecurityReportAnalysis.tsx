@@ -45,11 +45,6 @@ const SECURITY_FILTER_DEFINITIONS = [
     filterKey: "statusId",
     metadataKey: "caseStates",
   },
-  {
-    id: "deployment",
-    filterKey: "deploymentId",
-    metadataKey: "deploymentTypes",
-  },
 ];
 
 /**

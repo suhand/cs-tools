@@ -60,7 +60,7 @@ export interface UpdateHistoryTabProps {
     isSaving: boolean;
     saveAction: UpdateHistorySaveAction | null;
     handleAdd: () => void;
-  }) => void;
+  } | null) => void;
 }
 
 interface UpdateFormData {
@@ -261,6 +261,7 @@ export default function UpdateHistoryTab({
         saveAction: saveInFlight,
         handleAdd: handleAddUpdate,
       });
+      return () => onFormStateChange(null);
     }
   }, [
     isFormValid,

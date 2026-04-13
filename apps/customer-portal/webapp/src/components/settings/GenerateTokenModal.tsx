@@ -116,6 +116,7 @@ export default function GenerateTokenModal({
   }
 
   function handleClose() {
+    if (createMutation.isPending) return;
     setRobotName("");
     setRobotNameError(null);
     setSelectedUser(null);

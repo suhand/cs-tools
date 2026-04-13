@@ -71,7 +71,7 @@ export default function AllConversationsFilters({
               <Select
                 labelId={`${def.id}-label`}
                 id={def.id}
-                value={filters[def.filterKey] || ""}
+                value={filters[def.filterKey as keyof AllConversationsFilterValues] || ""}
                 label={label}
                 onChange={handleSelectChange(def.filterKey)}
               >
