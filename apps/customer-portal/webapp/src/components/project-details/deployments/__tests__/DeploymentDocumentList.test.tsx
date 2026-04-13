@@ -44,7 +44,9 @@ const mockDocuments: DeploymentDocument[] = [
 
 function makeInfiniteData(attachments: DeploymentDocument[]) {
   return {
-    pages: [{ limit: 10, offset: 0, attachments, totalRecords: attachments.length }],
+    pages: [
+      { limit: 10, offset: 0, attachments, totalRecords: attachments.length },
+    ],
     pageParams: [0],
   };
 }
@@ -100,8 +102,9 @@ vi.mock("@api/useInfiniteDeploymentDocuments", () => ({
       isFetchingNextPage: false,
     };
   },
-  flattenDeploymentDocuments: (data: { pages: { attachments: DeploymentDocument[] }[] } | undefined) =>
-    data?.pages?.flatMap((p) => p.attachments ?? []) ?? [],
+  flattenDeploymentDocuments: (
+    data: { pages: { attachments: DeploymentDocument[] }[] } | undefined,
+  ) => data?.pages?.flatMap((p) => p.attachments ?? []) ?? [],
 }));
 
 vi.mock("@case-details-attachments/UploadAttachmentModal", () => ({

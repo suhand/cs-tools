@@ -33,20 +33,25 @@ export default function usePostProjectInstancesUsagesSearch(
   payload: InstanceMetricsRequest,
 ) {
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  
+
   const authFetch = useAuthApiClient();
 
   return useQuery<InstanceUsageResponse>({
     queryKey: [ApiQueryKeys.PROJECT_INSTANCE_USAGES, projectId, payload],
     queryFn: async () => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
-      const response = await authFetch(`${baseUrl}/projects/${projectId}/instances/usages/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await authFetch(
+        `${baseUrl}/projects/${projectId}/instances/usages/search`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       if (!response.ok) {
-        throw new Error(`Failed to search project instance usages: ${response.status}`);
+        throw new Error(
+          `Failed to search project instance usages: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceUsageResponse>;
     },

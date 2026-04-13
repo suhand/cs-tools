@@ -55,8 +55,7 @@ const ProjectInformationCard = ({
     const val = project?.goLivePlanDate;
     return val?.trim() ? formatProjectDate(val.trim()) : "--";
   };
-  const getOnboardingStatus = () =>
-    project?.onboardingStatus?.trim() || "--";
+  const getOnboardingStatus = () => project?.onboardingStatus?.trim() || "--";
 
   return (
     <Card sx={{ height: "100%" }}>

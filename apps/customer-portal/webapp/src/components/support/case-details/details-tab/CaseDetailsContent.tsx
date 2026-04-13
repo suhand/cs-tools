@@ -123,7 +123,11 @@ export default function CaseDetailsContent({
       .filter((n) => !Number.isNaN(n));
   }, [projectFilters]);
 
-  const callsQuery = useGetCallRequests(resolvedProjectId, caseId, callRequestStateKeys);
+  const callsQuery = useGetCallRequests(
+    resolvedProjectId,
+    caseId,
+    callRequestStateKeys,
+  );
   const callCount =
     callsQuery.data?.pages?.[0]?.totalRecords ??
     callsQuery.data?.pages?.flatMap((p) => p.callRequests ?? []).length ??
@@ -134,14 +138,15 @@ export default function CaseDetailsContent({
 
   const isSecurityReportAnalysis = isSecurityReportAnalysisType(data?.type);
   const hideAssignedEngineer =
-    isSecurityReportAnalysis || isSecurityReportAnalysisRoute || isServiceRequest;
+    isSecurityReportAnalysis ||
+    isSecurityReportAnalysisRoute ||
+    isServiceRequest;
 
   const isCallSchedulingAllowed =
     statusLabel != null &&
     CALL_SCHEDULABLE_CASE_STATUSES.includes(statusLabel as CaseStatus);
 
-  const hideCallsTab =
-    isSecurityReportAnalysis || !isCallSchedulingAllowed;
+  const hideCallsTab = isSecurityReportAnalysis || !isCallSchedulingAllowed;
   const hideKnowledgeBaseTab =
     isSecurityReportAnalysis || isEngagementRoute || isServiceRequest;
 
@@ -155,7 +160,10 @@ export default function CaseDetailsContent({
     ],
     [hideCallsTab, hideKnowledgeBaseTab],
   );
-  const clampedActiveTab = Math.min(activeTab, Math.max(0, visibleTabs.length - 1));
+  const clampedActiveTab = Math.min(
+    activeTab,
+    Math.max(0, visibleTabs.length - 1),
+  );
 
   const resolvedPanelIndex = useMemo(() => {
     return visibleTabs[clampedActiveTab] ?? visibleTabs[0] ?? 0;

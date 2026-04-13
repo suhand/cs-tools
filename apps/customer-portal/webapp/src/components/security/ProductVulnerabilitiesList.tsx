@@ -135,9 +135,8 @@ const ProductVulnerabilitiesList = ({
                         variant="outlined"
                         sx={{
                           color: getVulnerabilitySeverityColor(severityLabel),
-                          borderColor: getVulnerabilitySeverityColor(
-                            severityLabel,
-                          ),
+                          borderColor:
+                            getVulnerabilitySeverityColor(severityLabel),
                           fontWeight: 500,
                         }}
                       />
@@ -157,11 +156,7 @@ const ProductVulnerabilitiesList = ({
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Chip
-                        label={row.type}
-                        variant="outlined"
-                        size="small"
-                      />
+                      <Chip label={row.type} variant="outlined" size="small" />
                     </TableCell>
                   </TableRow>
                 );

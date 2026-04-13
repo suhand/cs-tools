@@ -96,9 +96,13 @@ export function UpdateProductGrid({
                           productName: item.productName,
                           productBaseVersion: item.productBaseVersion,
                           startingUpdateLevel: String(item.startingUpdateLevel),
-                          endingUpdateLevel: String(item.recommendedUpdateLevel),
+                          endingUpdateLevel: String(
+                            item.recommendedUpdateLevel,
+                          ),
                         });
-                        navigate(`/projects/${projectId}/updates/pending?${params}`);
+                        navigate(
+                          `/projects/${projectId}/updates/pending?${params}`,
+                        );
                       }
                     : undefined
                 }

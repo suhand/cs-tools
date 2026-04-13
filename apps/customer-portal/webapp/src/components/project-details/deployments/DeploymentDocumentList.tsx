@@ -245,7 +245,12 @@ function DocumentsSkeleton(): JSX.Element {
           {i === 1 && (
             <Box sx={{ pl: 4.5, pt: 1 }}>
               <Skeleton variant="text" width="70%" height={16} />
-              <Skeleton variant="text" width="50%" height={16} sx={{ mt: 0.25 }} />
+              <Skeleton
+                variant="text"
+                width="50%"
+                height={16}
+                sx={{ mt: 0.25 }}
+              />
             </Box>
           )}
         </Box>
@@ -325,7 +330,15 @@ function DocumentRow({
           bgcolor: (theme) => alpha(theme.palette.grey[500], 0.05),
         }}
       >
-        <Box sx={{ display: "flex", gap: 2, flex: 1, minWidth: 0, flexDirection: "column" }}>
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flex: 1,
+            minWidth: 0,
+            flexDirection: "column",
+          }}
+        >
           <Box sx={{ display: "flex", gap: 2, flex: 1, minWidth: 0 }}>
             <Box sx={{ mt: 0.5, flexShrink: 0, color: "text.secondary" }}>
               {fileType === "image" ? (

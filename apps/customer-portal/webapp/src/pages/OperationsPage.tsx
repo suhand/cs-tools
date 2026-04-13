@@ -18,7 +18,7 @@ import { type JSX, useMemo } from "react";
 import { Box, Grid, Stack, Typography } from "@wso2/oxygen-ui";
 import { useNavigate, useParams } from "react-router";
 import { FileText } from "@wso2/oxygen-ui-icons-react";
-import SupportStatGrid from "@components/common/stat-grid/SupportStatGrid";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
 import SupportOverviewCard from "@components/support/support-overview-cards/SupportOverviewCard";
 import OutstandingCasesList from "@components/support/support-overview-cards/OutstandingCasesList";
 import OutstandingChangeRequestsList from "@components/support/support-overview-cards/OutstandingChangeRequestsList";
@@ -193,7 +193,7 @@ export default function OperationsPage(): JSX.Element {
   return (
     <Stack spacing={3}>
       <Box>
-        <SupportStatGrid<OperationsStatKey>
+        <ListStatGrid<OperationsStatKey>
           isLoading={
             !permissionsReady ||
             (stats === undefined &&

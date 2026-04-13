@@ -33,20 +33,26 @@ export default function usePostProjectInstancesMetricsSearch(
   payload: InstanceMetricsRequest,
 ) {
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  
+
   const authFetch = useAuthApiClient();
 
   return useQuery<InstanceMetricsResponse>({
     queryKey: [ApiQueryKeys.PROJECT_INSTANCE_METRICS, projectId, payload],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
-      const response = await authFetch(`${baseUrl}/projects/${projectId}/instances/metrics/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await authFetch(
+        `${baseUrl}/projects/${projectId}/instances/metrics/search`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+          signal,
+        },
+      );
       if (!response.ok) {
-        throw new Error(`Failed to search project instance metrics: ${response.status}`);
+        throw new Error(
+          `Failed to search project instance metrics: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceMetricsResponse>;
     },

@@ -74,7 +74,9 @@ export default function CallsPanel({
 }: CallsPanelProps): JSX.Element {
   const isSchedulingAllowed = useMemo(() => {
     if (!caseStatusLabel) return false;
-    return CALL_SCHEDULABLE_CASE_STATUSES.includes(caseStatusLabel as CaseStatus);
+    return CALL_SCHEDULABLE_CASE_STATUSES.includes(
+      caseStatusLabel as CaseStatus,
+    );
   }, [caseStatusLabel]);
 
   const disableCallActions = isCaseClosed || !isSchedulingAllowed;
@@ -85,9 +87,7 @@ export default function CallsPanel({
   const [approveCall, setApproveCall] = useState<CallRequest | null>(null);
   const [rejectCall, setRejectCall] = useState<CallRequest | null>(null);
   const [pendingCallAfterTz, setPendingCallAfterTz] = useState<
-    | { type: "create" }
-    | { type: "edit"; call: CallRequest }
-    | null
+    { type: "create" } | { type: "edit"; call: CallRequest } | null
   >(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -117,9 +117,7 @@ export default function CallsPanel({
       (isUserDetailsFetching && userDetails === undefined));
 
   const needsTimeZone =
-    !isUserMeLoading &&
-    !!userDetails &&
-    !resolvedUserTimeZone;
+    !isUserMeLoading && !!userDetails && !resolvedUserTimeZone;
 
   // Derive filtered state keys from project filters (all non-Canceled states for search body)
   const callRequestStateKeys = useMemo<number[] | undefined>(() => {
@@ -141,7 +139,11 @@ export default function CallsPanel({
       if (typeof alt === "number" && !Number.isNaN(alt)) return alt;
     }
     for (const [key, val] of Object.entries(map)) {
-      if (String(key).trim() === sid && typeof val === "number" && !Number.isNaN(val)) {
+      if (
+        String(key).trim() === sid &&
+        typeof val === "number" &&
+        !Number.isNaN(val)
+      ) {
         return val;
       }
     }
@@ -157,9 +159,10 @@ export default function CallsPanel({
   }, [projectFilters]);
 
   const rejectStateKey = useMemo<number | undefined>(() => {
-    const found = projectFilters?.callRequestStates?.find((s) =>
-      s.label.toLowerCase().includes("customer rejected") ||
-      s.label.toLowerCase().includes("rejected"),
+    const found = projectFilters?.callRequestStates?.find(
+      (s) =>
+        s.label.toLowerCase().includes("customer rejected") ||
+        s.label.toLowerCase().includes("rejected"),
     );
     return found ? Number(found.id) : undefined;
   }, [projectFilters]);
@@ -305,7 +308,13 @@ export default function CallsPanel({
         },
       );
     },
-    [rejectCall, rejectStateKey, patchCallRequest, handleCloseRejectModal, refetch],
+    [
+      rejectCall,
+      rejectStateKey,
+      patchCallRequest,
+      handleCloseRejectModal,
+      refetch,
+    ],
   );
 
   const handleConfirmDelete = useCallback(
@@ -317,20 +326,26 @@ export default function CallsPanel({
           cancellationReason: reason.trim(),
           stateKey: cancelStateKey,
         },
-      {
-        onSuccess: () => {
-          handleCloseDeleteModal();
-          setSuccessMessage("Call request cancelled successfully.");
-          refetch();
+        {
+          onSuccess: () => {
+            handleCloseDeleteModal();
+            setSuccessMessage("Call request cancelled successfully.");
+            refetch();
+          },
+          onError: (error) => {
+            handleCloseDeleteModal();
+            setErrorMessage(error.message || "Failed to cancel call request.");
+          },
         },
-        onError: (error) => {
-          handleCloseDeleteModal();
-          setErrorMessage(error.message || "Failed to cancel call request.");
-        },
-      },
-    );
+      );
     },
-    [deleteCall, cancelStateKey, patchCallRequest, handleCloseDeleteModal, refetch],
+    [
+      deleteCall,
+      cancelStateKey,
+      patchCallRequest,
+      handleCloseDeleteModal,
+      refetch,
+    ],
   );
   const handleSuccess = useCallback(() => {
     setSuccessMessage("Call request submitted successfully.");
@@ -342,7 +357,10 @@ export default function CallsPanel({
 
   useEffect(() => {
     if (!successMessage) return;
-    const t = setTimeout(() => setSuccessMessage(null), ERROR_BANNER_TIMEOUT_MS);
+    const t = setTimeout(
+      () => setSuccessMessage(null),
+      ERROR_BANNER_TIMEOUT_MS,
+    );
     return () => clearTimeout(t);
   }, [successMessage]);
 
@@ -386,7 +404,9 @@ export default function CallsPanel({
               userTimeZone={userTimeZone}
               onEditClick={disableCallActions ? undefined : handleEditClick}
               onDeleteClick={disableCallActions ? undefined : handleDeleteClick}
-              onApproveClick={disableCallActions ? undefined : handleApproveClick}
+              onApproveClick={
+                disableCallActions ? undefined : handleApproveClick
+              }
               onRejectClick={disableCallActions ? undefined : handleRejectClick}
             />
           )}

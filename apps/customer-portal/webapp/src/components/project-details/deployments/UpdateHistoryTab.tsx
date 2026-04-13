@@ -60,7 +60,7 @@ export interface UpdateHistoryTabProps {
     isSaving: boolean;
     saveAction: UpdateHistorySaveAction | null;
     handleAdd: () => void;
-  }) => void;
+  } | null) => void;
 }
 
 interface UpdateFormData {
@@ -135,9 +135,8 @@ export default function UpdateHistoryTab({
 }: UpdateHistoryTabProps): JSX.Element {
   const [form, setForm] = useState<UpdateFormData>(INITIAL_FORM);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [saveInFlight, setSaveInFlight] = useState<
-    UpdateHistorySaveAction | null
-  >(null);
+  const [saveInFlight, setSaveInFlight] =
+    useState<UpdateHistorySaveAction | null>(null);
 
   const isSaving = saveInFlight !== null;
   const { showSuccess } = useSuccessBanner();
@@ -257,12 +256,12 @@ export default function UpdateHistoryTab({
   useEffect(() => {
     if (onFormStateChange) {
       onFormStateChange({
-        canAdd:
-          isFormValid && !isSaving && !isAddUpdateSectionLoading,
+        canAdd: isFormValid && !isSaving && !isAddUpdateSectionLoading,
         isSaving,
         saveAction: saveInFlight,
         handleAdd: handleAddUpdate,
       });
+      return () => onFormStateChange(null);
     }
   }, [
     isFormValid,
@@ -286,7 +285,8 @@ export default function UpdateHistoryTab({
   const handleDeleteUpdate = useCallback(
     async (update: ProductUpdate) => {
       const newUpdates = updates.filter(
-        (u) => !(u.updateLevel === update.updateLevel && u.date === update.date),
+        (u) =>
+          !(u.updateLevel === update.updateLevel && u.date === update.date),
       );
       setSaveInFlight("delete");
       try {
@@ -410,7 +410,8 @@ export default function UpdateHistoryTab({
               {sortedUpdates.map((update) => {
                 const originalIndex = updates.findIndex(
                   (u) =>
-                    u.updateLevel === update.updateLevel && u.date === update.date,
+                    u.updateLevel === update.updateLevel &&
+                    u.date === update.date,
                 );
                 return (
                   <TimelineItem

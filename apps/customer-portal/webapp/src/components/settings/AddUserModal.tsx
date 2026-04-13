@@ -136,7 +136,11 @@ export default function AddUserModal({
           if (data.contactDetails) {
             setFirstName(data.contactDetails.firstName ?? "");
             setLastName(data.contactDetails.lastName ?? "");
-            setRole(data.contactDetails.isCsIntegrationUser ? "system_user" : "portal_user");
+            setRole(
+              data.contactDetails.isCsIntegrationUser
+                ? "system_user"
+                : "portal_user",
+            );
             setIsExistingContact(true);
           } else {
             setIsExistingContact(false);
@@ -144,7 +148,9 @@ export default function AddUserModal({
           setStep("details");
         },
         onError: (err) => {
-          setEmailError(err.message || "Email validation failed. Please try again.");
+          setEmailError(
+            err.message || "Email validation failed. Please try again.",
+          );
         },
       },
     );
@@ -174,14 +180,15 @@ export default function AddUserModal({
     });
   }, [firstName, lastName, email, role, onSubmit]);
 
-  const isDetailsValid =
-    firstName.trim().length > 0 &&
-    email.trim().length > 0;
+  const isDetailsValid = firstName.trim().length > 0 && email.trim().length > 0;
   const selectedRole = ROLES.find((r) => r.id === role);
 
-  const handleRoleChange = useCallback((event: SelectChangeEvent<ContactRole>) => {
-    setRole(event.target.value as ContactRole);
-  }, []);
+  const handleRoleChange = useCallback(
+    (event: SelectChangeEvent<ContactRole>) => {
+      setRole(event.target.value as ContactRole);
+    },
+    [],
+  );
 
   return (
     <Dialog
@@ -229,7 +236,10 @@ export default function AddUserModal({
                 htmlFor="add-user-email"
                 sx={{ display: "block", mb: 1, fontSize: "0.875rem" }}
               >
-                Email Address <span style={{ color: "var(--oxygen-palette-error-main)" }}>*</span>
+                Email Address{" "}
+                <span style={{ color: "var(--oxygen-palette-error-main)" }}>
+                  *
+                </span>
               </InputLabel>
               <Input
                 ref={emailInputRef}
@@ -247,7 +257,9 @@ export default function AddUserModal({
                 slotProps={{
                   input: {
                     "aria-invalid": !!emailError,
-                    "aria-errormessage": emailError ? "add-user-email-error" : undefined,
+                    "aria-errormessage": emailError
+                      ? "add-user-email-error"
+                      : undefined,
                   },
                 }}
               />
@@ -264,7 +276,11 @@ export default function AddUserModal({
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button variant="outlined" onClick={handleClose} disabled={validateContact.isPending}>
+            <Button
+              variant="outlined"
+              onClick={handleClose}
+              disabled={validateContact.isPending}
+            >
               Cancel
             </Button>
             <Button
@@ -273,7 +289,9 @@ export default function AddUserModal({
               onClick={handleEmailNext}
               disabled={!email.trim() || validateContact.isPending}
               startIcon={
-                validateContact.isPending ? <CircularProgress size={16} color="inherit" /> : undefined
+                validateContact.isPending ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : undefined
               }
             >
               {validateContact.isPending ? "Validating..." : "Next"}
@@ -296,7 +314,10 @@ export default function AddUserModal({
                   htmlFor="add-user-firstname"
                   sx={{ display: "block", mb: 1, fontSize: "0.875rem" }}
                 >
-                  First Name <span style={{ color: "var(--oxygen-palette-error-main)" }}>*</span>
+                  First Name{" "}
+                  <span style={{ color: "var(--oxygen-palette-error-main)" }}>
+                    *
+                  </span>
                 </InputLabel>
                 <Input
                   id="add-user-firstname"
@@ -353,7 +374,9 @@ export default function AddUserModal({
                   renderValue={() => {
                     const RoleIcon = selectedRole?.Icon;
                     return RoleIcon ? (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <RoleIcon size={16} />
                         {selectedRole?.label ?? role}
                       </Box>
@@ -366,7 +389,9 @@ export default function AddUserModal({
                     const RoleIcon = r.Icon;
                     return (
                       <MenuItem key={r.id} value={r.id}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           <RoleIcon size={16} />
                           {r.label}
                         </Box>
@@ -378,7 +403,11 @@ export default function AddUserModal({
             </Box>
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button variant="outlined" onClick={handleBackToEmail} disabled={isSubmitting}>
+            <Button
+              variant="outlined"
+              onClick={handleBackToEmail}
+              disabled={isSubmitting}
+            >
               Back
             </Button>
             <Button

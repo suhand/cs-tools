@@ -55,11 +55,13 @@ vi.mock("@utils/casesTable", () => ({
   getSeverityColor: () => "#fa7b3f",
 }));
 
-function renderDetailsPanel(props: {
-  data?: Partial<CaseDetails>;
-  isError?: boolean;
-  isServiceRequest?: boolean;
-} = {}) {
+function renderDetailsPanel(
+  props: {
+    data?: Partial<CaseDetails>;
+    isError?: boolean;
+    isServiceRequest?: boolean;
+  } = {},
+) {
   return render(
     <MemoryRouter initialEntries={["/projects/p1/support/cases/case-001"]}>
       <Routes>

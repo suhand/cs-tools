@@ -16,7 +16,7 @@
 
 import { Box } from "@wso2/oxygen-ui";
 import { type JSX } from "react";
-import SupportStatGrid from "@components/common/stat-grid/SupportStatGrid";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
 import { SUPPORT_STAT_CONFIGS } from "@constants/supportConstants";
 import type { ProjectSupportStats } from "@/types/projects";
 
@@ -39,7 +39,7 @@ export default function CasesOverviewStatCard({
 }: CasesOverviewStatCardProps): JSX.Element {
   return (
     <Box>
-      <SupportStatGrid
+      <ListStatGrid
         isLoading={isLoading}
         isError={isError}
         entityName="support"

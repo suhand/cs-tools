@@ -14,13 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Skeleton,
-} from "@wso2/oxygen-ui";
+import { Box, Card, CardContent, Typography, Skeleton } from "@wso2/oxygen-ui";
 import { Clock } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
 

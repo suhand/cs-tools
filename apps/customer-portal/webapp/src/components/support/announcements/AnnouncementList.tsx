@@ -25,7 +25,8 @@ import {
   getStatusIconElement,
   resolveColorFromTheme,
 } from "@utils/support";
-import AllCasesListSkeleton from "@components/support/all-cases/AllCasesListSkeleton";
+
+import ListSkeleton from "@components/common/list-view/ListSkeleton";
 import EmptyIcon from "@components/common/empty-state/EmptyIcon";
 import SearchNoResultsIcon from "@components/common/empty-state/SearchNoResultsIcon";
 
@@ -52,7 +53,7 @@ export default function AnnouncementList({
   const theme = useTheme();
 
   if (isLoading) {
-    return <AllCasesListSkeleton compact />;
+    return <ListSkeleton compact />;
   }
 
   if (cases.length === 0) {

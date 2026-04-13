@@ -70,7 +70,9 @@ export interface SettingsRegistryTokensProps {
 }
 
 /** Derive token status from its fields. */
-function getTokenStatus(token: RegistryToken): "Active" | "Expired" | "Revoked" {
+function getTokenStatus(
+  token: RegistryToken,
+): "Active" | "Expired" | "Revoked" {
   if (token.disable) return "Revoked";
   if (token.expiresAt && token.expiresAt > 0) {
     const nowSec = Math.floor(Date.now() / 1000);
@@ -163,7 +165,9 @@ export default function SettingsRegistryTokens({
 
   const [generateModalOpen, setGenerateModalOpen] = useState(false);
   const [deleteToken, setDeleteToken] = useState<RegistryToken | null>(null);
-  const [regenerateToken, setRegenerateToken] = useState<RegistryToken | null>(null);
+  const [regenerateToken, setRegenerateToken] = useState<RegistryToken | null>(
+    null,
+  );
 
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [menuToken, setMenuToken] = useState<RegistryToken | null>(null);
@@ -185,11 +189,15 @@ export default function SettingsRegistryTokens({
   );
 
   const stats = useMemo(() => {
-    const active = allTokens.filter((t) => getTokenStatus(t) === "Active").length;
+    const active = allTokens.filter(
+      (t) => getTokenStatus(t) === "Active",
+    ).length;
     const revokedOrExpired = allTokens.filter(
       (t) => getTokenStatus(t) === "Expired" || getTokenStatus(t) === "Revoked",
     ).length;
-    const expiringSoon = allTokens.filter((t) => expiresWithinDays(t, 7)).length;
+    const expiringSoon = allTokens.filter((t) =>
+      expiresWithinDays(t, 7),
+    ).length;
     return {
       total: allTokens.length,
       active,
@@ -294,20 +302,18 @@ export default function SettingsRegistryTokens({
               <StatCard
                 label={card.label}
                 value={
-                  isTableLoading ? (
-                    ((
-                      <Skeleton
-                        data-testid="Skeleton"
-                        variant="rounded"
-                        width={60}
-                        height={24}
-                      />
-                    ) as any)
-                  ) : error ? (
-                    DASH
-                  ) : (
-                    card.value.toString()
-                  )
+                  isTableLoading
+                    ? ((
+                        <Skeleton
+                          data-testid="Skeleton"
+                          variant="rounded"
+                          width={60}
+                          height={24}
+                        />
+                      ) as any)
+                    : error
+                      ? DASH
+                      : card.value.toString()
                 }
                 icon={<Icon />}
                 iconColor={card.iconColor as any}
@@ -626,7 +632,11 @@ export default function SettingsRegistryTokens({
         open={generateModalOpen}
         onClose={() => setGenerateModalOpen(false)}
         projectId={projectId}
-        tokenType={displayTokenTab === "service" ? RegistryTokenType.SERVICE : RegistryTokenType.USER}
+        tokenType={
+          displayTokenTab === "service"
+            ? RegistryTokenType.SERVICE
+            : RegistryTokenType.USER
+        }
         isAdmin={isAdmin}
       />
 

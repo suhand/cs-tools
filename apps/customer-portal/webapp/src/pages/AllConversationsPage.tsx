@@ -22,28 +22,26 @@ import {
   type JSX,
   type ChangeEvent,
 } from "react";
-import {
-  Box,
-  Button,
-  Stack,
-  Select,
-  MenuItem,
-  Typography,
-  FormControl,
-  InputLabel,
-  Pagination,
-} from "@wso2/oxygen-ui";
-import { ArrowLeft } from "@wso2/oxygen-ui-icons-react";
+import { Box, Stack } from "@wso2/oxygen-ui";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import { useSearchConversations } from "@api/useSearchConversations";
 import { useGetConversationStats } from "@api/useGetConversationStats";
 import type { AllConversationsFilterValues, Conversation } from "@/types/conversations";
-import type { AllConversationsStatKey } from "@constants/supportConstants";
-import AllConversationsStatCards from "@components/support/all-conversations/AllConversationsStatCards";
-import AllConversationsSearchBar from "@components/support/all-conversations/AllConversationsSearchBar";
+import {
+  ALL_CONVERSATIONS_STAT_CONFIGS,
+  ALL_CONVERSATIONS_FILTER_DEFINITIONS,
+  type AllConversationsStatKey,
+} from "@constants/supportConstants";
+import type { CaseMetadataResponse } from "@/types/cases";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
+import ListPageHeader from "@components/common/list-view/ListPageHeader";
+import ListSearchBar from "@components/common/list-view/ListSearchBar";
+import ListFiltersPanel from "@components/common/list-view/ListFiltersPanel";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
 import AllConversationsList from "@components/support/all-conversations/AllConversationsList";
-import { hasListSearchOrFilters } from "@utils/support";
+import { hasListSearchOrFilters, countListSearchAndFilters } from "@utils/support";
 import { SortOrder } from "@/types/common";
 
 /**
@@ -158,9 +156,10 @@ export default function AllConversationsPage(): JSX.Element {
   };
 
   const handleFilterChange = (field: string, value: string) => {
+    const key = field as keyof AllConversationsFilterValues;
     setFilters((prev) => ({
       ...prev,
-      [field]: value || undefined,
+      [key]: value || undefined,
     }));
     setPage(1);
   };
@@ -190,97 +189,69 @@ export default function AllConversationsPage(): JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Box>
-        <Button
-          startIcon={<ArrowLeft size={16} />}
-          onClick={() => (returnTo ? navigate(returnTo) : navigate(".."))}
-          sx={{ mb: 2 }}
-          variant="text"
-        >
-          Back to Support Center
-        </Button>
-        <Box>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            {createdByMe ? "My Chat History" : "All Chat History"}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {createdByMe
-              ? "Browse and search your conversation history with Novera"
-              : "Browse and search your complete conversation history with Novera"}
-          </Typography>
-        </Box>
-      </Box>
-
-      <AllConversationsStatCards
-        isLoading={isStatsLoading}
-        isError={isStatsError}
-        stats={stats}
+      <ListPageHeader
+        title={createdByMe ? "My Chat History" : "All Chat History"}
+        description={
+          createdByMe
+            ? "Browse and search your conversation history with Novera"
+            : "Browse and search your complete conversation history with Novera"
+        }
+        backLabel="Back to Support Center"
+        onBack={() => (returnTo ? navigate(returnTo) : navigate(".."))}
       />
 
-      <AllConversationsSearchBar
+      <Box sx={{ mb: 3 }}>
+        <ListStatGrid
+          isLoading={isStatsLoading}
+          isError={isStatsError}
+          entityName="conversation"
+          configs={ALL_CONVERSATIONS_STAT_CONFIGS}
+          stats={stats}
+        />
+      </Box>
+
+      <ListSearchBar
+        searchPlaceholder="Search chats by message, ID, or category..."
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
-        filters={filters}
-        filterMetadata={filterMetadata}
-        onFilterChange={handleFilterChange}
+        activeFiltersCount={countListSearchAndFilters(searchTerm, filters)}
         onClearFilters={handleClearFilters}
+        filtersContent={
+          <ListFiltersPanel
+            filterDefinitions={ALL_CONVERSATIONS_FILTER_DEFINITIONS}
+            filters={filters}
+            resolveOptions={(def) => {
+              const raw = (filterMetadata as CaseMetadataResponse | undefined)?.[
+                def.metadataKey as keyof CaseMetadataResponse
+              ];
+              if (!Array.isArray(raw)) return [];
+              return raw.map((item: { label: string; id: string }) => ({
+                label: item.label,
+                value: item.id,
+              }));
+            }}
+            onFilterChange={handleFilterChange}
+          />
+        }
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {conversations.length} of {totalRecords} chat sessions
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="conversation-sort-by-label">Sort by</InputLabel>
-            <Select<"createdOn" | "updatedOn">
-              labelId="conversation-sort-by-label"
-              id="conversation-sort-by"
-              value={sortField}
-              label="Sort by"
-              onChange={(e) =>
-                handleSortFieldChange(
-                  e.target.value as "createdOn" | "updatedOn",
-                )
-              }
-            >
-              <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated on</Typography>
-              </MenuItem>
-              <MenuItem value="createdOn">
-                <Typography variant="body2">Created on</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="conversation-order-by-label">Order by</InputLabel>
-            <Select<SortOrder>
-              labelId="conversation-order-by-label"
-              id="conversation-order-by"
-              value={sortOrder}
-              label="Order by"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest first</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest first</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Box>
+      <ListResultsBar
+        shownCount={conversations.length}
+        totalCount={totalRecords}
+        entityLabel="chat sessions"
+        sortFieldOptions={[
+          { value: "updatedOn", label: "Updated on" },
+          { value: "createdOn", label: "Created on" },
+        ]}
+        sortField={sortField}
+        onSortFieldChange={(v) =>
+          handleSortFieldChange(v as "createdOn" | "updatedOn")
+        }
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
 
       <AllConversationsList
         conversations={conversations}
@@ -290,18 +261,11 @@ export default function AllConversationsPage(): JSX.Element {
         onConversationClick={handleConversationClick}
       />
 
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            variant="outlined"
-            shape="rounded"
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Stack>
   );
 }

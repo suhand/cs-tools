@@ -101,8 +101,10 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
     [changeRequest],
   );
   const decisionMode = getChangeRequestDecisionMode(changeRequest);
-  const canShowApprovalActions = decisionMode !== ChangeRequestDecisionMode.NONE;
-  const canShowProposeNewTime = decisionMode === ChangeRequestDecisionMode.CUSTOMER_APPROVAL;
+  const canShowApprovalActions =
+    decisionMode !== ChangeRequestDecisionMode.NONE;
+  const canShowProposeNewTime =
+    decisionMode === ChangeRequestDecisionMode.CUSTOMER_APPROVAL;
 
   const impactColor = getChangeRequestImpactColorShades(
     changeRequest?.impact?.label,
@@ -110,7 +112,8 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
   const statusColor = getChangeRequestStateColorShades(changeRequest?.state);
 
   const handleApproveChange = () => {
-    if (!changeRequest || decisionMode === ChangeRequestDecisionMode.NONE) return;
+    if (!changeRequest || decisionMode === ChangeRequestDecisionMode.NONE)
+      return;
     patchChangeRequest.mutate(
       decisionMode === ChangeRequestDecisionMode.CUSTOMER_APPROVAL
         ? { isCustomerApproved: true }
@@ -127,7 +130,8 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
   };
 
   const handleRejectChange = () => {
-    if (!changeRequest || decisionMode === ChangeRequestDecisionMode.NONE) return;
+    if (!changeRequest || decisionMode === ChangeRequestDecisionMode.NONE)
+      return;
     patchChangeRequest.mutate(
       decisionMode === ChangeRequestDecisionMode.CUSTOMER_APPROVAL
         ? { isCustomerApproved: false }
@@ -684,7 +688,9 @@ export default function ChangeRequestDetailsPage(): JSX.Element {
                     Created Date
                   </Typography>
                   <Typography variant="body2">
-                    {changeRequest.createdOn ? formatDateTime(changeRequest.createdOn) : "Not Available"}
+                    {changeRequest.createdOn
+                      ? formatDateTime(changeRequest.createdOn)
+                      : "Not Available"}
                   </Typography>
                 </Box>
 

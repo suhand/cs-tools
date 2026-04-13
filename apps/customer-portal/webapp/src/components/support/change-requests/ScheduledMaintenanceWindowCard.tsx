@@ -15,13 +15,7 @@
 // under the License.
 
 import { type JSX, useMemo } from "react";
-import {
-  Box,
-  Paper,
-  Typography,
-  Divider,
-  colors,
-} from "@wso2/oxygen-ui";
+import { Box, Paper, Typography, Divider, colors } from "@wso2/oxygen-ui";
 import { Calendar, Clock } from "@wso2/oxygen-ui-icons-react";
 import type { ChangeRequestDetails } from "@/types/changeRequests";
 import {
@@ -48,10 +42,10 @@ export default function ScheduledMaintenanceWindowCard({
       .duration;
     if (duration == null) return "Not available";
     const mins =
-      typeof duration === "number"
-        ? duration
-        : parseInt(String(duration), 10);
-    return Number.isNaN(mins) ? "Not available" : formatChangeRequestDuration(mins);
+      typeof duration === "number" ? duration : parseInt(String(duration), 10);
+    return Number.isNaN(mins)
+      ? "Not available"
+      : formatChangeRequestDuration(mins);
   }, [changeRequest]);
 
   return (

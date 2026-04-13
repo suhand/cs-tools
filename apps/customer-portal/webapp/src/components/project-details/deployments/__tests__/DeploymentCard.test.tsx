@@ -93,11 +93,16 @@ vi.mock("@components/project-details/deployments/EditDeploymentModal", () => ({
   default: () => null,
 }));
 
-vi.mock("@components/project-details/deployments/DeleteDeploymentModal", () => ({
-  default: () => null,
-}));
+vi.mock(
+  "@components/project-details/deployments/DeleteDeploymentModal",
+  () => ({
+    default: () => null,
+  }),
+);
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
 
 function renderWithProviders(ui: ReactElement) {
   return render(
@@ -117,7 +122,10 @@ const defaultProductSelection = {
 describe("DeploymentCard", () => {
   it("should render deployment name and url", () => {
     renderWithProviders(
-      <DeploymentCard deployment={mockDeployment} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={mockDeployment}
+        {...defaultProductSelection}
+      />,
     );
 
     expect(
@@ -131,7 +139,10 @@ describe("DeploymentCard", () => {
 
   it("should render products section", () => {
     renderWithProviders(
-      <DeploymentCard deployment={mockDeployment} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={mockDeployment}
+        {...defaultProductSelection}
+      />,
     );
 
     expect(screen.getByText("WSO2 Products")).toBeInTheDocument();
@@ -141,7 +152,10 @@ describe("DeploymentCard", () => {
 
   it("should render documents section with Upload button", () => {
     renderWithProviders(
-      <DeploymentCard deployment={mockDeployment} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={mockDeployment}
+        {...defaultProductSelection}
+      />,
     );
 
     expect(screen.getByRole("button", { name: /Upload/ })).toBeInTheDocument();
@@ -149,7 +163,10 @@ describe("DeploymentCard", () => {
 
   it("should render documents section", () => {
     renderWithProviders(
-      <DeploymentCard deployment={mockDeployment} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={mockDeployment}
+        {...defaultProductSelection}
+      />,
     );
 
     expect(screen.getByText("Documents")).toBeInTheDocument();
@@ -163,7 +180,10 @@ describe("DeploymentCard", () => {
     };
 
     renderWithProviders(
-      <DeploymentCard deployment={deploymentNoDesc} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={deploymentNoDesc}
+        {...defaultProductSelection}
+      />,
     );
 
     expect(screen.getByText("Not Available")).toBeInTheDocument();
@@ -171,10 +191,17 @@ describe("DeploymentCard", () => {
 
   it("should display Edit and Delete icon buttons", () => {
     renderWithProviders(
-      <DeploymentCard deployment={mockDeployment} {...defaultProductSelection} />,
+      <DeploymentCard
+        deployment={mockDeployment}
+        {...defaultProductSelection}
+      />,
     );
 
-    expect(screen.getByRole("button", { name: "Edit deployment" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Delete deployment" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Edit deployment" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Delete deployment" }),
+    ).toBeInTheDocument();
   });
 });

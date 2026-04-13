@@ -23,35 +23,31 @@ import {
   type ChangeEvent,
 } from "react";
 import { useLoader } from "@context/linear-loader/LoaderContext";
-import {
-  Box,
-  Button,
-  Stack,
-  Select,
-  MenuItem,
-  Typography,
-  FormControl,
-  InputLabel,
-  Pagination,
-} from "@wso2/oxygen-ui";
+import { Box, Button, Stack } from "@wso2/oxygen-ui";
 import { ArrowLeft, Plus } from "@wso2/oxygen-ui-icons-react";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { usePostProjectDeploymentsSearchInfinite } from "@api/usePostProjectDeploymentsSearch";
-import DOMPurify from "dompurify";
 import { hasListSearchOrFilters, isS0Case } from "@utils/support";
-import { CaseType } from "@constants/supportConstants";
+import {
+  CaseType,
+  ALL_CASES_STAT_CONFIGS,
+  getAllCasesFlattenedStats,
+} from "@constants/supportConstants";
 import {
   getProjectPermissions,
   shouldExcludeS0,
 } from "@utils/subscriptionUtils";
 import { SortOrder } from "@/types/common";
 import type { AllCasesFilterValues } from "@/types/cases";
-import AllCasesStatCards from "@components/support/all-cases/AllCasesStatCards";
-import AllCasesSearchBar from "@components/support/all-cases/AllCasesSearchBar";
-import AllCasesList from "@components/support/all-cases/AllCasesList";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
+import ListPageHeader from "@components/common/list-view/ListPageHeader";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
+import ListSearchPanel from "@components/common/list-view/ListSearchPanel";
+import ListItems from "@components/common/list-view/ListItems";
 import ErrorIndicator from "@components/common/error-indicator/ErrorIndicator";
 
 /**
@@ -276,61 +272,45 @@ export default function ServiceRequestsPage(): JSX.Element {
     );
   }
 
+  const newRequestButton = (
+    <Button
+      variant="contained"
+      color="primary"
+      startIcon={<Plus size={16} />}
+      onClick={handleNewServiceRequest}
+      sx={{ mt: { xs: 0, sm: 4 } }}
+    >
+      New Service Request
+    </Button>
+  );
+
   return (
     <Stack spacing={3}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-        }}
-      >
-        <Box>
-          <Button
-            startIcon={<ArrowLeft size={16} />}
-            onClick={() => navigate("..")}
-            sx={{ mb: 2 }}
-            variant="text"
-          >
-            Back
-          </Button>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            {createdByMe ? "My Service Requests" : "All Service Requests"}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            component="div"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted static copy rendered as HTML by request
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(
-                createdByMe
-                  ? "Manage and track your service requests"
-                  : "Manage deployments, operations, infrastructure change, and service configurations",
-              ),
-            }}
-          />
-        </Box>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<Plus size={16} />}
-          onClick={handleNewServiceRequest}
-          sx={{ mt: 4 }}
-        >
-          New Service Request
-        </Button>
-      </Box>
-
-      <AllCasesStatCards
-        isLoading={isStatsLoading}
-        isError={isStatsError}
-        stats={stats}
-        statEntityName="service request"
+      <ListPageHeader
+        title={createdByMe ? "My Service Requests" : "All Service Requests"}
+        description={
+          createdByMe
+            ? "Manage and track your service requests"
+            : "Manage deployments, operations, infrastructure change, and service configurations"
+        }
+        backLabel="Back"
+        onBack={() => (returnTo ? navigate(returnTo) : navigate(".."))}
+        actions={newRequestButton}
       />
 
-      <AllCasesSearchBar
+      <Box sx={{ mb: 3 }}>
+        <ListStatGrid
+          isLoading={isStatsLoading}
+          isError={isStatsError}
+          entityName="service request"
+          configs={ALL_CASES_STAT_CONFIGS}
+          stats={getAllCasesFlattenedStats(stats)}
+        />
+      </Box>
+
+      <ListSearchPanel
         searchTerm={searchTerm}
+        searchPlaceholder="Search service requests by ID, title, or description..."
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -357,75 +337,32 @@ export default function ServiceRequestsPage(): JSX.Element {
         isProjectContextLoading={isProjectContextLoading}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {paginatedCases.length} of {totalItems} service requests
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sr-sort-by-label">Sort by</InputLabel>
-            <Select<"createdOn" | "updatedOn" | "severity" | "state">
-              labelId="sr-sort-by-label"
-              id="sr-sort-by"
-              value={sortField}
-              label="Sort by"
-              onChange={(e) =>
-                handleSortFieldChange(
-                  e.target.value as
-                    | "createdOn"
-                    | "updatedOn"
-                    | "severity"
-                    | "state",
-                )
-              }
-            >
-              <MenuItem value="createdOn">
-                <Typography variant="body2">Created on</Typography>
-              </MenuItem>
-              <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated on</Typography>
-              </MenuItem>
-              <MenuItem value="severity">
-                <Typography variant="body2">Severity</Typography>
-              </MenuItem>
-              <MenuItem value="state">
-                <Typography variant="body2">State</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sr-order-by-label">Order by</InputLabel>
-            <Select<SortOrder>
-              labelId="sr-order-by-label"
-              id="sr-order-by"
-              value={sortOrder}
-              label="Order by"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest first</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest first</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Box>
+      <ListResultsBar
+        shownCount={paginatedCases.length}
+        totalCount={totalItems}
+        entityLabel="service requests"
+        sortFieldOptions={[
+          { value: "createdOn", label: "Created on" },
+          { value: "updatedOn", label: "Updated on" },
+          { value: "severity", label: "Severity" },
+          { value: "state", label: "State" },
+        ]}
+        sortField={sortField}
+        onSortFieldChange={(v) =>
+          handleSortFieldChange(
+            v as "createdOn" | "updatedOn" | "severity" | "state",
+          )
+        }
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
 
-      <AllCasesList
+      <ListItems
         cases={paginatedCases}
         isLoading={isCasesAreaLoading && !isCasesError}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="service requests"
         onCaseClick={(c) =>
           navigate(
             `/projects/${projectId}/${basePath}/service-requests/${c.id}`,
@@ -433,18 +370,11 @@ export default function ServiceRequestsPage(): JSX.Element {
         }
       />
 
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            variant="outlined"
-            shape="rounded"
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Stack>
   );
 }

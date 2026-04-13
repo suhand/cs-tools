@@ -115,32 +115,61 @@ export const SEVERITY_LABEL_TO_DISPLAY: Record<string, string> = {
 };
 
 /** S0 (Catastrophic) severity API labels - used when filtering out S0 for non-Managed Cloud Subscription projects. */
-export const S0_SEVERITY_LABELS = ["Catastrophic (P0)", "0 - Catastrophic", "0 - catastrophic"] as const;
+export const S0_SEVERITY_LABELS = [
+  "Catastrophic (P0)",
+  "0 - Catastrophic",
+  "0 - catastrophic",
+] as const;
 
 /** Returns true if the severity label corresponds to S0 (Catastrophic). */
 export function isS0SeverityLabel(label?: string | null): boolean {
   if (!label?.trim()) return false;
   const trimmed = label.trim().toLowerCase();
-  return S0_SEVERITY_LABELS.some(
-    (l) => l.toLowerCase() === trimmed,
-  );
+  return S0_SEVERITY_LABELS.some((l) => l.toLowerCase() === trimmed);
 }
 
 // Legend display format: "S{n} - {Severity}". Same order for Outstanding Engagements and Cases Trend.
 // Order: S0 - Catastrophic (highest), S1 - Critical, S2 - High, S3 - Medium, S4 - Low (lowest).
 // Matches SEVERITY_LABEL_TO_DISPLAY: Catastrophic (P0)→S0, Critical (P1)→S1, etc.
 export const SEVERITY_LEGEND_ORDER = [
-  { key: "catastrophic", label: "Catastrophic (P0)", displayName: "S0 - Catastrophic", color: colors.red[500] },
-  { key: "critical", label: "Critical (P1)", displayName: "S1 - Critical", color: colors.orange[500] },
-  { key: "high", label: "High (P2)", displayName: "S2 - High", color: colors.yellow[700] },
-  { key: "medium", label: "Medium (P3)", displayName: "S3 - Medium", color: colors.blue[500] },
-  { key: "low", label: "Low (P4)", displayName: "S4 (Queries) - Low", color: colors.green[500] },
+  {
+    key: "catastrophic",
+    label: "Catastrophic (P0)",
+    displayName: "S0 - Catastrophic",
+    color: colors.red[500],
+  },
+  {
+    key: "critical",
+    label: "Critical (P1)",
+    displayName: "S1 - Critical",
+    color: colors.orange[500],
+  },
+  {
+    key: "high",
+    label: "High (P2)",
+    displayName: "S2 - High",
+    color: colors.yellow[700],
+  },
+  {
+    key: "medium",
+    label: "Medium (P3)",
+    displayName: "S3 - Medium",
+    color: colors.blue[500],
+  },
+  {
+    key: "low",
+    label: "Low (P4)",
+    displayName: "S4 (Queries) - Low",
+    color: colors.green[500],
+  },
 ] as const;
 
 export const OUTSTANDING_INCIDENTS_CHART_DATA = SEVERITY_LEGEND_ORDER;
 
 /** API severity labels in chart order (catastrophic, critical, high, medium, low) for casesTrend mapping. */
-export const SEVERITY_API_LABELS = SEVERITY_LEGEND_ORDER.map((item) => item.label);
+export const SEVERITY_API_LABELS = SEVERITY_LEGEND_ORDER.map(
+  (item) => item.label,
+);
 
 /** Alternate severity labels for announcements (e.g. "1 - Critical", "2 - High") mapped to legend keys. */
 export const SEVERITY_ALT_TO_LEGEND_KEY: Record<string, string> = {
@@ -170,13 +199,15 @@ export function getSeverityFriendlyLabel(label?: string): string {
   if (!label?.trim()) return "--";
   const trimmed = label.trim().toLowerCase();
   const entry =
-    SEVERITY_LEGEND_ORDER.find((item) => item.label.toLowerCase() === trimmed) ??
+    SEVERITY_LEGEND_ORDER.find(
+      (item) => item.label.toLowerCase() === trimmed,
+    ) ??
     (SEVERITY_ALT_TO_LEGEND_KEY[trimmed]
       ? SEVERITY_LEGEND_ORDER.find(
           (item) => item.key === SEVERITY_ALT_TO_LEGEND_KEY[trimmed],
         )
       : undefined);
-  return entry ? SEVERITY_FRIENDLY_LABEL[entry.key] ?? entry.label : label;
+  return entry ? (SEVERITY_FRIENDLY_LABEL[entry.key] ?? entry.label) : label;
 }
 
 /**
@@ -191,9 +222,7 @@ export function getSeverityLegendColor(label?: string): string {
   const trimmed = label.trim();
   const lower = trimmed.toLowerCase();
   const entry =
-    SEVERITY_LEGEND_ORDER.find(
-      (item) => item.label.toLowerCase() === lower,
-    ) ??
+    SEVERITY_LEGEND_ORDER.find((item) => item.label.toLowerCase() === lower) ??
     (SEVERITY_ALT_TO_LEGEND_KEY[lower]
       ? SEVERITY_LEGEND_ORDER.find(
           (item) => item.key === SEVERITY_ALT_TO_LEGEND_KEY[lower],
@@ -231,8 +260,13 @@ export const CASES_TREND_CHART_DATA: CasesTrendChartDataItem[] =
     name: item.displayName,
     key: item.key,
     color: item.color,
-    ...(i === 0 && { radius: [0, 0, 4, 4] as [number, number, number, number] }),
-    ...(i === 4 && { radius: [4, 4, 0, 0] as [number, number, number, number], border: true }),
+    ...(i === 0 && {
+      radius: [0, 0, 4, 4] as [number, number, number, number],
+    }),
+    ...(i === 4 && {
+      radius: [4, 4, 0, 0] as [number, number, number, number],
+      border: true,
+    }),
   }));
 
 /** Case type display config for Outstanding Engagements table Type column. */

@@ -49,9 +49,7 @@ import type { Message } from "@/types/conversations";
 import { buildEnvProducts } from "@utils/caseCreation";
 import { filterDeploymentsForCaseCreation } from "@utils/subscriptionUtils";
 import { getFinalMessageFromPayload } from "@utils/chat";
-import {
-  NOVERA_ANALYZING_PLACEHOLDER_TEXT,
-} from "@constants/chatConstants";
+import { NOVERA_ANALYZING_PLACEHOLDER_TEXT } from "@constants/chatConstants";
 import { ChatSender } from "@/types/conversations";
 import ChatMessageBubble from "@components/support/novera-ai-assistant/novera-chat-page/ChatMessageBubble";
 import LoadingDotsBubble from "@components/support/novera-ai-assistant/novera-chat-page/LoadingDotsBubble";

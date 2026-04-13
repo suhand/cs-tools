@@ -33,20 +33,25 @@ export default function usePostDeploymentInstancesSearch(
   payload: InstanceSearchRequest = {},
 ) {
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  
+
   const authFetch = useAuthApiClient();
 
   return useQuery<InstancesResponse>({
     queryKey: [ApiQueryKeys.DEPLOYMENT_INSTANCES_SEARCH, deploymentId, payload],
     queryFn: async () => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
-      const response = await authFetch(`${baseUrl}/deployments/${deploymentId}/instances/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await authFetch(
+        `${baseUrl}/deployments/${deploymentId}/instances/search`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       if (!response.ok) {
-        throw new Error(`Failed to search deployment instances: ${response.status}`);
+        throw new Error(
+          `Failed to search deployment instances: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstancesResponse>;
     },

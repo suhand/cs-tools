@@ -14,20 +14,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import type { PaginationResponse } from "./common";
+import type { MetadataItem, PaginationResponse } from "@/types/common";
 
 // Item type for a catalog item within a catalog.
-export type CatalogItem = {
-  id: string;
-  label: string;
-}
+export type CatalogItem = MetadataItem;
 
 // Model type for a catalog with its items.
 export type Catalog = {
   id: string;
   name: string;
-  catalogItems: CatalogItem[];
-}
+  catalogItems: MetadataItem[];
+};
 
 // Response type for catalogs search results.
 export type CatalogSearchResponse = PaginationResponse & {
@@ -40,12 +37,12 @@ export type CatalogItemVariable = {
   questionText: string;
   order: number;
   type: string;
-}
+};
 
 // Response type for catalog item variables.
 export type CatalogItemVariablesResponse = {
   variables: CatalogItemVariable[];
-}
+};
 
 // Item type for a service request variable.
 export type ServiceRequestVariable = {
@@ -69,4 +66,4 @@ export type CreateServiceRequestPayload = {
   catalogItemId: string;
   variables: ServiceRequestVariable[];
   attachments?: ServiceRequestAttachment[];
-}
+};

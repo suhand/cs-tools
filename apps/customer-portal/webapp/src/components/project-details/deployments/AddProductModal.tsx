@@ -194,7 +194,10 @@ export default function AddProductModal({
       prevProducts.map((p) => p.id).filter((id): id is string => Boolean(id)),
     );
     const newProductItems = pageItems.filter(
-      (p) => typeof p.id === "string" && p.id.length > 0 && !prevProductIds.has(p.id),
+      (p) =>
+        typeof p.id === "string" &&
+        p.id.length > 0 &&
+        !prevProductIds.has(p.id),
     );
     const mergedProductsLen = prevProducts.length + newProductItems.length;
 
@@ -211,10 +214,11 @@ export default function AddProductModal({
     setProducts([...prevProducts, ...newProductItems]);
   }, [productsPage, products]);
 
-  const productsTotalRecords =
-    cachedProductsTotalRecords ??
-    productsPage?.totalRecords ??
-    products.length;
+  const productsTotalRecords = Number.isFinite(cachedProductsTotalRecords)
+    ? (cachedProductsTotalRecords as number)
+    : Number.isFinite(productsPage?.totalRecords)
+      ? (productsPage!.totalRecords as number)
+      : products.length;
   const canLoadMoreProducts = products.length < productsTotalRecords;
 
   const handleProductsScroll = useCallback(
@@ -300,7 +304,10 @@ export default function AddProductModal({
       prevVersions.map((v) => v.id).filter((id): id is string => Boolean(id)),
     );
     const newVersionItems = pageItems.filter(
-      (v) => typeof v.id === "string" && v.id.length > 0 && !prevVersionIds.has(v.id),
+      (v) =>
+        typeof v.id === "string" &&
+        v.id.length > 0 &&
+        !prevVersionIds.has(v.id),
     );
     const mergedVersionsLen = prevVersions.length + newVersionItems.length;
 
@@ -318,10 +325,11 @@ export default function AddProductModal({
   }, [form.productId, versionsPage, versions]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const versionsTotalRecords =
-    cachedVersionsTotalRecords ??
-    versionsPage?.totalRecords ??
-    versions.length;
+  const versionsTotalRecords = Number.isFinite(cachedVersionsTotalRecords)
+    ? (cachedVersionsTotalRecords as number)
+    : Number.isFinite(versionsPage?.totalRecords)
+      ? (versionsPage!.totalRecords as number)
+      : versions.length;
   const canLoadMoreVersions = versions.length < versionsTotalRecords;
 
   /**
@@ -512,7 +520,8 @@ export default function AddProductModal({
             }}
             SelectProps={{
               MenuProps: {
-                MenuListProps: paginatedSelectMenuListProps(handleProductsScroll),
+                MenuListProps:
+                  paginatedSelectMenuListProps(handleProductsScroll),
                 PaperProps: {
                   sx: { zIndex: 1400 },
                 },
@@ -526,9 +535,7 @@ export default function AddProductModal({
               </MenuItem>
             ))}
             <SelectMenuLoadMoreRow
-              visible={Boolean(
-                canLoadMoreProducts && isFetchingMoreProducts,
-              )}
+              visible={Boolean(canLoadMoreProducts && isFetchingMoreProducts)}
             />
             {(isLoadingProducts || isFetchingProducts) &&
               products.length === 0 && (
@@ -553,7 +560,8 @@ export default function AddProductModal({
             }}
             SelectProps={{
               MenuProps: {
-                MenuListProps: paginatedSelectMenuListProps(handleVersionsScroll),
+                MenuListProps:
+                  paginatedSelectMenuListProps(handleVersionsScroll),
                 PaperProps: {
                   sx: { zIndex: 1400 },
                 },
@@ -567,9 +575,7 @@ export default function AddProductModal({
               </MenuItem>
             ))}
             <SelectMenuLoadMoreRow
-              visible={Boolean(
-                canLoadMoreVersions && isFetchingMoreVersions,
-              )}
+              visible={Boolean(canLoadMoreVersions && isFetchingMoreVersions)}
             />
             {(isLoadingVersions || isFetchingVersions) &&
               versions.length === 0 && (

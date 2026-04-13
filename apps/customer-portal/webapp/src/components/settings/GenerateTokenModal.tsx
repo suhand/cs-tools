@@ -62,7 +62,9 @@ export default function GenerateTokenModal({
 }: GenerateTokenModalProps): JSX.Element {
   const [robotName, setRobotName] = useState("");
   const [robotNameError, setRobotNameError] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<IntegrationUser | null>(null);
+  const [selectedUser, setSelectedUser] = useState<IntegrationUser | null>(
+    null,
+  );
   const [createdForError, setCreatedForError] = useState<string | null>(null);
 
   const [secret, setSecret] = useState<string | null>(null);
@@ -71,10 +73,11 @@ export default function GenerateTokenModal({
   const [copiedName, setCopiedName] = useState(false);
 
   const createMutation = useCreateRegistryToken(projectId);
-  const {
-    data: integrationUsers = [],
-    isLoading: isLoadingUsers,
-  } = useGetIntegrationUsers(projectId, tokenType === RegistryTokenType.SERVICE && isAdmin);
+  const { data: integrationUsers = [], isLoading: isLoadingUsers } =
+    useGetIntegrationUsers(
+      projectId,
+      tokenType === RegistryTokenType.SERVICE && isAdmin,
+    );
 
   function validateRobotName(value: string): string | null {
     if (!value.trim()) return "Token name is required.";
@@ -113,6 +116,7 @@ export default function GenerateTokenModal({
   }
 
   function handleClose() {
+    if (createMutation.isPending) return;
     setRobotName("");
     setRobotNameError(null);
     setSelectedUser(null);
@@ -164,8 +168,8 @@ export default function GenerateTokenModal({
         {isSecretStep ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
             <Alert severity="warning" sx={{ borderRadius: 1 }}>
-              <strong>Important:</strong> Copy and save this secret now. You will
-              not be able to see it again after closing this dialog.
+              <strong>Important:</strong> Copy and save this secret now. You
+              will not be able to see it again after closing this dialog.
             </Alert>
             <TextField
               label="Token Name"
@@ -230,7 +234,9 @@ export default function GenerateTokenModal({
             />
           </Box>
         ) : (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}>
+          <Box
+            sx={{ display: "flex", flexDirection: "column", gap: 2.5, pt: 1 }}
+          >
             <Typography variant="body2" color="text.secondary">
               {tokenType === RegistryTokenType.USER
                 ? "Generate a personal registry token for WSO2 Updates 2.0 access. The token will be created for your account."
@@ -245,7 +251,8 @@ export default function GenerateTokenModal({
               value={robotName}
               onChange={(e) => {
                 setRobotName(e.target.value);
-                if (robotNameError) setRobotNameError(validateRobotName(e.target.value));
+                if (robotNameError)
+                  setRobotNameError(validateRobotName(e.target.value));
               }}
               onBlur={() => setRobotNameError(validateRobotName(robotName))}
               error={!!robotNameError}

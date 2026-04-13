@@ -82,7 +82,8 @@ export default function DeleteTokenModal({
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}>
           <Typography variant="body2">
             Are you sure you want to delete the token{" "}
-            <strong>{token?.displayName ?? token?.name ?? "this token"}</strong>?
+            <strong>{token?.displayName ?? token?.name ?? "this token"}</strong>
+            ?
           </Typography>
           <Typography variant="body2" color="text.secondary">
             This action cannot be undone. Any systems using this token will lose

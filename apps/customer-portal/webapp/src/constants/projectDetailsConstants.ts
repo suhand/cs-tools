@@ -41,7 +41,6 @@ export interface Stat {
   key: keyof NonNullable<ProjectStatsResponse["projectStats"]>;
 }
 
-
 export const PROJECT_DETAILS_TABS: TabOption[] = [
   {
     id: "overview",

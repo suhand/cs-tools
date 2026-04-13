@@ -22,7 +22,7 @@ import {
   CircleAlert,
 } from "@wso2/oxygen-ui-icons-react";
 import type { ProjectCasesStats } from "@/types/cases";
-import SupportStatGrid from "@components/common/stat-grid/SupportStatGrid";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
 import type { SupportStatConfig } from "@constants/supportConstants";
 import {
   SUPPORT_STATE_AWAITING_INFO,
@@ -96,7 +96,7 @@ export default function EngagementsStatCards({
   }, [stats]);
 
   return (
-    <SupportStatGrid<EngagementsStatKey>
+    <ListStatGrid<EngagementsStatKey>
       isLoading={isLoading}
       configs={configs}
       stats={flattened}

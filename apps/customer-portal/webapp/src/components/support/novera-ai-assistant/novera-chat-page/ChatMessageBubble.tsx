@@ -199,7 +199,8 @@ export default function ChatMessageBubble({
   useEffect(() => {
     if (!message.isStreaming) return;
     if (!streamContainerRef.current) return;
-    streamContainerRef.current.scrollTop = streamContainerRef.current.scrollHeight;
+    streamContainerRef.current.scrollTop =
+      streamContainerRef.current.scrollHeight;
   }, [message.isStreaming, streamBodyText]);
 
   // Safely format timestamp with fallback for invalid dates

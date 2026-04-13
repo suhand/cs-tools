@@ -37,7 +37,11 @@ export default function usePostDeployedProductInstancesMetricsSearch(
   const authFetch = useAuthApiClient();
 
   return useQuery<InstanceMetricsResponse>({
-    queryKey: [ApiQueryKeys.DEPLOYED_PRODUCT_INSTANCE_METRICS, deployedProductId, payload],
+    queryKey: [
+      ApiQueryKeys.DEPLOYED_PRODUCT_INSTANCE_METRICS,
+      deployedProductId,
+      payload,
+    ],
     queryFn: async () => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
       const response = await authFetch(
@@ -49,7 +53,9 @@ export default function usePostDeployedProductInstancesMetricsSearch(
         },
       );
       if (!response.ok) {
-        throw new Error(`Failed to search deployed product instance metrics: ${response.status}`);
+        throw new Error(
+          `Failed to search deployed product instance metrics: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceMetricsResponse>;
     },

@@ -16,31 +16,26 @@
 
 import { useParams, useNavigate } from "react-router";
 import { useState, useMemo, type JSX, type ChangeEvent } from "react";
-import {
-  Box,
-  Button,
-  Stack,
-  Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Pagination,
-} from "@wso2/oxygen-ui";
-import { ArrowLeft } from "@wso2/oxygen-ui-icons-react";
+import { Stack } from "@wso2/oxygen-ui";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import { useGetProjectCasesPage } from "@api/useGetProjectCasesPage";
 import { CaseType } from "@constants/supportConstants";
 import type { AnnouncementFilterValues } from "@constants/supportConstants";
-import AnnouncementsSearchBar from "@components/support/announcements/AnnouncementsSearchBar";
+import {
+  ANNOUNCEMENT_FILTER_DEFINITIONS,
+} from "@constants/supportConstants";
+import type { CaseMetadataResponse } from "@/types/cases";
 import AnnouncementList from "@components/support/announcements/AnnouncementList";
-import { hasListSearchOrFilters } from "@utils/support";
+import { hasListSearchOrFilters, countListSearchAndFilters } from "@utils/support";
 import { SortOrder } from "@/types/common";
-import AllCasesListSkeleton from "@components/support/all-cases/AllCasesListSkeleton";
-import DOMPurify from "dompurify";
+import ListPageHeader from "@components/common/list-view/ListPageHeader";
+import ListSearchBar from "@components/common/list-view/ListSearchBar";
+import ListFiltersPanel from "@components/common/list-view/ListFiltersPanel";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
 
 /**
- * AnnouncementsPage component to display announcements with stats, search, and filters (filter dropdowns disabled).
+ * AnnouncementsPage component to display announcements with search, filters, and pagination.
  *
  * @returns {JSX.Element} The rendered Announcements page.
  */
@@ -84,7 +79,6 @@ export default function AnnouncementsPage(): JSX.Element {
   const cases = data?.cases ?? [];
   const totalRecords = data?.totalRecords ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalRecords / pageSize));
-  const isCasesAreaLoading = isCasesQueryLoading;
 
   const handlePageChange = (_event: ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -115,99 +109,69 @@ export default function AnnouncementsPage(): JSX.Element {
 
   return (
     <Stack spacing={3}>
-      <Box>
-        <Button
-          startIcon={<ArrowLeft size={16} />}
-          onClick={() => navigate("..")}
-          sx={{ mb: 2 }}
-          variant="text"
-        >
-          Back
-        </Button>
-        <Box>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            Announcements
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            component="div"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(
-                "View and manage announcements for your project",
-              ),
-            }}
-          />
-        </Box>
-      </Box>
+      <ListPageHeader
+        title="Announcements"
+        description="View and manage announcements for your project"
+        backLabel="Back"
+        onBack={() => navigate("..")}
+      />
 
-      <AnnouncementsSearchBar
+      <ListSearchBar
+        searchPlaceholder="Search announcements..."
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
-        filters={filters}
-        filterMetadata={filterMetadata}
-        onFilterChange={handleFilterChange}
+        activeFiltersCount={countListSearchAndFilters(searchTerm, filters)}
         onClearFilters={handleClearFilters}
+        filtersContent={
+          <ListFiltersPanel
+            filterDefinitions={ANNOUNCEMENT_FILTER_DEFINITIONS}
+            filters={filters}
+            resolveOptions={(def) => {
+              const raw = (filterMetadata as CaseMetadataResponse | undefined)?.[
+                def.metadataKey as keyof CaseMetadataResponse
+              ];
+              if (!Array.isArray(raw)) return [];
+              const options = raw.map((item: { label: string; id: string }) => ({
+                label: item.label,
+                value: def.useLabelAsValue ? item.label : item.id,
+              }));
+              if (def.metadataKey === "caseStates") {
+                return options.filter((o) => o.value === "1" || o.value === "3");
+              }
+              return options;
+            }}
+            onFilterChange={handleFilterChange}
+          />
+        }
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {cases.length} of {totalRecords} announcements
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="announcements-order-by-label">Order by</InputLabel>
-            <Select<SortOrder>
-              labelId="announcements-order-by-label"
-              id="announcements-order-by"
-              value={sortOrder}
-              label="Order by"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest first</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest first</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Box>
+      <ListResultsBar
+        shownCount={cases.length}
+        totalCount={totalRecords}
+        entityLabel="announcements"
+        sortFieldOptions={[
+          { value: "createdOn", label: "Created date" },
+        ]}
+        sortField="createdOn"
+        onSortFieldChange={() => undefined}
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
 
-      {isCasesAreaLoading ? (
-        <AllCasesListSkeleton />
-      ) : (
-        <AnnouncementList
-          cases={cases}
-          isLoading={false}
-          hasListRefinement={listHasRefinement}
-          onCaseClick={(c) => navigate(`/projects/${projectId}/announcements/${c.id}`)}
-        />
-      )}
+      <AnnouncementList
+        cases={cases}
+        isLoading={isCasesQueryLoading}
+        hasListRefinement={listHasRefinement}
+        onCaseClick={(c) => navigate(`/projects/${projectId}/announcements/${c.id}`)}
+      />
 
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            variant="outlined"
-            shape="rounded"
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Stack>
   );
 }

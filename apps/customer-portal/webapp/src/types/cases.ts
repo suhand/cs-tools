@@ -273,6 +273,7 @@ export type CaseMetadataResponse = {
 
 // Model type for all cases filter values state.
 export type AllCasesFilterValues = {
+  [key: string]: string | undefined;
   statusId?: string;
   severityId?: string;
   issueTypes?: string;

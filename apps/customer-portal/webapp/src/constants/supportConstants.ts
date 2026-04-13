@@ -41,8 +41,10 @@ import {
 } from "@wso2/oxygen-ui-icons-react";
 import { type ComponentType } from "react";
 import type { ProjectSupportStats } from "@/types/projects";
-import type { ProjectCasesStats, CaseMetadataResponse, AllCasesFilterValues } from "@/types/cases";
-import type { AllConversationsFilterValues } from "@/types/conversations";
+import type {
+  ProjectCasesStats,
+  CaseMetadataResponse,
+} from "@/types/cases";
 
 // Chat actions for the history list.
 export const ChatAction = {
@@ -365,7 +367,7 @@ export const SERVICE_REQUEST_BULLET_ITEMS = [
 export interface AllCasesFilterDefinition {
   id: string;
   metadataKey: keyof CaseMetadataResponse;
-  filterKey: keyof AllCasesFilterValues;
+  filterKey: string;
   useLabelAsValue?: boolean;
 }
 
@@ -405,7 +407,7 @@ export const ALL_CONVERSATIONS_STAT_CONFIGS: SupportStatConfig<AllConversationsS
 export interface AllConversationsFilterDefinition {
   id: string;
   metadataKey: keyof CaseMetadataResponse;
-  filterKey: keyof AllConversationsFilterValues;
+  filterKey: string;
 }
 
 /**
@@ -497,6 +499,7 @@ export const ANNOUNCEMENT_STAT_CONFIGS: SupportStatConfig<AnnouncementStatKey>[]
  * Filter values for announcements page.
  */
 export interface AnnouncementFilterValues {
+  [key: string]: string | undefined;
   statusId?: string;
 }
 
@@ -504,7 +507,7 @@ export interface AnnouncementFilterValues {
  * Announcement filter definitions (status only).
  */
 export const ANNOUNCEMENT_FILTER_DEFINITIONS: Array<{
-  filterKey: keyof AnnouncementFilterValues;
+  filterKey: string;
   id: string;
   metadataKey: keyof CaseMetadataResponse;
   useLabelAsValue?: boolean;

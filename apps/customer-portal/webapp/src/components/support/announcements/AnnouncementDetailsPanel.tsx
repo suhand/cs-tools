@@ -261,7 +261,7 @@ export default function AnnouncementDetailsPanel({
           engineerInitials={
             typeof data.assignedEngineer === "object" &&
             data.assignedEngineer?.name
-              ? data.assignedEngineer.name.split(" ")[0]?.[0] ?? ""
+              ? (data.assignedEngineer.name.split(" ")[0]?.[0] ?? "")
               : ""
           }
           closedOn={data.closedOn}

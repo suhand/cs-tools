@@ -100,7 +100,10 @@ export default function ServiceHoursStatCards({
             <Typography variant="body2" color="text.secondary">
               Query Hours
             </Typography>
-            <Box component="span" sx={{ color: "info.main", display: "inline-flex" }}>
+            <Box
+              component="span"
+              sx={{ color: "info.main", display: "inline-flex" }}
+            >
               <Clock size={16} />
             </Box>
           </Box>
@@ -144,7 +147,10 @@ export default function ServiceHoursStatCards({
             <Typography variant="body2" color="text.secondary">
               Onboarding Hours
             </Typography>
-            <Box component="span" sx={{ color: "success.main", display: "inline-flex" }}>
+            <Box
+              component="span"
+              sx={{ color: "success.main", display: "inline-flex" }}
+            >
               <Clock size={16} />
             </Box>
           </Box>

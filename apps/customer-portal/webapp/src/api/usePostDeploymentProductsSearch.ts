@@ -27,7 +27,11 @@ import { useLogger } from "@hooks/useLogger";
 import { ApiQueryKeys } from "@constants/apiConstants";
 import { addApiHeaders } from "@utils/apiUtils";
 import type { DeployedProductSearchRequest } from "@/types/deployments";
-import type { DeploymentProductItem, DeployedProductsResponsePayload, DeployedProductsResponse } from "@/types/deployments";
+import type {
+  DeploymentProductItem,
+  DeployedProductsResponsePayload,
+  DeployedProductsResponse,
+} from "@/types/deployments";
 import { isDeployedProductsResponse } from "@/utils/deployments";
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -217,7 +221,10 @@ export interface UsePostDeploymentProductsSearchInfiniteOptions {
 export function usePostDeploymentProductsSearchInfinite(
   deploymentId: string,
   options?: UsePostDeploymentProductsSearchInfiniteOptions,
-): UseInfiniteQueryResult<InfiniteData<DeployedProductsResponsePayload>, Error> {
+): UseInfiniteQueryResult<
+  InfiniteData<DeployedProductsResponsePayload>,
+  Error
+> {
   const logger = useLogger();
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
   const authFetch = useAuthApiClient();
@@ -318,7 +325,7 @@ export function extractDeploymentProducts(
 ): DeploymentProductItem[] {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
-  if (isDeployedProductsResponse(payload)) return payload.deployedProducts ?? [];
+  if (isDeployedProductsResponse(payload))
+    return payload.deployedProducts ?? [];
   return [];
 }
-

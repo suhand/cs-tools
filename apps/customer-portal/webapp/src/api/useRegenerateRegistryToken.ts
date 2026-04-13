@@ -45,7 +45,9 @@ export function useRegenerateRegistryToken(
 
       try {
         if (!isSignedIn || isAuthLoading) {
-          throw new Error("User must be signed in to regenerate a registry token");
+          throw new Error(
+            "User must be signed in to regenerate a registry token",
+          );
         }
 
         const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL;

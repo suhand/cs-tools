@@ -184,8 +184,9 @@ export default function DescribeIssuePage(): JSX.Element {
                   What can we help you with?
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Describe your issue or question in as much detail as you&apos;d
-                  like. We&apos;ll analyze it and guide you to a solution.
+                  Describe your issue or question in as much detail as
+                  you&apos;d like. We&apos;ll analyze it and guide you to a
+                  solution.
                 </Typography>
               </Box>
 

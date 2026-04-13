@@ -188,7 +188,7 @@ export default function ManageProductModal({
     const newDescription = description.trim();
     const originalDescription = (product.description ?? "").trim();
     if (newDescription !== originalDescription) {
-      body.description = newDescription || undefined;
+      body.description = newDescription;
     }
 
     if (Object.keys(body).length === 0) {
@@ -387,8 +387,9 @@ export default function ManageProductModal({
               Save Changes
             </Button>
           ))}
-        {tabValue === 1 && addUpdateState && (
-          addUpdateState.isSaving ? (
+        {tabValue === 1 &&
+          addUpdateState &&
+          (addUpdateState.isSaving ? (
             <Button
               variant="contained"
               color="primary"
@@ -407,8 +408,7 @@ export default function ManageProductModal({
             >
               Add Update
             </Button>
-          )
-        )}
+          ))}
       </DialogActions>
     </Dialog>
   );

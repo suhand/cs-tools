@@ -52,7 +52,9 @@ describe("AttachmentListItem", () => {
     renderItem();
     expect(screen.getByText("screenshot.png")).toBeInTheDocument();
     expect(screen.getByText(/100 KB/)).toBeInTheDocument();
-    expect(screen.getByText(/Uploaded by user@example.com/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Uploaded by user@example.com/),
+    ).toBeInTheDocument();
     expect(screen.getByText("2026-02-13 10:00:00")).toBeInTheDocument();
   });
 

@@ -22,16 +22,7 @@ import {
   type JSX,
   type ChangeEvent,
 } from "react";
-import {
-  Box,
-  Stack,
-  Pagination,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-} from "@wso2/oxygen-ui";
+import { Stack } from "@wso2/oxygen-ui";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import useGetProjectFilters from "@api/useGetProjectFilters";
@@ -39,12 +30,13 @@ import useGetProjectCases from "@api/useGetProjectCases";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { CaseType } from "@constants/supportConstants";
 import { shouldExcludeS0 } from "@utils/subscriptionUtils";
-import { hasListSearchOrFilters } from "@utils/support";
+import { hasListSearchOrFilters, isS0Case } from "@utils/support";
 import type { AllCasesFilterValues } from "@/types/cases";
 import { SortOrder } from "@/types/common";
-import { isS0Case } from "@utils/support";
-import AllCasesList from "@components/support/all-cases/AllCasesList";
-import AllCasesSearchBar from "@components/support/all-cases/AllCasesSearchBar";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
+import ListItems from "@components/common/list-view/ListItems";
+import ListSearchPanel from "@components/common/list-view/ListSearchPanel";
 import EngagementsStatCards from "@components/support/engagements/EngagementsStatCards";
 
 /**
@@ -210,8 +202,9 @@ export default function EngagementsPage(): JSX.Element {
         isError={isStatsError}
       />
 
-      <AllCasesSearchBar
+      <ListSearchPanel
         searchTerm={searchTerm}
+        searchPlaceholder="Search engagements by ID, title, or description..."
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
@@ -224,76 +217,32 @@ export default function EngagementsPage(): JSX.Element {
         isProjectContextLoading={!projectReady}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {paginatedCases.length} of {totalItems} engagements
-        </Typography>
+      <ListResultsBar
+        shownCount={paginatedCases.length}
+        totalCount={totalItems}
+        entityLabel="engagements"
+        sortFieldOptions={[
+          { value: "createdOn", label: "Created on" },
+          { value: "updatedOn", label: "Updated on" },
+          { value: "severity", label: "Severity" },
+          { value: "state", label: "State" },
+        ]}
+        sortField={sortField}
+        onSortFieldChange={(v) =>
+          handleSortFieldChange(
+            v as "createdOn" | "updatedOn" | "severity" | "state",
+          )
+        }
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="engagements-sort-by-label">Sort by</InputLabel>
-            <Select<"createdOn" | "updatedOn" | "severity" | "state">
-              labelId="engagements-sort-by-label"
-              id="engagements-sort-by"
-              value={sortField}
-              label="Sort by"
-              onChange={(e) =>
-                handleSortFieldChange(
-                  e.target.value as
-                    | "createdOn"
-                    | "updatedOn"
-                    | "severity"
-                    | "state",
-                )
-              }
-            >
-              <MenuItem value="createdOn">
-                <Typography variant="body2">Created on</Typography>
-              </MenuItem>
-              <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated on</Typography>
-              </MenuItem>
-              <MenuItem value="severity">
-                <Typography variant="body2">Severity</Typography>
-              </MenuItem>
-              <MenuItem value="state">
-                <Typography variant="body2">State</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-label">Order By</InputLabel>
-            <Select<SortOrder>
-              labelId="sort-label"
-              id="sort"
-              value={sortOrder}
-              label="Order By"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest First</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest First</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Box>
-
-      <AllCasesList
+      <ListItems
         cases={paginatedCases}
         isLoading={isCasesAreaLoading}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="engagements"
         onCaseClick={
           projectId
             ? (caseItem) =>
@@ -302,15 +251,11 @@ export default function EngagementsPage(): JSX.Element {
         }
       />
 
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Pagination
-            page={page}
-            count={totalPages}
-            onChange={handlePageChange}
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Stack>
   );
 }

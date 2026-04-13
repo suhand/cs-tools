@@ -33,11 +33,15 @@ export default function usePostDeployedProductInstancesUsagesSearch(
   payload: InstanceMetricsRequest,
 ) {
   const { isSignedIn, isLoading: isAuthLoading } = useAsgardeo();
-  
+
   const authFetch = useAuthApiClient();
 
   return useQuery<InstanceUsageResponse>({
-    queryKey: [ApiQueryKeys.DEPLOYED_PRODUCT_INSTANCE_USAGES, deployedProductId, payload],
+    queryKey: [
+      ApiQueryKeys.DEPLOYED_PRODUCT_INSTANCE_USAGES,
+      deployedProductId,
+      payload,
+    ],
     queryFn: async () => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
       const response = await authFetch(
@@ -49,7 +53,9 @@ export default function usePostDeployedProductInstancesUsagesSearch(
         },
       );
       if (!response.ok) {
-        throw new Error(`Failed to search deployed product instance usages: ${response.status}`);
+        throw new Error(
+          `Failed to search deployed product instance usages: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceUsageResponse>;
     },

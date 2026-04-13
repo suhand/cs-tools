@@ -78,7 +78,9 @@ describe("ScheduledMaintenanceWindowCard", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: /propose new implementation time/i }),
+      screen.queryByRole("button", {
+        name: /propose new implementation time/i,
+      }),
     ).not.toBeInTheDocument();
   });
 });

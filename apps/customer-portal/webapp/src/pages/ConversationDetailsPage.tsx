@@ -35,7 +35,10 @@ import {
 } from "@wso2/oxygen-ui-icons-react";
 import { useMemo, type JSX } from "react";
 import { useGetConversationMessages } from "@api/useGetConversationMessages";
-import type { ConversationMessage, ChatHistoryItem } from "@/types/conversations";
+import type {
+  ConversationMessage,
+  ChatHistoryItem,
+} from "@/types/conversations";
 import { ChatSender } from "@/types/conversations";
 import Error500Page from "@components/common/error/Error500Page";
 import type { Message } from "@/types/conversations";

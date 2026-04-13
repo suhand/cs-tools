@@ -14,7 +14,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { Box, Button, Typography, TextField, InputAdornment } from "@wso2/oxygen-ui";
+import {
+  Box,
+  Button,
+  Typography,
+  TextField,
+  InputAdornment,
+} from "@wso2/oxygen-ui";
 import { Calendar, ChartColumn } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
 import { useCallback, useMemo, useState } from "react";
@@ -28,7 +34,10 @@ import type { TabOption } from "@components/common/tab-bar/TabBar";
 import { usePostProjectDeploymentsSearchAll } from "@api/usePostProjectDeploymentsSearch";
 
 /** Compute ISO date strings for the selected preset relative to today. */
-function resolveDateRange(preset: UsageTimeRange): { startDate: string; endDate: string } {
+function resolveDateRange(preset: UsageTimeRange): {
+  startDate: string;
+  endDate: string;
+} {
   const end = new Date();
   const start = new Date(end);
   if (preset === UsageTimeRange.THREE_MONTHS) {
@@ -51,11 +60,13 @@ function resolveDateRange(preset: UsageTimeRange): { startDate: string; endDate:
  */
 export default function UsageAndMetricsTabContent(): JSX.Element {
   const { projectId } = useParams<{ projectId: string }>();
-  const [timeRange, setTimeRange] = useState<UsageTimeRange>(UsageTimeRange.THREE_MONTHS);
-  const [innerTab, setInnerTab] = useState<string>("um-overview");
-  const [expandedEnvironmentIds, setExpandedEnvironmentIds] = useState<Set<string>>(
-    () => new Set(),
+  const [timeRange, setTimeRange] = useState<UsageTimeRange>(
+    UsageTimeRange.THREE_MONTHS,
   );
+  const [innerTab, setInnerTab] = useState<string>("um-overview");
+  const [expandedEnvironmentIds, setExpandedEnvironmentIds] = useState<
+    Set<string>
+  >(() => new Set());
   const [expandedProductIds, setExpandedProductIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -68,11 +79,17 @@ export default function UsageAndMetricsTabContent(): JSX.Element {
   const timeLabel = USAGE_TIME_RANGE_LABELS[timeRange];
   const dateRange = useMemo(() => resolveDateRange(timeRange), [timeRange]);
 
-  const { data: deploymentsData } = usePostProjectDeploymentsSearchAll(projectId ?? "");
+  const { data: deploymentsData } = usePostProjectDeploymentsSearchAll(
+    projectId ?? "",
+  );
 
   // Build dynamic tabs from deployments returned by the API — one tab per deployment, labelled by dep.name.
   const innerTabs = useMemo((): TabOption[] => {
-    const overviewTab: TabOption = { id: "um-overview", label: "Overview", icon: ChartColumn };
+    const overviewTab: TabOption = {
+      id: "um-overview",
+      label: "Overview",
+      icon: ChartColumn,
+    };
     if (!deploymentsData || deploymentsData.length === 0) {
       return [overviewTab];
     }
@@ -126,118 +143,138 @@ export default function UsageAndMetricsTabContent(): JSX.Element {
   };
 
   const timeRangeSelector = (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 2,
+        mb: 1,
+        mt: innerTab !== "um-overview" ? 1 : 0,
+        overflowX: "auto",
+        pb: 0.5,
+      }}
+    >
       <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-          mb: 1,
-          mt: innerTab !== "um-overview" ? 1 : 0,
-          overflowX: "auto",
-          pb: 0.5,
-        }}
+        sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexShrink: 0 }}>
-          <Calendar size={18} />
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            Time Range:
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            {([UsageTimeRange.THREE_MONTHS, UsageTimeRange.SIX_MONTHS, UsageTimeRange.TWELVE_MONTHS] as UsageTimeRange[]).map((preset) => {
-              const selected = timeRange === preset;
-              return (
-                <Button
-                  key={preset}
-                  size="small"
-                  variant={selected ? "contained" : "outlined"}
-                  color={selected ? "warning" : "inherit"}
-                  onClick={() => {
-                    setTimeRange(preset);
-                    setAppliedCustomStart("");
-                    setAppliedCustomEnd("");
-                  }}
-                  sx={{ textTransform: "none", minWidth: 48 }}
-                >
-                  {preset === "3m" ? "3M" : preset === "6m" ? "6M" : "12M"}
-                </Button>
-              );
-            })}
-            <Button
-              size="small"
-              variant={timeRange === UsageTimeRange.CUSTOM ? "contained" : "outlined"}
-              color={timeRange === UsageTimeRange.CUSTOM ? "warning" : "inherit"}
-              onClick={() => setTimeRange(UsageTimeRange.CUSTOM)}
-              sx={{ textTransform: "none", minWidth: 48 }}
-            >
-              Custom
-            </Button>
-            
-            {timeRange === UsageTimeRange.CUSTOM && (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, ml: 1 }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <TextField
-                    type="date"
-                    size="small"
-                    value={customStart}
-                    onChange={(e) => setCustomStart(e.target.value)}
-                    sx={{ minWidth: 160 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Calendar size={16} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  <Typography variant="body2" color="text.secondary" sx={{ mx: 0.5 }}>
-                    to
-                  </Typography>
-                  <TextField
-                    type="date"
-                    size="small"
-                    value={customEnd}
-                    onChange={(e) => setCustomEnd(e.target.value)}
-                    sx={{ minWidth: 160 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Calendar size={16} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Box>
-                <Box sx={{ display: "flex", gap: 1 }}>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="warning"
-                    onClick={handleApplyCustom}
-                    disabled={!customStart || !customEnd}
-                  >
-                    Apply
-                  </Button>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="inherit"
-                    onClick={handleCancelCustom}
-                  >
-                    Cancel
-                  </Button>
-                </Box>
-              </Box>
-            )}
-          </Box>
-        </Box>
-        
-        <Typography variant="body2" color="text.secondary" sx={{ minWidth: 100, textAlign: "right", flexShrink: 0 }}>
-          {timeRange === "custom"
-            ? (appliedCustomStart && appliedCustomEnd ? `${appliedCustomStart} to ${appliedCustomEnd}` : "Select custom range")
-            : timeLabel}
+        <Calendar size={18} />
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          Time Range:
         </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {(
+            [
+              UsageTimeRange.THREE_MONTHS,
+              UsageTimeRange.SIX_MONTHS,
+              UsageTimeRange.TWELVE_MONTHS,
+            ] as UsageTimeRange[]
+          ).map((preset) => {
+            const selected = timeRange === preset;
+            return (
+              <Button
+                key={preset}
+                size="small"
+                variant={selected ? "contained" : "outlined"}
+                color={selected ? "warning" : "inherit"}
+                onClick={() => {
+                  setTimeRange(preset);
+                  setAppliedCustomStart("");
+                  setAppliedCustomEnd("");
+                }}
+                sx={{ textTransform: "none", minWidth: 48 }}
+              >
+                {preset === "3m" ? "3M" : preset === "6m" ? "6M" : "12M"}
+              </Button>
+            );
+          })}
+          <Button
+            size="small"
+            variant={
+              timeRange === UsageTimeRange.CUSTOM ? "contained" : "outlined"
+            }
+            color={timeRange === UsageTimeRange.CUSTOM ? "warning" : "inherit"}
+            onClick={() => setTimeRange(UsageTimeRange.CUSTOM)}
+            sx={{ textTransform: "none", minWidth: 48 }}
+          >
+            Custom
+          </Button>
+
+          {timeRange === UsageTimeRange.CUSTOM && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, ml: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <TextField
+                  type="date"
+                  size="small"
+                  value={customStart}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                  sx={{ minWidth: 160 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Calendar size={16} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mx: 0.5 }}
+                >
+                  to
+                </Typography>
+                <TextField
+                  type="date"
+                  size="small"
+                  value={customEnd}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                  sx={{ minWidth: 160 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Calendar size={16} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="warning"
+                  onClick={handleApplyCustom}
+                  disabled={!customStart || !customEnd}
+                >
+                  Apply
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="inherit"
+                  onClick={handleCancelCustom}
+                >
+                  Cancel
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </Box>
       </Box>
+
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        sx={{ minWidth: 100, textAlign: "right", flexShrink: 0 }}
+      >
+        {timeRange === "custom"
+          ? appliedCustomStart && appliedCustomEnd
+            ? `${appliedCustomStart} to ${appliedCustomEnd}`
+            : "Select custom range"
+          : timeLabel}
+      </Typography>
+    </Box>
   );
 
   return (

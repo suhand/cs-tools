@@ -40,13 +40,18 @@ export default function usePostProjectInstancesSearch(
     queryKey: [ApiQueryKeys.PROJECT_INSTANCES_SEARCH, projectId, payload],
     queryFn: async () => {
       const baseUrl = window.config?.CUSTOMER_PORTAL_BACKEND_BASE_URL ?? "";
-      const response = await authFetch(`${baseUrl}/projects/${projectId}/instances/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await authFetch(
+        `${baseUrl}/projects/${projectId}/instances/search`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       if (!response.ok) {
-        throw new Error(`Failed to search project instances: ${response.status}`);
+        throw new Error(
+          `Failed to search project instances: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstancesResponse>;
     },

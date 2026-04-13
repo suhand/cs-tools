@@ -29,13 +29,7 @@ import {
   TextField,
   Typography,
 } from "@wso2/oxygen-ui";
-import {
-  CheckCircle,
-  Copy,
-  Eye,
-  EyeOff,
-  X,
-} from "@wso2/oxygen-ui-icons-react";
+import { CheckCircle, Copy, Eye, EyeOff, X } from "@wso2/oxygen-ui-icons-react";
 import { useRegenerateRegistryToken } from "@api/useRegenerateRegistryToken";
 import type { RegistryToken } from "@/types/registryTokens";
 

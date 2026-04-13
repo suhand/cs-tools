@@ -36,8 +36,9 @@ import { useNavigate, useParams } from "react-router";
 import { useDebouncedValue } from "@hooks/useDebouncedValue";
 import useGetProjectCases from "@api/useGetProjectCases";
 import type { CaseListItem } from "@/types/cases";
-import AllCasesList from "@components/support/all-cases/AllCasesList";
-import AllCasesListSkeleton from "@components/support/all-cases/AllCasesListSkeleton";
+import ListItems from "@components/common/list-view/ListItems";
+import ListSkeleton from "@components/common/list-view/ListSkeleton";
+
 import SearchNoResultsIcon from "@components/common/empty-state/SearchNoResultsIcon";
 import Error500Page from "@components/common/error/Error500Page";
 import { isS0Case } from "@utils/support";
@@ -164,7 +165,7 @@ export default function SearchBar({
         </Box>
       ) : isLoading ? (
         <Box sx={{ p: 2 }}>
-          <AllCasesListSkeleton />
+          <ListSkeleton />
         </Box>
       ) : isError ? (
         <Box
@@ -202,7 +203,7 @@ export default function SearchBar({
         </Box>
       ) : (
         <Box sx={{ p: 2 }}>
-          <AllCasesList
+          <ListItems
             cases={cases}
             isLoading={false}
             onCaseClick={handleCaseClick}

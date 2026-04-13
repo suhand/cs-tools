@@ -17,7 +17,7 @@
 import { Box } from "@wso2/oxygen-ui";
 import { useParams } from "react-router";
 import { type JSX } from "react";
-import SupportStatGrid from "@components/common/stat-grid/SupportStatGrid";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
 import { usePostProductVulnerabilitiesSearch } from "@api/usePostProductVulnerabilitiesSearch";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import { CaseType } from "@constants/supportConstants";
@@ -63,7 +63,7 @@ export default function SecurityStats(): JSX.Element {
 
   return (
     <Box>
-      <SupportStatGrid
+      <ListStatGrid
         isLoading={isLoading}
         isError={isError}
         entityName="security"

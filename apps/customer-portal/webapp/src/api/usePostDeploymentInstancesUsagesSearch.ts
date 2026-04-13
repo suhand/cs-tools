@@ -49,7 +49,9 @@ export default function usePostDeploymentInstancesUsagesSearch(
         },
       );
       if (!response.ok) {
-        throw new Error(`Failed to search deployment instance usages: ${response.status}`);
+        throw new Error(
+          `Failed to search deployment instance usages: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceUsageResponse>;
     },

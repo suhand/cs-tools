@@ -62,7 +62,11 @@ const useGetUserDetails = (): UseQueryResult<UserDetails, Error> => {
         logger.debug("[useGetUserDetails] Data received:", data);
         const tzRaw = data.timeZone ?? data.timezone ?? data.time_zone;
         const timeZone =
-          typeof tzRaw === "string" ? tzRaw : tzRaw != null ? String(tzRaw) : "";
+          typeof tzRaw === "string"
+            ? tzRaw
+            : tzRaw != null
+              ? String(tzRaw)
+              : "";
         return { ...data, timeZone } as UserDetails;
       } catch (error) {
         logger.error("[useGetUserDetails] Error:", error);

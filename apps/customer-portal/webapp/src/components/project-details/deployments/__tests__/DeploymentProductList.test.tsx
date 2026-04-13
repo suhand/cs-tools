@@ -32,7 +32,9 @@ vi.mock("@api/useSearchProductVersions");
 vi.mock("@api/usePostDeploymentProduct");
 vi.mock("@api/usePatchDeploymentProduct");
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
 
 function renderWithProviders(ui: ReactElement) {
   return render(

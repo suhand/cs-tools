@@ -40,7 +40,12 @@ import { LineChart } from "@wso2/oxygen-ui-charts-react";
 import type { JSX } from "react";
 import { useCallback, useMemo, useState } from "react";
 import type { InstanceUsageEntry, InstanceMetricEntry } from "@/types/usage";
-import type { UsageEnvironmentProduct, UsageInstanceChartBlock, UsageProductInstanceRow, UsageTrendRow } from "@/types/usage";
+import type {
+  UsageEnvironmentProduct,
+  UsageInstanceChartBlock,
+  UsageProductInstanceRow,
+  UsageTrendRow,
+} from "@/types/usage";
 import { USAGE_LINE_CHART_MARGIN } from "@constants/usageMetricsConstants";
 import { UsageChartSurface } from "@components/project-details/usage-metrics/UsageChartSurface";
 import usePostDeploymentInstancesUsagesSearch from "@api/usePostDeploymentInstancesUsagesSearch";
@@ -51,7 +56,6 @@ function formatCount(n: number): string {
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
-
 
 function buildTrendFromUsages(
   usages: InstanceUsageEntry[],
@@ -69,7 +73,9 @@ function buildTrendFromUsages(
     .map(([period, value]) => ({ name: period.slice(5), value }));
 }
 
-function buildCoreTrendFromMetrics(metrics: InstanceMetricEntry[]): UsageTrendRow[] {
+function buildCoreTrendFromMetrics(
+  metrics: InstanceMetricEntry[],
+): UsageTrendRow[] {
   const periodMap = new Map<string, { total: number; count: number }>();
   for (const entry of metrics) {
     for (const dp of entry.dataPoints) {
@@ -94,10 +100,16 @@ function buildCoreTrendFromMetrics(metrics: InstanceMetricEntry[]): UsageTrendRo
     }));
 }
 
-function computeHeadlineDelta(trend: UsageTrendRow[]): { headline: string; delta: string; deltaPositive: boolean } {
-  if (trend.length === 0) return { headline: "—", delta: "—", deltaPositive: true };
+function computeHeadlineDelta(trend: UsageTrendRow[]): {
+  headline: string;
+  delta: string;
+  deltaPositive: boolean;
+} {
+  if (trend.length === 0)
+    return { headline: "—", delta: "—", deltaPositive: true };
   const last = trend[trend.length - 1].value ?? 0;
-  if (trend.length === 1) return { headline: formatCount(last), delta: "—", deltaPositive: true };
+  if (trend.length === 1)
+    return { headline: formatCount(last), delta: "—", deltaPositive: true };
   const prev = trend[trend.length - 2].value ?? 0;
   const pct = prev === 0 ? 0 : ((last - prev) / prev) * 100;
   const sign = pct >= 0 ? "+" : "";
@@ -140,91 +152,119 @@ function deriveProducts(
     productMap.set(pid, existing);
   }
 
-  return Array.from(productMap.entries()).map(([pid, { label, usages: pUsages, metrics: pMetrics }]) => {
-    const txTrend = buildTrendFromUsages(pUsages, "TRANSACTION_COUNT");
-    const coreTrend = buildCoreTrendFromMetrics(pMetrics);
-    const totalTx = pUsages.reduce(
-      (sum, u) => sum + u.periodSummaries.reduce((s, ps) => s + (ps.counts["TRANSACTION_COUNT"] ?? 0), 0),
-      0,
-    );
-    const totalCores = pMetrics.reduce(
-      (sum, m) => sum + m.dataPoints.reduce((s, dp) => {
-        const c = dp.coreCount != null ? dp.coreCount
-          : dp.deploymentMetadata?.numberOfCores != null ? Number(dp.deploymentMetadata.numberOfCores) : 0;
-        return s + c;
-      }, 0),
-      0,
-    );
-    const totalApis = pUsages.reduce(
-      (sum, u) => sum + u.periodSummaries.reduce((s, ps) => s + (ps.counts["API_COUNT"] ?? 0), 0),
-      0,
-    );
+  return Array.from(productMap.entries()).map(
+    ([pid, { label, usages: pUsages, metrics: pMetrics }]) => {
+      const txTrend = buildTrendFromUsages(pUsages, "TRANSACTION_COUNT");
+      const coreTrend = buildCoreTrendFromMetrics(pMetrics);
+      const totalTx = pUsages.reduce(
+        (sum, u) =>
+          sum +
+          u.periodSummaries.reduce(
+            (s, ps) => s + (ps.counts["TRANSACTION_COUNT"] ?? 0),
+            0,
+          ),
+        0,
+      );
+      const totalCores = pMetrics.reduce(
+        (sum, m) =>
+          sum +
+          m.dataPoints.reduce((s, dp) => {
+            const c =
+              dp.coreCount != null
+                ? dp.coreCount
+                : dp.deploymentMetadata?.numberOfCores != null
+                  ? Number(dp.deploymentMetadata.numberOfCores)
+                  : 0;
+            return s + c;
+          }, 0),
+        0,
+      );
+      const totalApis = pUsages.reduce(
+        (sum, u) =>
+          sum +
+          u.periodSummaries.reduce(
+            (s, ps) => s + (ps.counts["API_COUNT"] ?? 0),
+            0,
+          ),
+        0,
+      );
 
-    const instanceRows: UsageProductInstanceRow[] = pUsages.map((u) => {
-      const instUsageTrend = buildTrendFromUsages([u], "TRANSACTION_COUNT");
-      const instTxHD = computeHeadlineDelta(instUsageTrend);
-      const instMetric = pMetrics.find((m) => m.instanceId === u.instanceId);
-      const instCoreTrend = instMetric ? buildCoreTrendFromMetrics([instMetric]) : [];
-      const lastCore = instMetric?.dataPoints.at(-1)?.coreCount
-        ?? (instMetric?.dataPoints.at(-1)?.deploymentMetadata?.numberOfCores != null
-          ? Number(instMetric.dataPoints.at(-1)!.deploymentMetadata!.numberOfCores)
-          : 0)
-        ?? 0;
-      const coreHD = computeHeadlineDelta(instCoreTrend.map((r) => ({ name: r.name, value: r.current })));
+      const instanceRows: UsageProductInstanceRow[] = pUsages.map((u) => {
+        const instUsageTrend = buildTrendFromUsages([u], "TRANSACTION_COUNT");
+        const instTxHD = computeHeadlineDelta(instUsageTrend);
+        const instMetric = pMetrics.find((m) => m.instanceId === u.instanceId);
+        const instCoreTrend = instMetric
+          ? buildCoreTrendFromMetrics([instMetric])
+          : [];
+        const lastCore =
+          instMetric?.dataPoints.at(-1)?.coreCount ??
+          (instMetric?.dataPoints.at(-1)?.deploymentMetadata?.numberOfCores !=
+          null
+            ? Number(
+                instMetric.dataPoints.at(-1)!.deploymentMetadata!.numberOfCores,
+              )
+            : 0) ??
+          0;
+        const coreHD = computeHeadlineDelta(
+          instCoreTrend.map((r) => ({ name: r.name, value: r.current })),
+        );
 
-      const javaVer = instMetric?.dataPoints.at(-1)?.jdkVersion
-        ?? instMetric?.dataPoints.at(-1)?.deploymentMetadata?.jdkVersion
-        ?? "—";
-      const u2Level = instMetric?.dataPoints.at(-1)?.deploymentMetadata?.updateLevel ?? "—";
-      const instanceStroke = colors.blue?.[500] ?? "#3B82F6";
+        const javaVer =
+          instMetric?.dataPoints.at(-1)?.jdkVersion ??
+          instMetric?.dataPoints.at(-1)?.deploymentMetadata?.jdkVersion ??
+          "—";
+        const u2Level =
+          instMetric?.dataPoints.at(-1)?.deploymentMetadata?.updateLevel ?? "—";
+        const instanceStroke = colors.blue?.[500] ?? "#3B82F6";
 
-      const txBlock: UsageInstanceChartBlock = {
-        title: "Transactions",
-        caption: "Periodic transaction count",
-        headlineValue: instTxHD.headline,
-        deltaLabel: instTxHD.delta,
-        deltaPositive: instTxHD.deltaPositive,
-        stroke: instanceStroke,
-        data: instUsageTrend,
-      };
-      const coresBlock: UsageInstanceChartBlock = {
-        title: "Core Count",
-        caption: "Cores over time",
-        headlineValue: String(lastCore),
-        deltaLabel: coreHD.delta,
-        deltaPositive: coreHD.deltaPositive,
-        stroke: colors.orange?.[500] ?? "#F97316",
-        data: instCoreTrend.map((r) => ({ name: r.name, value: r.current })),
-      };
+        const txBlock: UsageInstanceChartBlock = {
+          title: "Transactions",
+          caption: "Periodic transaction count",
+          headlineValue: instTxHD.headline,
+          deltaLabel: instTxHD.delta,
+          deltaPositive: instTxHD.deltaPositive,
+          stroke: instanceStroke,
+          data: instUsageTrend,
+        };
+        const coresBlock: UsageInstanceChartBlock = {
+          title: "Core Count",
+          caption: "Cores over time",
+          headlineValue: String(lastCore),
+          deltaLabel: coreHD.delta,
+          deltaPositive: coreHD.deltaPositive,
+          stroke: colors.orange?.[500] ?? "#F97316",
+          data: instCoreTrend.map((r) => ({ name: r.name, value: r.current })),
+        };
+
+        return {
+          id: u.instanceId,
+          hostName: u.instanceId,
+          javaVersion: javaVer,
+          u2Level,
+          transactionsLabel: instTxHD.headline,
+          coreCount: lastCore,
+          charts: { transactions: txBlock, cores: coresBlock },
+        };
+      });
 
       return {
-        id: u.instanceId,
-        hostName: u.instanceId,
-        javaVersion: javaVer,
-        u2Level,
-        transactionsLabel: instTxHD.headline,
-        coreCount: lastCore,
-        charts: { transactions: txBlock, cores: coresBlock },
+        id: pid,
+        name: label,
+        version: "",
+        runningInstances: pUsages.length,
+        transactionsLabel: formatCount(totalTx),
+        thirdMetricLabel: "API Count",
+        thirdMetricValue: String(totalApis),
+        coreMetrics: [
+          { label: "Total Cores", value: String(totalCores) },
+          { label: "Instances", value: String(pUsages.length) },
+        ],
+        transactionTrend: txTrend,
+        coreUsageTrend: coreTrend,
+        instances: instanceRows,
       };
-    });
-
-    return {
-      id: pid,
-      name: label,
-      version: "",
-      runningInstances: pUsages.length,
-      transactionsLabel: formatCount(totalTx),
-      thirdMetricLabel: "API Count",
-      thirdMetricValue: String(totalApis),
-      coreMetrics: [
-        { label: "Total Cores", value: String(totalCores) },
-        { label: "Instances", value: String(pUsages.length) },
-      ],
-      transactionTrend: txTrend,
-      coreUsageTrend: coreTrend,
-      instances: instanceRows,
-    };
-  });
+    },
+  );
 }
 
 const ACCENT_PALETTE = [
@@ -356,7 +396,7 @@ function ProductExpandedView({
           </Card>
         </Grid>
       </Grid>
-      
+
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5 }}>
           Instances ({instances.length})
@@ -382,7 +422,11 @@ function ProductExpandedView({
 
 // ─── Instance minicard ────────────────────────────────────────────────────────
 
-function InstanceMiniTrendCard({ block }: { block: UsageInstanceChartBlock }): JSX.Element {
+function InstanceMiniTrendCard({
+  block,
+}: {
+  block: UsageInstanceChartBlock;
+}): JSX.Element {
   const deltaColor = block.deltaPositive
     ? (colors.green?.[600] ?? "#16A34A")
     : (colors.red?.[600] ?? "#DC2626");
@@ -420,7 +464,10 @@ function InstanceMiniTrendCard({ block }: { block: UsageInstanceChartBlock }): J
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {block.headlineValue}
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 600, color: deltaColor }}>
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 600, color: deltaColor }}
+          >
             {block.deltaLabel}
           </Typography>
         </Box>
@@ -480,7 +527,9 @@ function InstanceAccordionRow({
       }}
     >
       <AccordionSummary
-        expandIcon={<ChevronDown size={20} color={colors.grey?.[400] ?? "#9CA3AF"} />}
+        expandIcon={
+          <ChevronDown size={20} color={colors.grey?.[400] ?? "#9CA3AF"} />
+        }
         sx={{
           px: 2,
           py: 2,
@@ -772,7 +821,9 @@ export default function UsageEnvironmentProductsPanel({
   onToggleProduct,
 }: UsageEnvironmentProductsPanelProps): JSX.Element {
   const metricsPayload = useMemo(
-    () => ({ filters: { startDate: dateRange.startDate, endDate: dateRange.endDate } }),
+    () => ({
+      filters: { startDate: dateRange.startDate, endDate: dateRange.endDate },
+    }),
     [dateRange],
   );
 
@@ -796,7 +847,6 @@ export default function UsageEnvironmentProductsPanel({
     if (!usagesData || !metricsData) return [];
     return deriveProducts(usagesData.usages, metricsData.metrics);
   }, [usagesData, metricsData]);
-
 
   const [expandedInstanceKeys, setExpandedInstanceKeys] = useState<Set<string>>(
     () => new Set(),
@@ -826,16 +876,37 @@ export default function UsageEnvironmentProductsPanel({
     return (
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
         {[1, 2, 3].map((i) => (
-          <Card key={i} variant="outlined" sx={{ borderRadius: 0, p: 1.5, borderColor: "divider" }}>
+          <Card
+            key={i}
+            variant="outlined"
+            sx={{ borderRadius: 0, p: 1.5, borderColor: "divider" }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Box>
                   <Skeleton variant="text" width={180} height={24} />
                   <Skeleton variant="text" width={120} height={20} />
                 </Box>
                 <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 3 }}>
-                  <Skeleton variant="rectangular" width={100} height={32} sx={{ borderRadius: 1 }} />
-                  <Skeleton variant="rectangular" width={100} height={32} sx={{ borderRadius: 1 }} />
+                  <Skeleton
+                    variant="rectangular"
+                    width={100}
+                    height={32}
+                    sx={{ borderRadius: 1 }}
+                  />
+                  <Skeleton
+                    variant="rectangular"
+                    width={100}
+                    height={32}
+                    sx={{ borderRadius: 1 }}
+                  />
                 </Box>
               </Box>
               <Skeleton variant="circular" width={24} height={24} />

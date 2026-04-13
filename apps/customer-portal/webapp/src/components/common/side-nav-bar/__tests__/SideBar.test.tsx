@@ -110,10 +110,12 @@ const mockParams: { projectId: string | undefined } = {
 
 let mockProjectTypeLabel: string = "Other";
 
-const createMockProjectsResponse = () => [{
-  id: "project-1",
-  type: { label: mockProjectTypeLabel },
-}];
+const createMockProjectsResponse = () => [
+  {
+    id: "project-1",
+    type: { label: mockProjectTypeLabel },
+  },
+];
 
 vi.mock("react-router", () => ({
   useLocation: () => mockLocation,
@@ -174,9 +176,11 @@ describe("SideBar", () => {
     mockProjectTypeLabel = "Other";
     render(<SideBar collapsed={false} />);
 
-    APP_SHELL_NAV_ITEMS.filter((item) => item.id !== "operations").forEach((item) => {
-      expect(screen.getByText(item.label)).toBeInTheDocument();
-    });
+    APP_SHELL_NAV_ITEMS.filter((item) => item.id !== "operations").forEach(
+      (item) => {
+        expect(screen.getByText(item.label)).toBeInTheDocument();
+      },
+    );
 
     expect(screen.queryByText("Operations")).not.toBeInTheDocument();
   });

@@ -93,9 +93,7 @@ export default function CaseDetailsTabPanels({
       return (
         <CaseDetailsAttachmentsPanel
           caseId={caseId}
-          isCaseClosed={
-            !!data?.closedOn || data?.status?.label === "Closed"
-          }
+          isCaseClosed={!!data?.closedOn || data?.status?.label === "Closed"}
         />
       );
     case 3: {
@@ -111,9 +109,7 @@ export default function CaseDetailsTabPanels({
         <CallsPanel
           projectId={resolvedProjectId}
           caseId={caseId}
-          isCaseClosed={
-            !!data?.closedOn || data?.status?.label === "Closed"
-          }
+          isCaseClosed={!!data?.closedOn || data?.status?.label === "Closed"}
           caseStatusLabel={data?.status?.label}
           caseSeverityId={data?.severity?.id}
         />

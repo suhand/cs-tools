@@ -90,12 +90,11 @@ export default function RemoveUserModal({
       >
         <X size={18} />
       </IconButton>
-      <DialogTitle id="remove-user-modal-title">
-        Remove User
-      </DialogTitle>
+      <DialogTitle id="remove-user-modal-title">Remove User</DialogTitle>
       <DialogContent>
         <Typography id="remove-user-modal-description" color="text.secondary">
-          Are you sure you want to remove <strong>{displayName}</strong> from this project?
+          Are you sure you want to remove <strong>{displayName}</strong> from
+          this project?
         </Typography>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -108,7 +107,9 @@ export default function RemoveUserModal({
           onClick={onConfirm}
           disabled={isDeleting}
           startIcon={
-            isDeleting ? <CircularProgress size={16} color="inherit" /> : undefined
+            isDeleting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
           }
         >
           {isDeleting ? "Removing..." : "Yes, Remove"}

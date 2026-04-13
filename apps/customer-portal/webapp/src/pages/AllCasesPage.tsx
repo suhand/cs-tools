@@ -23,35 +23,30 @@ import {
   type ChangeEvent,
 } from "react";
 import { useLoader } from "@context/linear-loader/LoaderContext";
-import {
-  Box,
-  Button,
-  Stack,
-  Select,
-  MenuItem,
-  Typography,
-  FormControl,
-  InputLabel,
-  Pagination,
-} from "@wso2/oxygen-ui";
-import { ArrowLeft } from "@wso2/oxygen-ui-icons-react";
+import { Box, Stack } from "@wso2/oxygen-ui";
 import { useGetProjectCasesStats } from "@api/useGetProjectCasesStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { usePostProjectDeploymentsSearchInfinite } from "@api/usePostProjectDeploymentsSearch";
 import { hasListSearchOrFilters, isS0Case } from "@utils/support";
-import { CaseType } from "@constants/supportConstants";
+import {
+  CaseType,
+  ALL_CASES_STAT_CONFIGS,
+  getAllCasesFlattenedStats,
+} from "@constants/supportConstants";
 import { SortOrder } from "@/types/common";
-import DOMPurify from "dompurify";
 import {
   getProjectPermissions,
   shouldExcludeS0,
 } from "@utils/subscriptionUtils";
 import type { AllCasesFilterValues } from "@/types/cases";
-import AllCasesStatCards from "@components/support/all-cases/AllCasesStatCards";
-import AllCasesSearchBar from "@components/support/all-cases/AllCasesSearchBar";
-import AllCasesList from "@components/support/all-cases/AllCasesList";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
+import ListPageHeader from "@components/common/list-view/ListPageHeader";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
+import ListSearchPanel from "@components/common/list-view/ListSearchPanel";
+import ListItems from "@components/common/list-view/ListItems";
 
 /**
  * AllCasesPage component to display all cases with stats, filters, and search.
@@ -157,7 +152,7 @@ export default function AllCasesPage(): JSX.Element {
   const isStatsLoading =
     isProjectContextLoading ||
     isStatsQueryLoading ||
-    (!!projectId && !hasStatsResponse);
+    (!!projectId && !hasStatsResponse && !isStatsError);
 
   const isCasesAreaLoading =
     isCasesQueryLoading ||
@@ -248,44 +243,29 @@ export default function AllCasesPage(): JSX.Element {
 
   return (
     <Stack spacing={3}>
-      {/* Back button and header */}
-      <Box>
-        <Button
-          startIcon={<ArrowLeft size={16} />}
-            onClick={() => (returnTo ? navigate(returnTo) : navigate(".."))}
-          sx={{ mb: 2 }}
-          variant="text"
-        >
-          Back to Support Center
-        </Button>
-        <Box>
-          <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-            {createdByMe ? "My Cases" : "All Cases"}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            component="div"
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted static copy rendered as HTML by request
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(
-                createdByMe
-                  ? "Manage and track your support cases"
-                  : "Manage and track all your support cases",
-              ),
-            }}
-          />
-        </Box>
-      </Box>
-
-      {/* Stat cards */}
-      <AllCasesStatCards
-        isLoading={isStatsLoading}
-        isError={isStatsError}
-        stats={stats}
+      <ListPageHeader
+        title={createdByMe ? "My Cases" : "All Cases"}
+        description={
+          createdByMe
+            ? "Manage and track your support cases"
+            : "Manage and track all your support cases"
+        }
+        backLabel="Back to Support Center"
+        onBack={() => (returnTo ? navigate(returnTo) : navigate(".."))}
       />
 
-      <AllCasesSearchBar
+      {/* Stat cards */}
+      <Box sx={{ mb: 3 }}>
+        <ListStatGrid
+          isLoading={isStatsLoading}
+          isError={isStatsError}
+          entityName="case"
+          configs={ALL_CASES_STAT_CONFIGS}
+          stats={getAllCasesFlattenedStats(stats)}
+        />
+      </Box>
+
+      <ListSearchPanel
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
@@ -313,95 +293,42 @@ export default function AllCasesPage(): JSX.Element {
         isProjectContextLoading={isProjectContextLoading}
       />
 
-      {/* Sort and results count */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {paginatedCases.length} of {totalItems} cases
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-by-label">Sort by</InputLabel>
-            <Select<"createdOn" | "updatedOn" | "severity" | "state">
-              labelId="sort-by-label"
-              id="sort-by"
-              value={sortField}
-              label="Sort by"
-              onChange={(e) =>
-                handleSortFieldChange(
-                  e.target.value as
-                    | "createdOn"
-                    | "updatedOn"
-                    | "severity"
-                    | "state",
-                )
-              }
-            >
-              <MenuItem value="createdOn">
-                <Typography variant="body2">Created on</Typography>
-              </MenuItem>
-              <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated on</Typography>
-              </MenuItem>
-              <MenuItem value="severity">
-                <Typography variant="body2">Severity</Typography>
-              </MenuItem>
-              <MenuItem value="state">
-                <Typography variant="body2">State</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="order-by-label">Order by</InputLabel>
-            <Select<SortOrder>
-              labelId="order-by-label"
-              id="order-by"
-              value={sortOrder}
-              label="Order by"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest first</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest first</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
-      </Box>
+      <ListResultsBar
+        shownCount={paginatedCases.length}
+        totalCount={totalItems}
+        entityLabel="cases"
+        sortFieldOptions={[
+          { value: "createdOn", label: "Created on" },
+          { value: "updatedOn", label: "Updated on" },
+          { value: "severity", label: "Severity" },
+          { value: "state", label: "State" },
+        ]}
+        sortField={sortField}
+        onSortFieldChange={(v) =>
+          handleSortFieldChange(
+            v as "createdOn" | "updatedOn" | "severity" | "state",
+          )
+        }
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
 
-      {/* Cases list */}
-      <AllCasesList
+      <ListItems
         cases={paginatedCases}
         isLoading={isCasesAreaLoading && !isCasesError}
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
+        entityName="cases"
         onCaseClick={(c) =>
           navigate(`/projects/${projectId}/support/cases/${c.id}`)
         }
       />
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            variant="outlined"
-            shape="rounded"
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Stack>
   );
 }

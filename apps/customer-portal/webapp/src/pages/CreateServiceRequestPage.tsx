@@ -24,7 +24,12 @@ import {
   type FormEvent,
   type JSX,
 } from "react";
-import { useNavigate, useParams, useLocation, useSearchParams } from "react-router";
+import {
+  useNavigate,
+  useParams,
+  useLocation,
+  useSearchParams,
+} from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { usePostProjectDeploymentsSearchInfinite } from "@api/usePostProjectDeploymentsSearch";
 import type { ProjectDeploymentItem } from "@/types/deployments";
@@ -81,7 +86,9 @@ export default function CreateServiceRequestPage(): JSX.Element {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { projectId } = useParams<{ projectId: string }>();
-  const basePath = location.pathname.includes("/operations/") ? "operations" : "support";
+  const basePath = location.pathname.includes("/operations/")
+    ? "operations"
+    : "support";
   const { showLoader, hideLoader } = useLoader();
   const { showError } = useErrorBanner();
   const { showSuccess } = useSuccessBanner();
@@ -103,12 +110,16 @@ export default function CreateServiceRequestPage(): JSX.Element {
 
   const { data: projectDetails, isLoading: isProjectLoading } =
     useGetProjectDetails(projectId || "");
-  const deploymentsQuery = usePostProjectDeploymentsSearchInfinite(projectId || "", {
-    pageSize: 10,
-    enabled: !!projectId,
-  });
+  const deploymentsQuery = usePostProjectDeploymentsSearchInfinite(
+    projectId || "",
+    {
+      pageSize: 10,
+      enabled: !!projectId && !isProjectLoading,
+    },
+  );
   const allProjectDeployments = useMemo(
-    () => deploymentsQuery.data?.pages.flatMap((p) => p.deployments ?? []) ?? [],
+    () =>
+      deploymentsQuery.data?.pages.flatMap((p) => p.deployments ?? []) ?? [],
     [deploymentsQuery.data],
   );
   const isPrimaryProductionOnly = shouldRestrictToPrimaryProductionDeployments(
@@ -127,8 +138,11 @@ export default function CreateServiceRequestPage(): JSX.Element {
   const prefill = useMemo(() => {
     const depId = searchParams.get("deploymentId")?.trim() ?? "";
     const prodId = searchParams.get("productId")?.trim() ?? "";
-    if (!depId || !projectDeployments.length) return { deploymentLabel: "", productId: "" };
-    const dep = projectDeployments.find((d: ProjectDeploymentItem) => d.id === depId);
+    if (!depId || !projectDeployments.length)
+      return { deploymentLabel: "", productId: "" };
+    const dep = projectDeployments.find(
+      (d: ProjectDeploymentItem) => d.id === depId,
+    );
     const deploymentLabel = dep?.name?.trim() || dep?.type?.label?.trim() || "";
     return { deploymentLabel, productId: prodId };
   }, [searchParams, projectDeployments]);
@@ -138,7 +152,12 @@ export default function CreateServiceRequestPage(): JSX.Element {
 
   const baseDeploymentOptions = getBaseDeploymentOptions(projectDeployments);
   const selectedDeploymentMatch = useMemo(
-    () => resolveDeploymentMatch(effectiveDeployment, projectDeployments, undefined),
+    () =>
+      resolveDeploymentMatch(
+        effectiveDeployment,
+        projectDeployments,
+        undefined,
+      ),
     [effectiveDeployment, projectDeployments],
   );
   const selectedDeploymentId = selectedDeploymentMatch?.id ?? "";
@@ -184,7 +203,9 @@ export default function CreateServiceRequestPage(): JSX.Element {
   const selectedCatalogItemLabel = useMemo(() => {
     if (!selectedCatalogId || !selectedCatalogItemId || !catalogsData?.catalogs)
       return undefined;
-    const catalog = catalogsData.catalogs.find((c) => c.id === selectedCatalogId);
+    const catalog = catalogsData.catalogs.find(
+      (c) => c.id === selectedCatalogId,
+    );
     const item = catalog?.catalogItems?.find(
       (i) => i.id === selectedCatalogItemId,
     );
@@ -217,10 +238,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
     const depId = searchParams.get("deploymentId")?.trim();
     if (!depId) return;
     if (allProjectDeployments.some((d) => d.id === depId)) return;
-    if (
-      deploymentsQuery.hasNextPage &&
-      !deploymentsQuery.isFetchingNextPage
-    ) {
+    if (deploymentsQuery.hasNextPage && !deploymentsQuery.isFetchingNextPage) {
       void deploymentsQuery.fetchNextPage();
     }
   }, [searchParams, allProjectDeployments, deploymentsQuery]);
@@ -255,19 +273,27 @@ export default function CreateServiceRequestPage(): JSX.Element {
     [],
   );
 
-  const handleVariableChange = useCallback((variableId: string, value: string) => {
-    setVariableValues((prev) => ({ ...prev, [variableId]: value }));
-  }, []);
+  const handleVariableChange = useCallback(
+    (variableId: string, value: string) => {
+      setVariableValues((prev) => ({ ...prev, [variableId]: value }));
+    },
+    [],
+  );
 
   const handleAttachmentClick = () => setIsAttachmentModalOpen(true);
 
   const handleSelectAttachment = (file: File, attachmentName?: string) => {
     setAttachments((prev) => {
       const sig = `${file.name}-${file.size}-${file.lastModified}`;
-      if (prev.some((a) => `${a.file.name}-${a.file.size}-${a.file.lastModified}` === sig))
+      if (
+        prev.some(
+          (a) => `${a.file.name}-${a.file.size}-${a.file.lastModified}` === sig,
+        )
+      )
         return prev;
       const id = `att-${++attachmentIdCounterRef.current}-${Date.now()}`;
-      if (attachmentName?.trim()) attachmentNamesRef.current.set(id, attachmentName.trim());
+      if (attachmentName?.trim())
+        attachmentNamesRef.current.set(id, attachmentName.trim());
       return [...prev, { id, file }];
     });
   };
@@ -402,7 +428,9 @@ export default function CreateServiceRequestPage(): JSX.Element {
           );
         }
 
-        navigate(`/projects/${projectId}/${basePath}/service-requests/${data.id}`);
+        navigate(
+          `/projects/${projectId}/${basePath}/service-requests/${data.id}`,
+        );
       },
       onError: (error) => {
         const msg =
@@ -453,11 +481,12 @@ export default function CreateServiceRequestPage(): JSX.Element {
           metadata={{ deploymentTypes: baseDeploymentOptions }}
           isDeploymentLoading={isProjectLoading || isDeploymentsLoading}
           isProductDropdownDisabled={isProductDropdownDisabled}
-          isProductLoading={
-            !!selectedDeploymentId && deploymentProductsLoading
-          }
+          isProductLoading={!!selectedDeploymentId && deploymentProductsLoading}
           onLoadMoreDeployments={() => {
-            if (deploymentsQuery.hasNextPage && !deploymentsQuery.isFetchingNextPage) {
+            if (
+              deploymentsQuery.hasNextPage &&
+              !deploymentsQuery.isFetchingNextPage
+            ) {
               void deploymentsQuery.fetchNextPage();
             }
           }}

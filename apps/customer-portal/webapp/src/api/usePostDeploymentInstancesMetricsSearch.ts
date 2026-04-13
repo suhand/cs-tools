@@ -49,7 +49,9 @@ export default function usePostDeploymentInstancesMetricsSearch(
         },
       );
       if (!response.ok) {
-        throw new Error(`Failed to search deployment instance metrics: ${response.status}`);
+        throw new Error(
+          `Failed to search deployment instance metrics: ${response.status}`,
+        );
       }
       return response.json() as Promise<InstanceMetricsResponse>;
     },

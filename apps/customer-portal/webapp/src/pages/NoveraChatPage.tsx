@@ -56,7 +56,12 @@ import ChatInput from "@components/support/novera-ai-assistant/novera-chat-page/
 import ChatMessageList from "@components/support/novera-ai-assistant/novera-chat-page/ChatMessageList";
 import ChatSkeleton from "@components/support/novera-ai-assistant/novera-chat-page/ChatSkeleton";
 import { ROUTE_PREVIOUS_PAGE } from "@/constants/commonConstants";
-import { displayTextFromConversationContent, getFinalMessageFromPayload, sanitizeStreamToken, splitTokenForTyping } from "@/utils/chat";
+import {
+  displayTextFromConversationContent,
+  getFinalMessageFromPayload,
+  sanitizeStreamToken,
+  splitTokenForTyping,
+} from "@/utils/chat";
 import { compareByCreatedOnThenId, dateFromApiCreatedOn } from "@utils/support";
 
 /**

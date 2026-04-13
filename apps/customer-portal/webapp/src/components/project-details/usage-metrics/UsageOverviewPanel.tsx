@@ -46,11 +46,17 @@ import usePostProjectInstancesMetricsSearch from "@api/usePostProjectInstancesMe
 import usePostDeploymentInstancesSearch from "@api/usePostDeploymentInstancesSearch";
 import usePostDeploymentInstancesUsagesSearch from "@api/usePostDeploymentInstancesUsagesSearch";
 import useGetProjectUsageStats from "@api/useGetProjectUsageStats";
-import type { UsageAggregatedMetricDefinition, UsageTrendRow } from "@/types/usage";
-import type { InstanceItem, InstanceUsageEntry, InstanceMetricEntry } from "@/types/usage";
+import type {
+  UsageAggregatedMetricDefinition,
+  UsageTrendRow,
+} from "@/types/usage";
+import type {
+  InstanceItem,
+  InstanceUsageEntry,
+  InstanceMetricEntry,
+} from "@/types/usage";
 import { colors as oxygenColors } from "@wso2/oxygen-ui";
 import UsageMetricTrendCard from "@components/project-details/usage-metrics/UsageMetricTrendCard";
-
 
 const ORANGE_STROKE = oxygenColors.orange?.[600] ?? "#EA580C";
 const VIOLET_STROKE = oxygenColors.purple?.[500] ?? "#8B5CF6";
@@ -59,14 +65,30 @@ const CYAN_STROKE = oxygenColors.cyan?.[500] ?? "#06B6D4";
 const AMBER_STROKE = oxygenColors.amber?.[500] ?? "#F59E0B";
 
 /** Format ISO date (YYYY-MM-DD) to date format for the chart, responsive to screen size. */
-function formatDateForChart(isoDate: string, isSmallScreen: boolean = false): string {
+function formatDateForChart(
+  isoDate: string,
+  isSmallScreen: boolean = false,
+): string {
   try {
     const date = new Date(`${isoDate}T00:00:00Z`);
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthNames = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const month = monthNames[date.getUTCMonth()];
     const day = date.getUTCDate();
     const year = date.getUTCFullYear();
-    
+
     // Small screens: show only month-day (MM-DD format)
     if (isSmallScreen) {
       return `${month} ${day}`;
@@ -108,7 +130,10 @@ function buildTrendFromUsages(
   }
   return Array.from(periodMap.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([period, value]) => ({ name: formatDateForChart(period, isSmallScreen), value }));
+    .map(([period, value]) => ({
+      name: formatDateForChart(period, isSmallScreen),
+      value,
+    }));
 }
 
 /** Compute headline value (last point) and delta % vs previous point. */
@@ -126,15 +151,21 @@ function computeHeadlineDelta(trend: UsageTrendRow[]): {
 }
 
 /** Build a daily trend of summed cores across all instance metrics. */
-function buildDailyCoreTrend(metrics: InstanceMetricEntry[], isSmallScreen: boolean = false): UsageTrendRow[] {
+function buildDailyCoreTrend(
+  metrics: InstanceMetricEntry[],
+  isSmallScreen: boolean = false,
+): UsageTrendRow[] {
   const dayMap = new Map<string, number>();
 
   for (const m of metrics) {
     for (const dp of m.dataPoints) {
       if (!dp.date) continue;
-      const c = dp.coreCount != null
-        ? dp.coreCount
-        : (dp.deploymentMetadata?.numberOfCores != null ? Number(dp.deploymentMetadata.numberOfCores) : 0);
+      const c =
+        dp.coreCount != null
+          ? dp.coreCount
+          : dp.deploymentMetadata?.numberOfCores != null
+            ? Number(dp.deploymentMetadata.numberOfCores)
+            : 0;
       const prev = dayMap.get(dp.date) ?? 0;
       dayMap.set(dp.date, prev + c);
     }
@@ -149,11 +180,23 @@ function buildDailyCoreTrend(metrics: InstanceMetricEntry[], isSmallScreen: bool
 }
 
 /** Derive the 5 aggregated metric cards from project usages and metrics. */
-function deriveAggregatedMetrics(usages: InstanceUsageEntry[], metrics: InstanceMetricEntry[], isSmallScreen: boolean = false): UsageAggregatedMetricDefinition[] {
-  const txTrend = buildTrendFromUsages(usages, "TRANSACTION_COUNT", isSmallScreen);
+function deriveAggregatedMetrics(
+  usages: InstanceUsageEntry[],
+  metrics: InstanceMetricEntry[],
+  isSmallScreen: boolean = false,
+): UsageAggregatedMetricDefinition[] {
+  const txTrend = buildTrendFromUsages(
+    usages,
+    "TRANSACTION_COUNT",
+    isSmallScreen,
+  );
   const apiTrend = buildTrendFromUsages(usages, "API_COUNT", isSmallScreen);
   const userTrend = buildTrendFromUsages(usages, "TOTAL_USERS", isSmallScreen);
-  const b2bTrend = buildTrendFromUsages(usages, "TOTAL_B2B_ORGS", isSmallScreen);
+  const b2bTrend = buildTrendFromUsages(
+    usages,
+    "TOTAL_B2B_ORGS",
+    isSmallScreen,
+  );
   const coreTrend = buildDailyCoreTrend(metrics, isSmallScreen);
 
   const txHD = computeHeadlineDelta(txTrend);
@@ -278,7 +321,10 @@ interface ExpandedProductCardProps {
   accent: ReturnType<typeof accentForEnvironment>;
 }
 
-function ExpandedProductCard({ product, accent: a }: ExpandedProductCardProps): JSX.Element {
+function ExpandedProductCard({
+  product,
+  accent: a,
+}: ExpandedProductCardProps): JSX.Element {
   return (
     <Card
       sx={{
@@ -354,7 +400,9 @@ function DeploymentExpandedView({
   const a = accentForEnvironment(typeId);
 
   const metricsPayload = useMemo(
-    () => ({ filters: { startDate: dateRange.startDate, endDate: dateRange.endDate } }),
+    () => ({
+      filters: { startDate: dateRange.startDate, endDate: dateRange.endDate },
+    }),
     [dateRange],
   );
 
@@ -381,18 +429,26 @@ function DeploymentExpandedView({
     const usages: InstanceUsageEntry[] = usagesData?.usages ?? [];
 
     // Build product map keyed by deployedProduct.id
-    const productMap = new Map<string, {
-      label: string;
-      instanceCount: number;
-      coreCount: number;
-      totalTx: number;
-    }>();
+    const productMap = new Map<
+      string,
+      {
+        label: string;
+        instanceCount: number;
+        coreCount: number;
+        totalTx: number;
+      }
+    >();
 
     for (const inst of instances) {
       const pid = inst.deployedProduct?.id;
       const label = inst.deployedProduct?.label ?? "Unknown";
       if (!pid) continue;
-      const existing = productMap.get(pid) ?? { label, instanceCount: 0, coreCount: 0, totalTx: 0 };
+      const existing = productMap.get(pid) ?? {
+        label,
+        instanceCount: 0,
+        coreCount: 0,
+        totalTx: 0,
+      };
       existing.instanceCount += 1;
       existing.coreCount += inst.metadata?.coreCount ?? 0;
       productMap.set(pid, existing);
@@ -404,7 +460,12 @@ function DeploymentExpandedView({
       if (!pid) continue;
       // Ensure entry exists if it came only from usages (edge case)
       const label = usage.deployedProduct?.label ?? "Unknown";
-      const existing = productMap.get(pid) ?? { label, instanceCount: 0, coreCount: 0, totalTx: 0 };
+      const existing = productMap.get(pid) ?? {
+        label,
+        instanceCount: 0,
+        coreCount: 0,
+        totalTx: 0,
+      };
       existing.totalTx += sumTransactions(usage);
       productMap.set(pid, existing);
     }
@@ -528,12 +589,17 @@ function EnvironmentBreakdownAccordion({
               <EnvironmentIcon typeId={row.kind} />
             </Box>
             <Box sx={{ textAlign: "left" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: a.title }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ fontWeight: 600, color: a.title }}
+              >
                 {row.title}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {row.productCount} product{row.productCount !== 1 ? "s" : ""}
-                <Box component="span" sx={{ mx: 0.75, opacity: 0.4 }}>|</Box>
+                <Box component="span" sx={{ mx: 0.75, opacity: 0.4 }}>
+                  |
+                </Box>
                 {row.instanceCount} instance{row.instanceCount !== 1 ? "s" : ""}
               </Typography>
             </Box>
@@ -614,7 +680,9 @@ export default function UsageOverviewPanel({
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
   const metricsPayload = useMemo(
-    () => ({ filters: { startDate: dateRange.startDate, endDate: dateRange.endDate } }),
+    () => ({
+      filters: { startDate: dateRange.startDate, endDate: dateRange.endDate },
+    }),
     [dateRange],
   );
 
@@ -653,9 +721,19 @@ export default function UsageOverviewPanel({
     isError: statsError,
   } = useGetProjectUsageStats(projectId);
 
-  const isLoading = deploymentsLoading || instancesLoading || usagesLoading || metricsLoading || statsLoading;
-  const isError = deploymentsError || instancesError || usagesError || metricsError || statsError;
-  
+  const isLoading =
+    deploymentsLoading ||
+    instancesLoading ||
+    usagesLoading ||
+    metricsLoading ||
+    statsLoading;
+  const isError =
+    deploymentsError ||
+    instancesError ||
+    usagesError ||
+    metricsError ||
+    statsError;
+
   const isStatCardsLoading = statsLoading;
 
   // ── Overview summary stats ─────────────────────────────────────────────────
@@ -674,7 +752,9 @@ export default function UsageOverviewPanel({
 
     return deploymentsData.map((dep) => {
       const depInstances = instances.filter((i) => i.deployment?.id === dep.id);
-      const productIds = new Set(depInstances.map((i) => i.deployedProduct?.id).filter(Boolean));
+      const productIds = new Set(
+        depInstances.map((i) => i.deployedProduct?.id).filter(Boolean),
+      );
       const productCount = productIds.size;
       const instanceCount = depInstances.length;
       const totalCores = depInstances.reduce(
@@ -691,8 +771,13 @@ export default function UsageOverviewPanel({
         instanceCount,
         totalCores,
         transactionsLabel: (() => {
-          const depUsages = (usagesData?.usages ?? []).filter((u) => u.deployment?.id === dep.id);
-          const total = depUsages.reduce((sum, u) => sum + sumTransactions(u), 0);
+          const depUsages = (usagesData?.usages ?? []).filter(
+            (u) => u.deployment?.id === dep.id,
+          );
+          const total = depUsages.reduce(
+            (sum, u) => sum + sumTransactions(u),
+            0,
+          );
           return formatCount(total);
         })(),
       };
@@ -701,7 +786,11 @@ export default function UsageOverviewPanel({
 
   // ── Aggregated metric trend cards ─────────────────────────────────────────
   const aggregatedMetrics = useMemo((): UsageAggregatedMetricDefinition[] => {
-    return deriveAggregatedMetrics(usagesData?.usages ?? [], metricsData?.metrics ?? [], isSmallScreen);
+    return deriveAggregatedMetrics(
+      usagesData?.usages ?? [],
+      metricsData?.metrics ?? [],
+      isSmallScreen,
+    );
   }, [usagesData, metricsData, isSmallScreen]);
 
   if (isError) {
@@ -718,7 +807,13 @@ export default function UsageOverviewPanel({
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard
             label="Environments"
-            value={isStatCardsLoading ? (<Skeleton variant="rounded" width={60} height={24} /> as any) : overviewStats.environments}
+            value={
+              isStatCardsLoading
+                ? ((
+                    <Skeleton variant="rounded" width={60} height={24} />
+                  ) as any)
+                : overviewStats.environments
+            }
             icon={<Layers />}
             iconColor="info"
           />
@@ -726,7 +821,13 @@ export default function UsageOverviewPanel({
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard
             label="Products"
-            value={isStatCardsLoading ? (<Skeleton variant="rounded" width={60} height={24} /> as any) : overviewStats.products}
+            value={
+              isStatCardsLoading
+                ? ((
+                    <Skeleton variant="rounded" width={60} height={24} />
+                  ) as any)
+                : overviewStats.products
+            }
             icon={<Package />}
             iconColor="primary"
           />
@@ -734,7 +835,13 @@ export default function UsageOverviewPanel({
         <Grid size={{ xs: 12, md: 4 }}>
           <StatCard
             label="Instances"
-            value={isStatCardsLoading ? (<Skeleton variant="rounded" width={60} height={24} /> as any) : overviewStats.instances}
+            value={
+              isStatCardsLoading
+                ? ((
+                    <Skeleton variant="rounded" width={60} height={24} />
+                  ) as any)
+                : overviewStats.instances
+            }
             icon={<ServerIcon />}
             iconColor="success"
           />
@@ -750,17 +857,38 @@ export default function UsageOverviewPanel({
         {isLoading ? (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
             {[1, 2, 3].map((i) => (
-              <Card key={i} variant="outlined" sx={{ borderRadius: 0, p: 1.5, borderColor: "divider" }}>
+              <Card
+                key={i}
+                variant="outlined"
+                sx={{ borderRadius: 0, p: 1.5, borderColor: "divider" }}
+              >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <Skeleton variant="rectangular" width={32} height={32} />
-                  <Box sx={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Box>
                       <Skeleton variant="text" width={180} height={24} />
                       <Skeleton variant="text" width={120} height={20} />
                     </Box>
                     <Box sx={{ display: { xs: "none", sm: "flex" }, gap: 3 }}>
-                      <Skeleton variant="rectangular" width={100} height={32} sx={{ borderRadius: 1 }} />
-                      <Skeleton variant="rectangular" width={100} height={32} sx={{ borderRadius: 1 }} />
+                      <Skeleton
+                        variant="rectangular"
+                        width={100}
+                        height={32}
+                        sx={{ borderRadius: 1 }}
+                      />
+                      <Skeleton
+                        variant="rectangular"
+                        width={100}
+                        height={32}
+                        sx={{ borderRadius: 1 }}
+                      />
                     </Box>
                   </Box>
                 </Box>
@@ -791,7 +919,14 @@ export default function UsageOverviewPanel({
             {[0, 1, 2, 3, 4].map((i) => (
               <Grid key={i} size={{ xs: 12, lg: 6 }}>
                 <Card variant="outlined" sx={{ p: 2 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
                     <Box>
                       <Skeleton variant="text" width={140} height={24} />
                       <Skeleton variant="text" width={220} height={20} />

@@ -117,8 +117,7 @@ export default function useSearchProjectTimeCards({
       const nextOffset = lastPage.offset + lastPage.limit;
       return nextOffset < lastPage.totalRecords ? nextOffset : undefined;
     },
-    enabled:
-      enabled !== false && !!projectId && isSignedIn && !isAuthLoading,
+    enabled: enabled !== false && !!projectId && isSignedIn && !isAuthLoading,
     staleTime: 5 * 60 * 1000,
   });
 }

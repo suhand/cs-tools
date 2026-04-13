@@ -14,7 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import { Box, Button, Chip, Stack, Typography, alpha, useTheme } from "@wso2/oxygen-ui";
+import {
+  Box,
+  Button,
+  Chip,
+  Stack,
+  Typography,
+  alpha,
+  useTheme,
+} from "@wso2/oxygen-ui";
 import {
   Calendar,
   CircleCheck,
@@ -80,22 +88,21 @@ export default function CaseDetailsDetailsPanel({
   const overviewTitle = isSecurityReportAnalysis
     ? "Security Report Analysis Overview"
     : isEngagement
-    ? "Engagement Overview"
-    : isServiceRequest
-    ? "Service Request Overview"
-    : "Case Overview";
+      ? "Engagement Overview"
+      : isServiceRequest
+        ? "Service Request Overview"
+        : "Case Overview";
   const overviewIdLabel = isSecurityReportAnalysis
     ? "Security Report Analysis ID"
     : isEngagement
-    ? "Engagement ID"
-    : isServiceRequest
-    ? "Request number"
-    : "Case ID";
+      ? "Engagement ID"
+      : isServiceRequest
+        ? "Request number"
+        : "Case ID";
 
-  const productDisplayName =
-    data?.deployedProduct?.label?.trim?.()?.length
-      ? data.deployedProduct.label
-      : (data?.product?.label ?? null);
+  const productDisplayName = data?.deployedProduct?.label?.trim?.()?.length
+    ? data.deployedProduct.label
+    : (data?.product?.label ?? null);
   const relatedChangeRequest = data?.changeRequests?.[0];
 
   if (isError) {
@@ -236,7 +243,11 @@ export default function CaseDetailsDetailsPanel({
             <Box>
               <Typography {...labelSx}>Category</Typography>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <Tag size={16} color={theme.palette.text.secondary} aria-hidden />
+                <Tag
+                  size={16}
+                  color={theme.palette.text.secondary}
+                  aria-hidden
+                />
                 <Typography {...valueSx}>
                   {formatValue(data?.issueType)}
                 </Typography>
@@ -280,9 +291,7 @@ export default function CaseDetailsDetailsPanel({
           {isServiceRequest && data?.duration ? (
             <Box>
               <Typography {...labelSx}>Duration</Typography>
-              <Typography {...valueSx}>
-                {formatValue(data.duration)}
-              </Typography>
+              <Typography {...valueSx}>{formatValue(data.duration)}</Typography>
             </Box>
           ) : null}
           {isServiceRequest ? (

@@ -14,37 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import {
-  Box,
-  Typography,
-  Button,
-  Chip,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Paper,
-  TextField,
-  InputAdornment,
-  Divider,
-  Form,
-  Stack,
-  Grid,
-  alpha,
-  useTheme,
-  Pagination,
-} from "@wso2/oxygen-ui";
-import {
-  Plus,
-  Search,
-  ListFilter,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Calendar,
-  User,
-  FileText,
-} from "@wso2/oxygen-ui-icons-react";
+import { Box, Button, Paper, Typography } from "@wso2/oxygen-ui";
+import { Plus } from "@wso2/oxygen-ui-icons-react";
 import {
   useState,
   useMemo,
@@ -56,31 +27,31 @@ import { useNavigate, useParams } from "react-router";
 import { CaseType } from "@constants/supportConstants";
 import useGetProjectCases from "@api/useGetProjectCases";
 import useGetProjectFilters from "@api/useGetProjectFilters";
-import {
-  SortOrder,
-} from "@/types/common";
+import { SortOrder } from "@/types/common";
 import SecurityReportAnalysisSkeleton from "@components/security/SecurityReportAnalysisSkeleton";
 import TabBar from "@components/common/tab-bar/TabBar";
-import {
-  resolveColorFromTheme,
-  formatDateTime,
-  getStatusColor,
-  getStatusIcon,
-  getSeverityColor,
-  mapSeverityToDisplay,
-  getAssignedEngineerLabel,
-  stripHtml,
-  countListSearchAndFilters,
-} from "@utils/support";
-import DOMPurify from "dompurify";
+import ListSearchBar from "@components/common/list-view/ListSearchBar";
+import ListFiltersPanel from "@components/common/list-view/ListFiltersPanel";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
+import ListCard from "@components/common/list-view/ListCard";
+import { countListSearchAndFilters } from "@utils/support";
 import type { AllCasesFilterValues, CaseListItem } from "@/types/cases";
+import type { CaseMetadataResponse } from "@/types/cases";
+
+const SECURITY_FILTER_DEFINITIONS = [
+  {
+    id: "status",
+    filterKey: "statusId",
+    metadataKey: "caseStates",
+  },
+];
 
 /**
  * SecurityReportAnalysis displays security vulnerability reports uploaded for analysis.
  * @returns {JSX.Element}
  */
 const SecurityReportAnalysis = (): JSX.Element => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
 
@@ -95,10 +66,8 @@ const SecurityReportAnalysis = (): JSX.Element => {
   const [page, setPage] = useState(1);
   const pageSize = 10;
 
-  // Fetch filter metadata
   const { data: filterMetadata } = useGetProjectFilters(projectId || "");
 
-  // Build case search request for security report analysis cases
   const caseSearchRequest = useMemo(
     () => ({
       filters: {
@@ -118,31 +87,24 @@ const SecurityReportAnalysis = (): JSX.Element => {
     [filters, searchTerm, sortField, sortOrder, viewMode],
   );
 
-  // Fetch security report analysis cases
   const { data, isLoading, hasNextPage, fetchNextPage } = useGetProjectCases(
     projectId || "",
     caseSearchRequest,
-    {
-      enabled: !!projectId,
-    },
+    { enabled: !!projectId },
   );
 
-  // Auto-fetch all pages for complete dataset
   useEffect(() => {
-    if (!data || !hasNextPage) {
-      return;
-    }
+    if (!data || !hasNextPage) return;
     void fetchNextPage();
   }, [data, hasNextPage, fetchNextPage]);
 
   const displayedCases = useMemo(
-    () => data?.pages.flatMap((page) => page.cases) ?? [],
+    () => data?.pages.flatMap((p) => p.cases) ?? [],
     [data],
   );
 
   const totalItems = displayedCases.length;
 
-  // Pagination logic
   const paginatedCases = useMemo(() => {
     const startIndex = (page - 1) * pageSize;
     return displayedCases.slice(startIndex, startIndex + pageSize);
@@ -151,10 +113,7 @@ const SecurityReportAnalysis = (): JSX.Element => {
   const totalPages = Math.ceil(totalItems / pageSize);
 
   const handleCreateReport = () => {
-    // Navigate to create case page with security report analysis type
-    navigate(
-      `/projects/${projectId}/support/security-report/create`,
-    );
+    navigate(`/projects/${projectId}/support/security-report/create`);
   };
 
   const handleCaseClick = (caseItem: CaseListItem) => {
@@ -163,16 +122,13 @@ const SecurityReportAnalysis = (): JSX.Element => {
     );
   };
 
-  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
     setPage(1);
   };
 
   const handleFilterChange = (field: string, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: value || undefined,
-    }));
+    setFilters((prev) => ({ ...prev, [field]: value || undefined }));
     setPage(1);
   };
 
@@ -198,9 +154,6 @@ const SecurityReportAnalysis = (): JSX.Element => {
     setPage(value);
   };
 
-  const activeFiltersCount = countListSearchAndFilters(searchTerm, filters);
-  const hasActiveFilters = activeFiltersCount > 0;
-
   const reportViewTabs = useMemo(
     () => [
       { id: "my", label: "My Reports" },
@@ -220,235 +173,96 @@ const SecurityReportAnalysis = (): JSX.Element => {
         gap: 3,
       }}
     >
-      {/* Header Section */}
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            gap: 2,
-          }}
-        >
-          {/* Title and Description */}
-          <Box>
-            <Typography variant="h5" color="text.primary" sx={{ mb: 0.5 }}>
-              Security Report Analysis
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              component="div"
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(
-                  "Security vulnerability reports uploaded for analysis",
-                ),
-              }}
-            />
-          </Box>
-
-          {/* Action Buttons */}
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: 1.5,
-            }}
-          >
-            <TabBar
-              tabs={reportViewTabs}
-              activeTab={viewMode}
-              onTabChange={(tabId) => {
-                setViewMode(tabId as "my" | "all");
-                setPage(1);
-              }}
-              sx={{ mb: 0, height: 32 }}
-            />
-
-            {/* Create Report Button */}
-            <Button
-              variant="contained"
-              color="warning"
-              startIcon={<Plus size={16} />}
-              onClick={handleCreateReport}
-              size="small"
-            >
-              Create
-            </Button>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Search and Filters Section */}
-      <Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
-          <Box sx={{ position: "relative", flex: 1 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search reports by case number, title, or description..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search size={16} />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </Box>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={
-              hasActiveFilters
-                ? handleClearFilters
-                : () => setIsFiltersOpen(!isFiltersOpen)
-            }
-            startIcon={
-              hasActiveFilters ? <X size={16} /> : <ListFilter size={16} />
-            }
-            endIcon={
-              !hasActiveFilters &&
-              (isFiltersOpen ? (
-                <ChevronUp size={16} />
-              ) : (
-                <ChevronDown size={16} />
-              ))
-            }
-          >
-            {hasActiveFilters
-              ? `Clear Filters (${activeFiltersCount})`
-              : "Filters"}
-          </Button>
-        </Box>
-
-        {isFiltersOpen && (
-          <>
-            <Divider sx={{ my: 2 }} />
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="status-label">Status</InputLabel>
-                  <Select
-                    labelId="status-label"
-                    value={filters.statusId || ""}
-                    label="Status"
-                    onChange={(e) =>
-                      handleFilterChange("statusId", e.target.value)
-                    }
-                  >
-                    <MenuItem value="">
-                      <Typography variant="body2">All Statuses</Typography>
-                    </MenuItem>
-                    {filterMetadata?.caseStates?.map((status) => (
-                      <MenuItem key={status.id} value={status.id}>
-                        <Typography variant="body2">{status.label}</Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                <FormControl fullWidth size="small">
-                  <InputLabel id="deployment-label">Deployment</InputLabel>
-                  <Select
-                    labelId="deployment-label"
-                    value={filters.deploymentId || ""}
-                    label="Deployment"
-                    onChange={(e) =>
-                      handleFilterChange("deploymentId", e.target.value)
-                    }
-                  >
-                    <MenuItem value="">
-                      <Typography variant="body2">All Deployments</Typography>
-                    </MenuItem>
-                    {filterMetadata?.deploymentTypes?.map((deployment) => (
-                      <MenuItem key={deployment.id} value={deployment.id}>
-                        <Typography variant="body2">
-                          {deployment.label}
-                        </Typography>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </>
-        )}
-      </Box>
-
-      {/* Sort and Results Count */}
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
         }}
       >
-        <Typography variant="body2" color="text.secondary">
-          Showing {paginatedCases.length} of {totalItems} reports
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-by-label">Sort by</InputLabel>
-            <Select<"createdOn" | "updatedOn" | "severity" | "state">
-              labelId="sort-by-label"
-              id="sort-by"
-              value={sortField}
-              label="Sort by"
-              onChange={(e) =>
-                handleSortFieldChange(
-                  e.target.value as
-                    | "createdOn"
-                    | "updatedOn"
-                    | "severity"
-                    | "state",
-                )
-              }
-            >
-              <MenuItem value="createdOn">
-                <Typography variant="body2">Created date</Typography>
-              </MenuItem>
-              <MenuItem value="updatedOn">
-                <Typography variant="body2">Updated date</Typography>
-              </MenuItem>
-              <MenuItem value="severity">
-                <Typography variant="body2">Severity</Typography>
-              </MenuItem>
-              <MenuItem value="state">
-                <Typography variant="body2">State</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <InputLabel id="sort-label">Order By</InputLabel>
-            <Select<"desc" | "asc">
-              labelId="sort-label"
-              id="sort"
-              value={sortOrder}
-              label="Sort"
-              onChange={(e) =>
-                handleSortChange(e.target.value as SortOrder)
-              }
-            >
-              <MenuItem value={SortOrder.DESC}>
-                <Typography variant="body2">Newest First</Typography>
-              </MenuItem>
-              <MenuItem value={SortOrder.ASC}>
-                <Typography variant="body2">Oldest First</Typography>
-              </MenuItem>
-            </Select>
-          </FormControl>
+        <Box>
+          <Typography variant="h5" color="text.primary" sx={{ mb: 0.5 }}>
+            Security Report Analysis
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Security vulnerability reports uploaded for analysis
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+          <TabBar
+            tabs={reportViewTabs}
+            activeTab={viewMode}
+            onTabChange={(tabId) => {
+              setViewMode(tabId as "my" | "all");
+              setPage(1);
+            }}
+            sx={{ mb: 0, height: 32 }}
+          />
+          <Button
+            variant="contained"
+            color="warning"
+            startIcon={<Plus size={16} />}
+            onClick={handleCreateReport}
+            size="small"
+          >
+            Create
+          </Button>
         </Box>
       </Box>
 
-      {/* Reports List */}
+      {/* Search + Filters */}
+      <ListSearchBar
+        searchPlaceholder="Search reports by case number, title, or description..."
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        isFiltersOpen={isFiltersOpen}
+        onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
+        activeFiltersCount={countListSearchAndFilters(searchTerm, filters)}
+        onClearFilters={handleClearFilters}
+        filtersContent={
+          <ListFiltersPanel
+            filterDefinitions={SECURITY_FILTER_DEFINITIONS}
+            filters={filters}
+            resolveOptions={(def) => {
+              const raw = (filterMetadata as CaseMetadataResponse | undefined)?.[
+                def.metadataKey as keyof CaseMetadataResponse
+              ];
+              if (!Array.isArray(raw)) return [];
+              return raw.map((item: { label: string; id: string }) => ({
+                label: item.label,
+                value: item.id,
+              }));
+            }}
+            onFilterChange={handleFilterChange}
+          />
+        }
+      />
+
+      {/* Results count + sort */}
+      <ListResultsBar
+        shownCount={paginatedCases.length}
+        totalCount={totalItems}
+        entityLabel="reports"
+        sortFieldOptions={[
+          { value: "createdOn", label: "Created date" },
+          { value: "updatedOn", label: "Updated date" },
+          { value: "severity", label: "Severity" },
+          { value: "state", label: "State" },
+        ]}
+        sortField={sortField}
+        onSortFieldChange={(v) =>
+          handleSortFieldChange(
+            v as "createdOn" | "updatedOn" | "severity" | "state",
+          )
+        }
+        sortOrder={sortOrder}
+        onSortOrderChange={handleSortChange}
+      />
+
+      {/* Reports list */}
       <Box>
         {isLoading ? (
           <SecurityReportAnalysisSkeleton />
@@ -460,238 +274,22 @@ const SecurityReportAnalysis = (): JSX.Element => {
           </Box>
         ) : (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            {paginatedCases.map((caseItem) => {
-              const StatusIcon = getStatusIcon(caseItem.status?.label);
-              const colorPath = getStatusColor(caseItem.status?.label);
-              const resolvedColor = resolveColorFromTheme(colorPath, theme);
-
-              return (
-                <Form.CardButton
-                  key={caseItem.id}
-                  onClick={() => handleCaseClick(caseItem)}
-                  sx={{
-                    p: 3,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "stretch",
-                    gap: 1,
-                  }}
-                >
-                  <Form.CardHeader
-                    sx={{ p: 0 }}
-                    title={
-                      <Stack
-                        direction="row"
-                        spacing={1.5}
-                        alignItems="center"
-                        sx={{ mb: 1, flexWrap: "wrap" }}
-                      >
-                        <Typography
-                          variant="body2"
-                          fontWeight={500}
-                          color="text.primary"
-                        >
-                          {caseItem.number || "--"}
-                        </Typography>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 8,
-                              height: 8,
-                              borderRadius: "50%",
-                              bgcolor: getSeverityColor(
-                                caseItem.severity?.label,
-                              ),
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary">
-                            {mapSeverityToDisplay(caseItem.severity?.label)}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          size="small"
-                          variant="outlined"
-                          label={caseItem.status?.label || "--"}
-                          icon={<StatusIcon size={12} />}
-                          sx={{
-                            bgcolor: alpha(resolvedColor, 0.1),
-                            color: resolvedColor,
-                            height: 20,
-                            fontSize: "0.75rem",
-                            px: 0,
-                            "& .MuiChip-icon": {
-                              color: "inherit",
-                              ml: "6px",
-                              mr: "6px",
-                            },
-                            "& .MuiChip-label": {
-                              pl: 0,
-                              pr: "6px",
-                            },
-                          }}
-                        />
-                        {caseItem.issueType?.label && (
-                          <Chip
-                            size="small"
-                            label={caseItem.issueType.label || "--"}
-                            variant="outlined"
-                            sx={{
-                              height: 20,
-                              fontSize: "0.75rem",
-                            }}
-                          />
-                        )}
-                      </Stack>
-                    }
-                  />
-
-                  <Form.CardContent sx={{ p: 0 }}>
-                    <Typography
-                      variant="h6"
-                      color="text.primary"
-                      sx={{ mb: 1, fontWeight: 500 }}
-                    >
-                      {caseItem.title || "--"}
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {stripHtml(caseItem.description) || "--"}
-                    </Typography>
-                  </Form.CardContent>
-
-                  <Form.CardActions
-                    sx={{
-                      p: 0,
-                      justifyContent: "flex-start",
-                      flexWrap: "wrap",
-                      gap: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Calendar size={14} />
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ lineHeight: 1 }}
-                        >
-                          Created {formatDateTime(caseItem.createdOn) || "--"}
-                        </Typography>
-                      </Box>
-                      {caseItem.createdBy && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <User size={14} />
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ lineHeight: 1 }}
-                          >
-                            Created by {caseItem.createdBy}
-                          </Typography>
-                        </Box>
-                      )}
-                      {(() => {
-                        const assignedLabel = getAssignedEngineerLabel(
-                          caseItem.assignedEngineer,
-                        );
-                        return assignedLabel ? (
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.5,
-                              flexShrink: 0,
-                            }}
-                          >
-                            <User size={14} />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ lineHeight: 1 }}
-                            >
-                              Assigned to {assignedLabel}
-                            </Typography>
-                          </Box>
-                        ) : null;
-                      })()}
-                      {caseItem.deployment?.label && (
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.5,
-                            flexShrink: 0,
-                          }}
-                        >
-                          <FileText size={14} />
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ lineHeight: 1 }}
-                          >
-                            {caseItem.deployment.label}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Form.CardActions>
-                </Form.CardButton>
-              );
-            })}
+            {paginatedCases.map((caseItem) => (
+              <ListCard
+                key={caseItem.id}
+                caseItem={caseItem}
+                onClick={handleCaseClick}
+              />
+            ))}
           </Box>
         )}
       </Box>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-          <Pagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            color="primary"
-            variant="outlined"
-            shape="rounded"
-          />
-        </Box>
-      )}
+      <ListPagination
+        totalPages={totalPages}
+        page={page}
+        onChange={handlePageChange}
+      />
     </Paper>
   );
 };

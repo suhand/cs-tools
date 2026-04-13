@@ -82,7 +82,10 @@ export default function EditUserModal({
   const displayName = contact
     ? contact.firstName && contact.lastName
       ? `${contact.firstName} ${contact.lastName}`
-      : contact.firstName || contact.lastName || contact.email || NULL_PLACEHOLDER
+      : contact.firstName ||
+        contact.lastName ||
+        contact.email ||
+        NULL_PLACEHOLDER
     : NULL_PLACEHOLDER;
 
   return (
@@ -217,9 +220,9 @@ export default function EditUserModal({
                     color="text.secondary"
                     sx={{ display: "block", mt: 0.25 }}
                   >
-                    Designate this user to receive WSO2 security advisories,
-                    CVE notifications, and vulnerability reports for the
-                    project. They will also be able to create security cases.
+                    Designate this user to receive WSO2 security advisories, CVE
+                    notifications, and vulnerability reports for the project.
+                    They will also be able to create security cases.
                   </Typography>
                 </Box>
               </Box>
@@ -250,8 +253,8 @@ export default function EditUserModal({
                 )}
                 {!isSecurity && initialValue && (
                   <>
-                    <strong>{displayName}</strong> will be reverted to a
-                    regular Portal User and will no longer receive security
+                    <strong>{displayName}</strong> will be reverted to a regular
+                    Portal User and will no longer receive security
                     notifications.
                   </>
                 )}
@@ -259,7 +262,9 @@ export default function EditUserModal({
                   <>
                     This user is currently{" "}
                     <strong>
-                      {initialValue ? "a Security Contact" : "not a Security Contact"}
+                      {initialValue
+                        ? "a Security Contact"
+                        : "not a Security Contact"}
                     </strong>
                     . Toggle the switch to change it.
                   </>
@@ -270,7 +275,11 @@ export default function EditUserModal({
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button variant="outlined" onClick={handleClose} disabled={isSubmitting}>
+        <Button
+          variant="outlined"
+          onClick={handleClose}
+          disabled={isSubmitting}
+        >
           Cancel
         </Button>
         <Button
@@ -279,7 +288,9 @@ export default function EditUserModal({
           onClick={handleSave}
           disabled={isSubmitting || isSystemUser || !isDirty}
           startIcon={
-            isSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined
+            isSubmitting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
           }
         >
           {isSubmitting

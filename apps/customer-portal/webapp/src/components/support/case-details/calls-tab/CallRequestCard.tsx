@@ -79,10 +79,8 @@ export default function CallRequestCard({
   const theme = useTheme();
   const statusLabel = call.state?.label ?? "--";
   const statusLower = statusLabel?.toLowerCase() ?? "";
-  const isCancelled =
-    statusLower === "cancelled" || statusLower === "canceled";
-  const isTerminal =
-    isCancelled || statusLabel === CallRequestStatus.COMPLETED;
+  const isCancelled = statusLower === "cancelled" || statusLower === "canceled";
+  const isTerminal = isCancelled || statusLabel === CallRequestStatus.COMPLETED;
   const isPendingOnCustomer =
     statusLabel === CallRequestStatus.PENDING_ON_CUSTOMER;
   const isScheduled = statusLabel === CallRequestStatus.SCHEDULED;

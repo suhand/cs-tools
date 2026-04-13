@@ -22,16 +22,8 @@ import {
   type JSX,
   type ChangeEvent,
 } from "react";
+import { Box, Button, CircularProgress, Stack } from "@wso2/oxygen-ui";
 import {
-  Box,
-  Button,
-  Stack,
-  Typography,
-  Pagination,
-  CircularProgress,
-} from "@wso2/oxygen-ui";
-import {
-  ArrowLeft,
   FileText,
   Calendar as CalendarIcon,
   Download,
@@ -43,14 +35,23 @@ import useGetChangeRequests, {
   useGetChangeRequestsInfinite,
 } from "@api/useGetChangeRequests";
 import { useGetProjectChangeRequestStats } from "@api/useGetProjectChangeRequestStats";
-import ChangeRequestsStatCards from "@components/support/change-requests/ChangeRequestsStatCards";
-import ChangeRequestsSearchBar from "@components/support/change-requests/ChangeRequestsSearchBar";
+import {
+  CHANGE_REQUEST_STAT_CONFIGS,
+  formatImpactLabel,
+} from "@constants/changeRequestConstants";
+import { CHANGE_REQUEST_FILTER_DEFINITIONS } from "@constants/changeRequestConstants";
+import type { CaseMetadataResponse } from "@/types/cases";
+import ListStatGrid from "@components/common/list-view/ListStatGrid";
+import ListPageHeader from "@components/common/list-view/ListPageHeader";
+import ListSearchBar from "@components/common/list-view/ListSearchBar";
+import ListFiltersPanel from "@components/common/list-view/ListFiltersPanel";
+import ListResultsBar from "@components/common/list-view/ListResultsBar";
+import ListPagination from "@components/common/list-view/ListPagination";
 import ChangeRequestsList from "@components/support/change-requests/ChangeRequestsList";
 import ChangeRequestsCalendarView from "@components/support/change-requests/ChangeRequestsCalendarView";
 import TabBar from "@components/common/tab-bar/TabBar";
 import { generateChangeRequestsSchedulePdf } from "@utils/changeRequestsSchedulePdf";
-import { hasListSearchOrFilters } from "@utils/support";
-import DOMPurify from "dompurify";
+import { hasListSearchOrFilters, countListSearchAndFilters } from "@utils/support";
 
 /**
  * ChangeRequestsPage component to display all change requests with stats, filters, and search.
@@ -248,93 +249,80 @@ export default function ChangeRequestsPage(): JSX.Element {
 
   const listHasRefinement = hasListSearchOrFilters(searchTerm, filters);
 
+  const exportButton = (
+    <Button
+      variant="contained"
+      color="warning"
+      size="small"
+      onClick={handleExportSchedule}
+      startIcon={
+        isExporting ? (
+          <CircularProgress size={16} sx={{ color: "white" }} />
+        ) : (
+          <Download />
+        )
+      }
+      disabled={isExporting}
+      sx={{ mt: { xs: 0, sm: 4 } }}
+    >
+      {isExporting ? "Exporting..." : "Export Schedule"}
+    </Button>
+  );
+
   return (
     <Stack spacing={3}>
-      {/* Back button and header */}
-      <Box>
-        <Button
-          startIcon={<ArrowLeft size={16} />}
-          onClick={() => (returnTo ? navigate(returnTo) : navigate(".."))}
-          sx={{ mb: 2 }}
-          variant="text"
-        >
-          Back
-        </Button>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <Box>
-            <Typography variant="h4" color="text.primary" sx={{ mb: 1 }}>
-              All Change Requests
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              component="div"
-              // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted static copy rendered as HTML by request
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(
-                  "Track and manage deployment changes and updates",
-                ),
-              }}
-            />
-          </Box>
-          <Button
-            variant="contained"
-            color="warning"
-            size="small"
-            onClick={handleExportSchedule}
-            startIcon={
-              isExporting ? (
-                <CircularProgress size={16} sx={{ color: "white" }} />
-              ) : (
-                <Download />
-              )
-            }
-            disabled={isExporting}
-          >
-            {isExporting ? "Exporting..." : "Export Schedule"}
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Stat cards */}
-      <ChangeRequestsStatCards
-        isLoading={isStatsLoading || (!stats && !isStatsError)}
-        isError={isStatsError}
-        stats={stats}
+      <ListPageHeader
+        title="All Change Requests"
+        description="Track and manage deployment changes and updates"
+        backLabel="Back"
+        onBack={() => (returnTo ? navigate(returnTo) : navigate(".."))}
+        actions={exportButton}
       />
 
-      {/* Search bar and filters */}
-      <ChangeRequestsSearchBar
+      <Box sx={{ mb: 3 }}>
+        <ListStatGrid
+          isLoading={isStatsLoading || (!stats && !isStatsError)}
+          isError={isStatsError}
+          entityName="change request"
+          configs={CHANGE_REQUEST_STAT_CONFIGS}
+          stats={stats}
+        />
+      </Box>
+
+      <ListSearchBar
+        searchPlaceholder="Search change requests by number, title, or description..."
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         isFiltersOpen={isFiltersOpen}
         onFiltersToggle={() => setIsFiltersOpen(!isFiltersOpen)}
-        filters={filters}
-        filterMetadata={filterMetadata}
-        onFilterChange={handleFilterChange}
+        activeFiltersCount={countListSearchAndFilters(searchTerm, filters)}
         onClearFilters={handleClearFilters}
+        filtersContent={
+          <ListFiltersPanel
+            filterDefinitions={CHANGE_REQUEST_FILTER_DEFINITIONS}
+            filters={filters}
+            resolveOptions={(def) => {
+              const raw = (filterMetadata as CaseMetadataResponse | undefined)?.[
+                def.metadataKey as keyof CaseMetadataResponse
+              ];
+              if (!Array.isArray(raw)) return [];
+              return raw.map((item: { label: string; id: string }) => ({
+                label:
+                  def.id === "impact" ? formatImpactLabel(item.label) : item.label,
+                value: item.id,
+              }));
+            }}
+            onFilterChange={handleFilterChange}
+            gridSize={{ xs: 12, sm: 6, md: 4 }}
+          />
+        }
       />
 
-      {/* View selector */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
-        <Typography variant="body2" color="text.secondary">
-          Showing {changeRequests.length} of {totalRecords} change requests
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <ListResultsBar
+        shownCount={changeRequests.length}
+        totalCount={totalRecords}
+        entityLabel="change requests"
+        rightContent={
           <TabBar
             tabs={viewTabs}
             activeTab={viewMode}
@@ -344,10 +332,9 @@ export default function ChangeRequestsPage(): JSX.Element {
             }}
             sx={{ mb: 0, height: 32 }}
           />
-        </Box>
-      </Box>
+        }
+      />
 
-      {/* List View or Calendar View */}
       {viewMode === "list" ? (
         <>
           <ChangeRequestsList
@@ -357,20 +344,11 @@ export default function ChangeRequestsPage(): JSX.Element {
             hasListRefinement={listHasRefinement}
             onChangeRequestClick={handleChangeRequestClick}
           />
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                variant="outlined"
-                shape="rounded"
-              />
-            </Box>
-          )}
+          <ListPagination
+            totalPages={totalPages}
+            page={page}
+            onChange={handlePageChange}
+          />
         </>
       ) : (
         <ChangeRequestsCalendarView
