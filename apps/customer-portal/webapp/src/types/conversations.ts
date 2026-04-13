@@ -14,10 +14,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import type { CaseCommentInlineAttachment } from "./attachments";
-import type { IdLabelRef, PaginationRequest, SharedEnvContext, SortBy } from "./common";
+import type { CaseCommentInlineAttachment } from "@/types/attachments";
+import type {
+  AuditMetadata,
+  IdLabelRef,
+  PaginationResponse,
+  SearchRequestBase,
+  SharedEnvContext,
+} from "@/types/common";
 
-// Chat history list item (support chat session summary).
+// Item type for a support chat session summary.
 export type ChatHistoryItem = {
   chatId: string;
   chatNumber?: string;
@@ -26,104 +32,100 @@ export type ChatHistoryItem = {
   messages: number;
   kbArticles: number;
   status: string;
-}
+};
 
-// Response for project chat history list.
+// Response type for project chat history list.
 export type ChatHistoryResponse = {
   chatHistory: ChatHistoryItem[];
-}
+};
 
-// Conversation statistics response.
+// Response type for conversation statistics.
 export type ConversationStats = {
   abandonedCount: number;
   openCount: number;
   resolvedCount: number;
-}
+};
 
-// Conversation from POST /projects/:projectId/conversations/search.
-// Backend: modules/types/types.bal `Conversation` — project/case/state all
-// nullable, number and initialMessage also nullable.
-export type Conversation = {
+// Item type for a single conversation.
+export type Conversation = AuditMetadata & {
   id: string;
   number: string | null;
   initialMessage: string | null;
   messageCount: number;
-  createdOn: string;
-  createdBy: string;
   project: IdLabelRef | null;
   case: IdLabelRef | null;
   state: IdLabelRef | null;
-}
+};
 
-// Response for conversations search.
-export type ConversationSearchResponse = {
+// Response type for conversations search results.
+export type ConversationSearchResponse = PaginationResponse & {
   conversations: Conversation[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
-}
+};
 
-export type ConversationMessage = {
+// Item type for a single conversation message.
+export type ConversationMessage = AuditMetadata & {
   id: string;
   content: string;
   type: string;
-  createdOn: string;
-  createdBy: string;
   isEscalated: boolean;
   hasInlineAttachments: boolean;
   inlineAttachments: CaseCommentInlineAttachment[];
-}
+};
 
-export type ConversationMessagesResponse = {
+// Response type for conversation messages list.
+export type ConversationMessagesResponse = PaginationResponse & {
   comments: ConversationMessage[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
-}
+};
 
-// Filter values for conversations search (state filter uses statuses from filters API).
+// Model type for all conversations search filter values state.
 export type AllConversationsFilterValues = {
   stateId?: string;
-}
+};
 
-/** Slot option definition for select-type user input collection. */
+// Item type for select-type user input collection slot option.
 export type SelectSlotOption = {
   slot: string;
   label: string;
   options: string[];
   type: "select";
-}
+};
 
-/** Slot option definition for free-text user input collection. */
+// Item type for free-text user input collection slot option.
 export type TextSlotOption = {
   slot: string;
   label: string;
   type: "text";
   freeText?: true;
-}
+};
 
-/** Slot option union for user input collection. */
+// Model type for user input collection slot option union.
 export type SlotOption = SelectSlotOption | TextSlotOption;
 
-/** Slot state containing filled/missing slots and available options. */
+// Model type for slot state containing filled/missing slots and available options.
 export type SlotState = {
   intentId?: string;
   filledSlots?: Record<string, string>;
   missingSlots?: string[];
   isComplete?: boolean;
   slotOptions?: SlotOption[];
-}
+};
 
-/** Intent information from conversation response. */
+// Item type for intent information from conversation response.
 export type ConversationIntent = {
   intentId?: string;
   intentLabel?: string;
   confidence?: number;
   severity?: string;
   caseType?: string;
-}
+};
 
-/** Response from POST /projects/:projectId/conversations (Novera chat). */
+// Response type for recommendation results.
+export type RecommendationResult = {
+  query: string;
+  recommendations: Recommendation[];
+};
+
+// Response type for chat conversation (Novera).
 export type ConversationResponse = {
   message: string;
   sessionId: string;
@@ -131,39 +133,41 @@ export type ConversationResponse = {
   intent?: ConversationIntent;
   slotState?: SlotState;
   actions: unknown;
-  recommendations?: {
-    query: string;
-    recommendations: Array<{ title: string; articleId: string; score: number }>;
-  } | null;
+  recommendations?: RecommendationResult | null;
   resolved: unknown;
-}
+};
 
-// Request body for POST /projects/:projectId/conversations/search.
-export type ConversationSearchRequest = {
-  filters?: {
-    searchQuery?: string;
-    stateKeys?: number[];
-    createdByMe?: boolean;
-  };
-  pagination: PaginationRequest;
-  sortBy?: SortBy;
-}
+// Filter type for searching conversations.
+export type ConversationSearchFilters = {
+  searchQuery?: string;
+  stateKeys?: number[];
+  createdByMe?: boolean;
+};
 
-// Request body for POST /projects/:projectId/conversations (Novera chat).
+// Request type for searching conversations.
+export type ConversationSearchRequest = SearchRequestBase & {
+  filters?: ConversationSearchFilters;
+};
+
+// Request type for chat conversation (Novera).
 export type ConversationRequest = SharedEnvContext & {
   message: string;
+};
+
+// Enum for chat sender type.
+export enum ChatSender {
+  USER = "user",
+  BOT = "bot",
 }
 
-// --- Chat UI types (from former chatTypes.ts) ---
-
-export type ChatSender = "user" | "bot";
-
+// Item type for a recommendation article.
 export type Recommendation = {
   title: string;
   articleId: string;
   score: number;
-}
+};
 
+// Item type for a single UI chat message.
 export type Message = {
   id: string;
   text: string;
@@ -177,31 +181,35 @@ export type Message = {
   thinkingSteps?: string[];
   thinkingLabel?: string | null;
   isStreaming?: boolean;
-}
+};
 
+// Model type for chat navigation state.
 export type ChatNavState = {
   initialUserMessage?: string;
   conversationResponse?: ConversationResponse;
   initialEnvProducts?: Record<string, string[]>;
   accountId?: string;
   chatNumber?: string;
-}
+};
 
+// Model type for a generic chat WebSocket event.
 export type ChatWebSocketEvent = {
   type: string;
   [key: string]: unknown;
-}
+};
 
+// Request type for chat WebSocket user message payload.
 export type ChatWebSocketPayload = {
   type: "user_message";
   accountId: string;
   conversationId: string;
   message: string;
   envProducts: Record<string, string[]>;
-}
+};
 
+// Model type for chat WebSocket hook options.
 export type UseChatWebSocketOptions = {
   onEvent: (event: ChatWebSocketEvent) => void;
   onClose?: () => void;
   onError?: (message: string) => void;
-}
+};

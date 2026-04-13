@@ -14,10 +14,15 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import type { IdLabelRef } from "./common";
-import type { ProductUpdate } from "./products";
+import type {
+  AuditMetadata,
+  IdLabelRef,
+  PaginationResponse,
+  SearchRequestBase,
+} from "@/types/common";
+import type { ProductUpdate } from "@/types/products";
 
-// Product deployed in an environment.
+// Item type for a product deployed in an environment.
 export type DeploymentProduct = {
   id: string;
   name: string;
@@ -31,7 +36,7 @@ export type DeploymentProduct = {
   updateLevel: string;
 }
 
-// Document attached to a deployment.
+// Item type for a document attached to a deployment.
 export type DeploymentDocument = {
   id: string;
   name: string;
@@ -47,28 +52,29 @@ export type DeploymentDocument = {
   downloadUrl?: string;
 }
 
-/** Response for GET /deployments/:deploymentId/attachments. */
-export type DeploymentAttachmentsResponse = {
-  limit: number;
-  offset: number;
+// Response type for GET /deployments/:deploymentId/attachments.
+export type DeploymentAttachmentsResponse = PaginationResponse & {
   attachments: DeploymentDocument[];
-  totalRecords: number;
-}
+};
 
-// Response for POST /deployments/:deploymentId/attachments.
-export type PostDeploymentAttachmentResponse = {
+// Response type for POST /deployments/:deploymentId/attachments.
+export type PostDeploymentAttachmentResponse = AuditMetadata & {
   id: string;
-  createdBy: string;
-  createdOn: string;
   downloadUrl: string;
   size: number;
 }
 
-// Single deployment environment.
+// Enum for deployment status.
+export enum DeploymentStatus {
+  HEALTHY = "Healthy",
+  WARNING = "Warning",
+}
+
+// Model type for a single deployment environment.
 export type Deployment = {
   id: string;
   name: string;
-  status: "Healthy" | "Warning";
+  status: DeploymentStatus;
   url: string;
   version: string;
   description: string;
@@ -78,19 +84,15 @@ export type Deployment = {
   uptimePercent: number;
 }
 
-export type ProjectDeploymentsListResponse = {
+// Response type for project deployments list.
+export type ProjectDeploymentsListResponse = PaginationResponse & {
   deployments: ProjectDeploymentItem[];
-  totalRecords?: number;
-  offset?: number;
-  limit?: number;
-}
+};
 
-// Single item from GET /projects/:projectId/deployments (array response).
-export type ProjectDeploymentItem = {
+// Item type for a single item from GET /projects/:projectId/deployments.
+export type ProjectDeploymentItem = AuditMetadata & {
   id: string;
   name: string;
-  createdOn: string;
-  updatedOn: string;
   description: string | null;
   url: string | null;
   project: IdLabelRef;
@@ -99,40 +101,31 @@ export type ProjectDeploymentItem = {
   instanceCount?: number;
 }
 
-// Response for GET /deployments/:deploymentId/products (paginated).
-export type DeployedProductsResponse = {
+// Response type for GET /deployments/:deploymentId/products.
+export type DeployedProductsResponse = PaginationResponse & {
   deployedProducts: DeploymentProductItem[];
-  totalRecords: number;
-  offset: number;
-  limit: number;
-}
+};
 
-/**
- * Union type for the deployment products endpoint response.
- * Some backend versions return a paginated object, others return a plain array.
- */
+// Model type for union type for the deployment products endpoint response.
 export type DeployedProductsResponsePayload =
   | DeploymentProductItem[]
   | DeployedProductsResponse;
 
-/**
- * Type guard for DeployedProductsResponse.
- */
-export function isDeployedProductsResponse(
-  payload: unknown,
-): payload is DeployedProductsResponse {
-  return (
-    typeof payload === "object" &&
-    payload !== null &&
-    Array.isArray((payload as { deployedProducts?: unknown }).deployedProducts)
-  );
-}
 
-// Single item from GET /deployments/:deploymentId/products (array response).
-export type DeploymentProductItem = {
+// Item type for a deployment product instance.
+export type DeploymentProductInstance = AuditMetadata & {
   id: string;
-  createdOn: string;
-  updatedOn: string;
+  instance: string;
+  coreUsageCount?: number | null;
+  updates?: number | null;
+  jdkVersion?: string | null;
+  customCreatedOn?: string | null;
+  customUpdatedOn?: string | null;
+};
+
+// Item type for a single item from GET /deployments/:deploymentId/products.
+export type DeploymentProductItem = AuditMetadata & {
+  id: string;
   description: string | null;
   product: IdLabelRef;
   deployment: IdLabelRef;
@@ -143,27 +136,15 @@ export type DeploymentProductItem = {
   endOfLifeOn?: string | null;
   updates?: ProductUpdate[] | null;
   instanceCount?: number;
-  instances?: Array<{
-    id: string;
-    instance: string;
-    coreUsageCount?: number | null;
-    updates?: number | null;
-    jdkVersion?: string | null;
-    createdOn?: string | null;
-    updatedOn?: string | null;
-    customCreatedOn?: string | null;
-    customUpdatedOn?: string | null;
-  }> | null;
+  instances?: DeploymentProductInstance[] | null;
 }
 
-// Response for creating a deployment.
-export type CreateDeploymentResponse = {
-  createdBy: string;
-  createdOn: string;
+// Response type for creating a deployment.
+export type CreateDeploymentResponse = AuditMetadata & {
   id: string;
 }
 
-// Subscription data within license response.
+// Item type for subscription data within license response.
 export type SubscriptionData = {
   deploymentId: string;
   deploymentName: string;
@@ -173,13 +154,13 @@ export type SubscriptionData = {
   secrets: string;
 }
 
-// License response from POST /projects/:projectId/deployments/:deploymentId/license.
+// Response type for license details.
 export type DeploymentLicense = {
   subscriptionData: SubscriptionData;
   signature: string;
 }
 
-// Request body for posting a deployment attachment (POST /deployments/:deploymentId/attachments).
+// Request type for posting a deployment attachment.
 export type PostDeploymentAttachmentRequest = {
   name: string;
   type: string;
@@ -187,20 +168,23 @@ export type PostDeploymentAttachmentRequest = {
   description?: string;
 }
 
-// Request body for PATCH /deployments/:deploymentId/products/:productId.
+// Item type for deployment product update levels.
+export type DeploymentProductUpdate = {
+  date: string;
+  details?: string;
+  updateLevel: number;
+};
+
+// Request type for patching a deployment product.
 export type PatchDeploymentProductRequest = {
   cores?: number;
   tps?: number;
   description?: string;
   active?: boolean;
-  updates?: Array<{
-    date: string;
-    details?: string;
-    updateLevel: number;
-  }>;
+  updates?: DeploymentProductUpdate[];
 }
 
-// Request body for POST /deployments/:deploymentId/products.
+// Request type for posting a deployment product.
 export type PostDeploymentProductRequest = {
   productId: string;
   versionId: string;
@@ -210,14 +194,14 @@ export type PostDeploymentProductRequest = {
   description?: string;
 }
 
-// Request body for creating a deployment.
+// Request type for creating a deployment.
 export type CreateDeploymentRequest = {
   deploymentTypeKey: number;
   description: string;
   name: string;
 }
 
-// Request body for PATCH /projects/:projectId/deployments/:deploymentId.
+// Request type for patching a deployment.
 export type PatchDeploymentRequest = {
   active?: boolean;
   description?: string;
@@ -225,30 +209,29 @@ export type PatchDeploymentRequest = {
   typeKey?: number;
 }
 
+// Filter type for consumption statistics.
 export type ConsumptionFilter = {
   include?: boolean;
   startDate?: string;
   endDate?: string;
 }
 
-// Request payload for searching deployments (POST /projects/:projectId/deployments/search).
-export type DeploymentSearchRequest = {
-  filters?: {
-    consumption?: ConsumptionFilter;
-  };
-  pagination?: {
-    limit?: number;
-    offset?: number;
-  };
-}
+// Filter type for searching deployments.
+export type DeploymentSearchFilters = {
+  consumption?: ConsumptionFilter;
+};
 
-// Request payload for searching deployed products (POST /deployments/:deploymentId/products/search).
-export type DeployedProductSearchRequest = {
-  filters?: {
-    consumption?: ConsumptionFilter;
-  };
-  pagination?: {
-    limit?: number;
-    offset?: number;
-  };
-}
+// Request type for searching deployments.
+export type DeploymentSearchRequest = SearchRequestBase & {
+  filters?: DeploymentSearchFilters;
+};
+
+// Filter type for searching deployed products.
+export type DeployedProductSearchFilters = {
+  consumption?: ConsumptionFilter;
+};
+
+// Request type for searching deployed products.
+export type DeployedProductSearchRequest = SearchRequestBase & {
+  filters?: DeployedProductSearchFilters;
+};

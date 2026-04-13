@@ -14,63 +14,87 @@
 // specific language governing permissions and limitations
 // under the License.
 
-// Id/label reference used across many API responses.
-// Mirrors the backend `ReferenceItem` record. Optional `number`, `count`,
-// and `abbreviation` are included because the backend returns them on the
-// same shape for specific endpoints.
+
+// Model type for a label reference with an ID.
 export type IdLabelRef = {
   id: string;
   label: string;
   count?: number;
   number?: string | null;
+  name?: string | null;
   abbreviation?: string | null;
 };
 
-// Metadata item (status, severity, type, etc.).
+// Model type for metadata items (status, severity, type, etc.).
 export type MetadataItem = {
   id: string;
   label: string;
 };
 
-export type TrendData = {
-  value: string;
-  direction: "up" | "down";
-  color: "success" | "error" | "info" | "warning";
+// Model type for common audit metadata fields.
+export type AuditMetadata = {
+  createdOn?: string | null;
+  updatedOn?: string | null;
+  createdBy?: string | null;
+  updatedBy?: string | null;
 };
 
-// Pagination metadata for search requests.
+// Enum for trend direction.
+export enum TrendDirection {
+  UP = "up",
+  DOWN = "down",
+}
+
+// Enum for trend color.
+export enum TrendColor {
+  SUCCESS = "success",
+  ERROR = "error",
+  INFO = "info",
+  WARNING = "warning",
+}
+
+// Model type for trend data.
+export type TrendData = {
+  value: string;
+  direction: TrendDirection;
+  color: TrendColor;
+};
+
+// Request type for pagination metadata in search requests.
 export type PaginationRequest = {
   offset?: number;
   limit?: number;
 };
 
-// Pagination metadata echoed back on list responses.
+// Response type for pagination metadata echoed back on list responses.
 export type PaginationResponse = {
   offset: number;
   limit: number;
   totalRecords: number;
 };
 
-// Sort order used in list/search request payloads.
-export type SortOrder = "asc" | "desc";
+// Enum for sort order used in list/search request payloads.
+export enum SortOrder {
+  ASC = "asc",
+  DESC = "desc",
+}
 
-// Sort-by clause used in list/search request payloads.
+// Request type for sort-by clause used in list/search request payloads.
 export type SortBy = {
   field: string;
   order: SortOrder;
 };
 
-/** Object type where at least one key from T is required. */
-export type AtLeastOne<
-  T,
-  Keys extends keyof T = keyof T,
-> = Keys extends keyof T
-  ? Required<Pick<T, Keys>> & Partial<Omit<T, Keys>>
-  : never;
+// Request type for base search request wrapper.
+export type SearchRequestBase = {
+  pagination?: PaginationRequest;
+  sortBy?: SortBy;
+};
 
-/** Shared env context for conversations and case classification APIs. */
+// Model type for shared environment context for conversations and case classification APIs.
 export type SharedEnvContext = {
   envProducts: Record<string, string[]>;
   region: string;
   tier: string;
-}
+};
+
