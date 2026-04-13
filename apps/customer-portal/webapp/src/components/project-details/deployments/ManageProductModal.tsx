@@ -387,8 +387,9 @@ export default function ManageProductModal({
               Save Changes
             </Button>
           ))}
-        {tabValue === 1 && addUpdateState && (
-          addUpdateState.isSaving ? (
+        {tabValue === 1 &&
+          addUpdateState &&
+          (addUpdateState.isSaving ? (
             <Button
               variant="contained"
               color="primary"
@@ -407,8 +408,7 @@ export default function ManageProductModal({
             >
               Add Update
             </Button>
-          )
-        )}
+          ))}
       </DialogActions>
     </Dialog>
   );

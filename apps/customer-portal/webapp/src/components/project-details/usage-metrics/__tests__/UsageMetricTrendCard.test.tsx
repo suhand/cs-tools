@@ -29,7 +29,9 @@ vi.mock("@wso2/oxygen-ui", () => ({
   Card: ({ children }: { children?: ReactNode }) => (
     <div data-testid="metric-card">{children}</div>
   ),
-  Typography: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
+  Typography: ({ children }: { children?: ReactNode }) => (
+    <span>{children}</span>
+  ),
   colors: { green: { 600: "#16A34A" }, grey: { 400: "#9CA3AF" } },
 }));
 

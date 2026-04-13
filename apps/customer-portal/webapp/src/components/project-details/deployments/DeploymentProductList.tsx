@@ -126,9 +126,7 @@ function ProductsSkeleton(): JSX.Element {
                 <Skeleton variant="rounded" width={132} height={20} />
               </Box>
             </Box>
-            <Box
-              sx={{ display: "flex", gap: 0.25, alignItems: "center" }}
-            >
+            <Box sx={{ display: "flex", gap: 0.25, alignItems: "center" }}>
               <Skeleton variant="rounded" width={32} height={32} />
               <Skeleton variant="rounded" width={32} height={32} />
             </Box>
@@ -424,7 +422,9 @@ function ProductItemRow({
               p: 0,
             }}
           >
-            {isSelected ? <Check size={12} strokeWidth={3} aria-hidden /> : null}
+            {isSelected ? (
+              <Check size={12} strokeWidth={3} aria-hidden />
+            ) : null}
           </Box>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Box

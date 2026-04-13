@@ -72,8 +72,12 @@ describe("EditDeploymentModal", () => {
 
     expect(screen.getByText("Edit Deployment")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Production")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Primary production env")).toBeInTheDocument();
-    expect(screen.getByRole("combobox")).toHaveTextContent("Primary Production");
+    expect(
+      screen.getByDisplayValue("Primary production env"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toHaveTextContent(
+      "Primary Production",
+    );
   });
 
   it("should call PATCH with correct body when Update is clicked", async () => {

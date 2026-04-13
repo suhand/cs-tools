@@ -90,7 +90,10 @@ export default function DeleteDeploymentModal({
         Confirm Action
       </DialogTitle>
       <DialogContent>
-        <Typography id="delete-deployment-modal-description" color="text.secondary">
+        <Typography
+          id="delete-deployment-modal-description"
+          color="text.secondary"
+        >
           {deployment
             ? `Are you sure you want to delete the deployment "${deployment.name ?? "Untitled"}"? This action cannot be undone.`
             : "Are you sure you want to delete this deployment? This action cannot be undone."}
@@ -105,7 +108,11 @@ export default function DeleteDeploymentModal({
           color="error"
           onClick={onConfirm}
           disabled={isDeleting}
-          startIcon={isDeleting ? <CircularProgress size={16} color="inherit" /> : undefined}
+          startIcon={
+            isDeleting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
+          }
         >
           {isDeleting ? "Deleting..." : "Confirm"}
         </Button>
