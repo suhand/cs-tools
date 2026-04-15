@@ -27,16 +27,16 @@ import { useAsgardeo } from "@asgardeo/react";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useLocation, Outlet } from "react-router";
 import IdleTimeoutProvider from "@providers/IdleTimeoutProvider";
-import GlobalNotificationBanner from "@components/common/notification-banner/GlobalNotificationBanner";
-import Footer from "@components/common/footer/Footer";
-import Header from "@components/common/header/Header";
-import SideBar from "@components/common/side-nav-bar/SideBar";
-import NoveraFloatingChat from "@components/common/novera-floating-chat/NoveraFloatingChat";
+import GlobalNotificationBanner from "@components/notification-banner/GlobalNotificationBanner";
+import Footer from "@components/footer/Footer";
+import Header from "@components/header/Header";
+import SideBar from "@components/side-nav-bar/SideBar";
+import NoveraFloatingChat from "@components/novera-floating-chat/NoveraFloatingChat";
 import { FloatingNoveraVisibilityProvider } from "@context/floating-novera-visibility/FloatingNoveraVisibilityContext";
 import {
   getSidebarCollapsed,
   setSidebarCollapsed,
-} from "@utils/settingsStorage";
+} from "@features/settings/utils/settingsStorage";
 
 /**
  * AppLayout component.

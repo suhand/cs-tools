@@ -116,11 +116,11 @@ vi.mock("react-router", async (importOriginal) => {
 });
 
 // Mock child components
-vi.mock("@components/common/footer/Footer", async () => ({
+vi.mock("@components/footer/Footer", async () => ({
   default: () => <div data-testid="footer" />,
 }));
 
-vi.mock("@components/common/header/Header", async () => ({
+vi.mock("@components/header/Header", async () => ({
   default: ({ onToggleSidebar }: { onToggleSidebar: () => void }) => (
     <div data-testid="header">
       <button onClick={onToggleSidebar}>Toggle</button>
@@ -129,20 +129,20 @@ vi.mock("@components/common/header/Header", async () => ({
 }));
 
 vi.mock(
-  "@components/common/notification-banner/GlobalNotificationBanner",
+  "@components/notification-banner/GlobalNotificationBanner",
   async () => ({
     default: () => <div data-testid="global-notification-banner" />,
   }),
 );
 
 vi.mock(
-  "@components/common/novera-floating-chat/NoveraFloatingChat",
+  "@components/novera-floating-chat/NoveraFloatingChat",
   async () => ({
     default: () => <div data-testid="novera-floating-chat" />,
   }),
 );
 
-vi.mock("@components/common/side-nav-bar/SideBar", async () => ({
+vi.mock("@components/side-nav-bar/SideBar", async () => ({
   default: ({ collapsed, onSelect, onToggleExpand }: any) => (
     <div data-testid="sidebar">
       <span>Collapsed: {collapsed.toString()}</span>

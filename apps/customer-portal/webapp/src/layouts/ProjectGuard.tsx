@@ -23,11 +23,9 @@ import {
   isNotFoundError,
   getApiErrorMessage,
 } from "@api/ApiError";
-import {
-  Error401Page,
-  Error403Page,
-  Error404Page,
-} from "@components/common/error";
+import Error401Page from "@components/error/Error401Page";
+import Error403Page from "@components/error/Error403Page";
+import Error404Page from "@components/error/Error404Page";
 
 /**
  * ProjectGuard wraps all routes under `projects/:projectId`.
