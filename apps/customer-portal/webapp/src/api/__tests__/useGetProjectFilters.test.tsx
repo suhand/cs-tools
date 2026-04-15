@@ -39,7 +39,7 @@ vi.mock("@asgardeo/react", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useLogger", () => ({
+vi.mock("@hooks/useLogger", () => ({
   useLogger: () => ({ debug: vi.fn(), error: vi.fn() }),
 }));
 
