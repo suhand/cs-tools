@@ -21,7 +21,7 @@ import {
   getProjectPermissions,
   getRecentActivityItems,
   shouldExcludeS0,
-} from "@utils/subscriptionUtils";
+} from "@utils/project-details/utils/permissions";
 
 describe("getProjectPermissions", () => {
   it("should enable full features for Managed Cloud Subscription", () => {
