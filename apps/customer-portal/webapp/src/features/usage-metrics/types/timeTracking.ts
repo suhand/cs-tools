@@ -58,6 +58,7 @@ export type TimeCard = {
   hasBillable: boolean;
   state: IdLabelRef | null;
   approvedBy: IdLabelRef | null;
+  reportedBy: IdLabelRef | null;
   project: IdLabelRef | null;
   case: IdLabelRef & { number: string };
 };

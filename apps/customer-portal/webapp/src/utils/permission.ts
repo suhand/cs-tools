@@ -16,7 +16,7 @@
 
 import type { ActivityItem } from "@features/project-details/types/projectDetails";
 import type { ProjectStatsResponse } from "@features/project-hub/types/projects";
-import { PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL } from "@/constants/permissionConstants";
+import { PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL } from "@constants/permissionConstants";
 import type {
   ProjectOperationsStatsResult,
   ProjectPermissions,
@@ -24,7 +24,7 @@ import type {
 import { ProjectType } from "@/types/permission";
 import { convertMinutesToHours } from "@features/project-details/utils/projectDetails";
 
-export { PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL } from "@/constants/permissionConstants";
+export { PRIMARY_PRODUCTION_DEPLOYMENT_TYPE_LABEL } from "@constants/permissionConstants";
 export { ProjectType } from "@/types/permission";
 export type {
   ProjectOperationsStatsResult,

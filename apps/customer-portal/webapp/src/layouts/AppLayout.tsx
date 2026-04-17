@@ -195,6 +195,7 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
                 sx={{
                   flex: 1,
                   minHeight: 0,
+                  minWidth: 0,
                   display: "flex",
                   flexDirection: "column",
                   overflow: "auto",

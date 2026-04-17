@@ -13,9 +13,7 @@
       "@api/*": ["src/api/*"],
       "@assets/*": ["src/assets/*"],
       "@components/*": ["src/components/*"],
-      "@case-details": [
-        "src/features/support/components/case-details/header"
-      ],
+      "@case-details": ["src/features/support/components/case-details/header"],
       "@case-details/*": [
         "src/features/support/components/case-details/header/*"
       ],
@@ -55,15 +53,12 @@
       "@time-tracking/*": [
         "src/features/project-details/components/time-tracking/*"
       ],
-      "@deployments": [
-        "src/features/project-details/components/deployments"
-      ],
+      "@deployments": ["src/features/project-details/components/deployments"],
       "@deployments/*": [
         "src/features/project-details/components/deployments/*"
       ],
-      "@update-cards/*": [
-        "src/features/updates/components/update-cards/*"
-      ]
+      "@update-cards/*": ["src/features/updates/components/update-cards/*"],
+      "@constants/*": ["src/constants/*"]
     },
 
     /* Bundler mode */

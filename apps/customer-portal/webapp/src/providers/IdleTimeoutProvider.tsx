@@ -23,7 +23,7 @@ import {
   IDLE_TIMEOUT_MS,
   IDLE_PROMPT_BEFORE_MS,
   IDLE_THROTTLE_MS,
-} from "@/constants/authConstants";
+} from "@constants/authConstants";
 
 interface IdleTimeoutProviderProps {
   children: ReactNode;
