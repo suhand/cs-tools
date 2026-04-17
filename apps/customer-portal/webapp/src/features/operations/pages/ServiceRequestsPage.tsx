@@ -103,6 +103,14 @@ export default function ServiceRequestsPage(): JSX.Element {
   const [page, setPage] = useState(1);
   const pageSize = OPERATIONS_LIST_PAGE_SIZE;
 
+  useEffect(() => {
+    setSortField((prev) =>
+      prev === ServiceRequestCaseSortField.Severity
+        ? ServiceRequestCaseSortField.CreatedOn
+        : prev,
+    );
+  }, []);
+
   const { data: project, isLoading: isProjectLoading } = useGetProjectDetails(
     projectId || "",
   );
@@ -274,7 +282,10 @@ export default function ServiceRequestsPage(): JSX.Element {
     }
   }, [projectDetailsReady, permissions.hasDeployments, filters.deploymentId]);
 
-  const listHasRefinement = hasListSearchOrFilters(searchTerm, filters);
+  const listHasRefinement = hasListSearchOrFilters(searchTerm, {
+    ...filters,
+    severityId: undefined,
+  });
 
   const handleNewServiceRequest = () => {
     navigate(`/projects/${projectId}/${navSegment}/service-requests/create`);
@@ -365,6 +376,7 @@ export default function ServiceRequestsPage(): JSX.Element {
         onClearFilters={handleClearFilters}
         excludeS0={excludeS0}
         restrictSeverityToLow={restrictSeverityToLow}
+        hideSeverityFilter
         isProjectContextLoading={isProjectContextLoading}
       />
 
@@ -385,6 +397,7 @@ export default function ServiceRequestsPage(): JSX.Element {
         isError={isCasesError}
         hasListRefinement={listHasRefinement}
         entityName={SERVICE_REQUESTS_ENTITY_LABEL}
+        hideSeverity
         onCaseClick={(c) =>
           navigate(
             `/projects/${projectId}/${navSegment}/service-requests/${c.id}`,
