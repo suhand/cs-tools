@@ -31,25 +31,35 @@ import {
   Play,
 } from "@wso2/oxygen-ui-icons-react";
 import type { JSX } from "react";
-import type { Conversation } from "@features/support/types/conversations";
 import {
   formatDateTime,
   getStatusColor,
   getStatusIcon,
   resolveColorFromTheme,
 } from "@features/support/utils/support";
-import AllConversationsListSkeleton from "@features/support/components/all-conversations/AllConversationsListSkeleton";
+import { resolveConversationListRowAction } from "@features/support/utils/conversationsList";
+import {
+  ALL_CONVERSATIONS_LIST_ACTION_RESUME_LABEL,
+  ALL_CONVERSATIONS_LIST_ACTION_VIEW_LABEL,
+  ALL_CONVERSATIONS_LIST_CREATED_BY_PREFIX,
+  ALL_CONVERSATIONS_LIST_EMPTY_CONTAINER_PY,
+  ALL_CONVERSATIONS_LIST_EMPTY_DEFAULT_MESSAGE,
+  ALL_CONVERSATIONS_LIST_EMPTY_REFINED_MESSAGE,
+  ALL_CONVERSATIONS_LIST_ERROR_ENTITY_NAME,
+  ALL_CONVERSATIONS_LIST_ERROR_MESSAGE,
+  ALL_CONVERSATIONS_LIST_ILLUSTRATION_MARGIN_BOTTOM_PX,
+  ALL_CONVERSATIONS_LIST_ILLUSTRATION_WIDTH_PX,
+  ALL_CONVERSATIONS_LIST_MESSAGE_PLURAL,
+  ALL_CONVERSATIONS_LIST_MESSAGE_SINGULAR,
+} from "@features/support/constants/conversationConstants";
+import {
+  ConversationListRowAction,
+  type AllConversationsListProps,
+} from "@features/support/types/conversations";
+import AllConversationsListSkeleton from "./AllConversationsListSkeleton";
 import ErrorIndicator from "@components/error-indicator/ErrorIndicator";
 import EmptyIcon from "@components/empty-state/EmptyIcon";
 import SearchNoResultsIcon from "@components/empty-state/SearchNoResultsIcon";
-
-export interface AllConversationsListProps {
-  conversations: Conversation[];
-  isLoading: boolean;
-  isError?: boolean;
-  hasListRefinement?: boolean;
-  onConversationClick?: (conversation: Conversation) => void;
-}
 
 /**
  * Component to display conversations as cards.
@@ -72,10 +82,13 @@ export default function AllConversationsList({
 
   if (isError) {
     return (
-      <Box sx={{ textAlign: "center", py: 6 }}>
-        <ErrorIndicator entityName="conversations" size="medium" />
+      <Box sx={{ textAlign: "center", py: ALL_CONVERSATIONS_LIST_EMPTY_CONTAINER_PY }}>
+        <ErrorIndicator
+          entityName={ALL_CONVERSATIONS_LIST_ERROR_ENTITY_NAME}
+          size="medium"
+        />
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Failed to load conversations. Please try again.
+          {ALL_CONVERSATIONS_LIST_ERROR_MESSAGE}
         </Typography>
       </Box>
     );
@@ -89,19 +102,19 @@ export default function AllConversationsList({
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            py: 6,
+            py: ALL_CONVERSATIONS_LIST_EMPTY_CONTAINER_PY,
           }}
         >
           <SearchNoResultsIcon
             style={{
-              width: 200,
+              width: ALL_CONVERSATIONS_LIST_ILLUSTRATION_WIDTH_PX,
               maxWidth: "100%",
               height: "auto",
-              marginBottom: 16,
+              marginBottom: ALL_CONVERSATIONS_LIST_ILLUSTRATION_MARGIN_BOTTOM_PX,
             }}
           />
           <Typography variant="body1" color="text.secondary">
-            No conversations found. Try adjusting your filters or search query.
+            {ALL_CONVERSATIONS_LIST_EMPTY_REFINED_MESSAGE}
           </Typography>
         </Box>
       );
@@ -112,19 +125,19 @@ export default function AllConversationsList({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          py: 6,
+          py: ALL_CONVERSATIONS_LIST_EMPTY_CONTAINER_PY,
         }}
       >
         <EmptyIcon
           style={{
-            width: 200,
+            width: ALL_CONVERSATIONS_LIST_ILLUSTRATION_WIDTH_PX,
             maxWidth: "100%",
             height: "auto",
-            marginBottom: 16,
+            marginBottom: ALL_CONVERSATIONS_LIST_ILLUSTRATION_MARGIN_BOTTOM_PX,
           }}
         />
         <Typography variant="body1" color="text.secondary">
-          No conversations yet.
+          {ALL_CONVERSATIONS_LIST_EMPTY_DEFAULT_MESSAGE}
         </Typography>
       </Box>
     );
@@ -136,9 +149,7 @@ export default function AllConversationsList({
         const StatusIcon = getStatusIcon(conv.state?.label);
         const colorPath = getStatusColor(conv.state?.label);
         const resolvedColor = resolveColorFromTheme(colorPath, theme);
-        const action = (
-          conv.state?.label?.toLowerCase().includes("open") ? "resume" : "view"
-        ) as "resume" | "view";
+        const action = resolveConversationListRowAction(conv.state?.label);
 
         return (
           <Form.CardButton
@@ -241,7 +252,9 @@ export default function AllConversationsList({
                     sx={{ lineHeight: 1 }}
                   >
                     {conv.messageCount}{" "}
-                    {conv.messageCount === 1 ? "message" : "messages"}
+                    {conv.messageCount === 1
+                      ? ALL_CONVERSATIONS_LIST_MESSAGE_SINGULAR
+                      : ALL_CONVERSATIONS_LIST_MESSAGE_PLURAL}
                   </Typography>
                 </Box>
                 {conv.createdBy && (
@@ -250,7 +263,8 @@ export default function AllConversationsList({
                     color="text.secondary"
                     sx={{ lineHeight: 1 }}
                   >
-                    Created by {conv.createdBy}
+                    {ALL_CONVERSATIONS_LIST_CREATED_BY_PREFIX}
+                    {conv.createdBy}
                   </Typography>
                 )}
               </Stack>
@@ -260,14 +274,18 @@ export default function AllConversationsList({
               <Button
                 size="small"
                 variant="text"
-                color={action === "view" ? "secondary" : "primary"}
+                color={
+                  action === ConversationListRowAction.View
+                    ? "secondary"
+                    : "primary"
+                }
                 disableRipple
                 onClick={(e) => {
                   e.stopPropagation();
                   onConversationClick?.(conv);
                 }}
                 startIcon={
-                  action === "view" ? (
+                  action === ConversationListRowAction.View ? (
                     <ExternalLink size={14} />
                   ) : (
                     <Play size={14} />
@@ -275,7 +293,9 @@ export default function AllConversationsList({
                 }
                 sx={{ textTransform: "none", fontWeight: 500 }}
               >
-                {action === "view" ? "View" : "Resume"}
+                {action === ConversationListRowAction.View
+                  ? ALL_CONVERSATIONS_LIST_ACTION_VIEW_LABEL
+                  : ALL_CONVERSATIONS_LIST_ACTION_RESUME_LABEL}
               </Button>
             </Form.CardActions>
           </Form.CardButton>
