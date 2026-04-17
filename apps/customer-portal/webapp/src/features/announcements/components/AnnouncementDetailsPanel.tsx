@@ -30,7 +30,6 @@ import { ArrowLeft, Calendar, FileText } from "@wso2/oxygen-ui-icons-react";
 import type { JSX, ReactElement } from "react";
 import CaseDetailsActionRow from "@features/support/components/case-details/header/CaseDetailsActionRow";
 import {
-  formatUtcToLocalNoTimezone,
   getStatusColor,
   getStatusIconElement,
   resolveColorFromTheme,
@@ -202,7 +201,7 @@ export default function AnnouncementDetailsPanel({
               aria-hidden
             />
             <Typography variant="body2" color="text.secondary">
-              {formatUtcToLocalNoTimezone(data.createdOn) || "--"}
+              {data.createdOn || "--"}
             </Typography>
           </Stack>
           {data.issueType?.label && (
