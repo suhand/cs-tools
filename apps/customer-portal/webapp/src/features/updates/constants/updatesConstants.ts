@@ -26,9 +26,10 @@ import {
   type AllUpdatesTabFilterState,
   type UpdatesStatConfigItem,
 } from "@features/updates/types/updates";
+import { NULL_PLACEHOLDER } from "@constants/common";
 
 /** Placeholder when a stat or field has no value. */
-export const UPDATES_NULL_PLACEHOLDER = "--";
+export const UPDATES_NULL_PLACEHOLDER = NULL_PLACEHOLDER;
 
 export const UPDATES_PAGE_TABS = [
   { id: UpdatesPageTabId.MyUpdates, label: "My Updates" },
@@ -94,8 +95,7 @@ export const UPDATE_PRODUCT_GRID_SECTION_TITLE = "Product Update Status";
 export const UPDATE_PRODUCT_GRID_ERROR_MESSAGE =
   "Failed to load product updates.";
 
-export const UPDATE_PRODUCT_GRID_EMPTY_MESSAGE =
-  "No product updates found.";
+export const UPDATE_PRODUCT_GRID_EMPTY_MESSAGE = "No product updates found.";
 
 export const UPDATES_STATS: UpdatesStatConfigItem[] = [
   {

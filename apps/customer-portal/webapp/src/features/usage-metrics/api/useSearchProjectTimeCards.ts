@@ -22,7 +22,7 @@ import {
 import { useAsgardeo } from "@asgardeo/react";
 import { useAuthApiClient } from "@/utils/useAuthApiClient";
 import { useLogger } from "@hooks/useLogger";
-import { ApiQueryKeys } from "@/constants/apiConstants";
+import { ApiQueryKeys } from "@constants/apiConstants";
 import type { TimeCardSearchResponse } from "@features/usage-metrics/types/timeTracking";
 import type { TimeCardSearchRequest } from "@features/usage-metrics/types/timeTracking";
 import type { UseSearchProjectTimeCardsParams } from "@features/usage-metrics/types/usageMetrics";

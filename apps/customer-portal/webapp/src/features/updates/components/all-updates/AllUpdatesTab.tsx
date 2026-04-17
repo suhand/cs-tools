@@ -60,7 +60,7 @@ import {
   ALL_UPDATES_VIEW_REPORT_BUTTON_LABEL,
   ALL_UPDATES_EMPTY_SEARCH_MESSAGE,
 } from "@features/updates/constants/updatesConstants";
-import { EMPTY_DROPDOWN_PLACEHOLDER } from "@features/shared/constants/dropdownConstants";
+import { EMPTY_DROPDOWN_PLACEHOLDER } from "@constants/common";
 import { getUpdateLevelsReportData } from "@features/updates/utils/updateLevelsReportPdf";
 import {
   getNextAllUpdatesFilterAfterChange,
@@ -81,8 +81,9 @@ export default function AllUpdatesTab(): JSX.Element {
   const navigate = useNavigate();
   const { projectId } = useParams<{ projectId: string }>();
 
-  const [filter, setFilter] =
-    useState<AllUpdatesTabFilterState>(ALL_UPDATES_TAB_INITIAL_FILTER);
+  const [filter, setFilter] = useState<AllUpdatesTabFilterState>(
+    ALL_UPDATES_TAB_INITIAL_FILTER,
+  );
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [searchParams, setSearchParams] =
     useState<AllUpdatesTabSearchParams | null>(null);
