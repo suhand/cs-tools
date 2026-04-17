@@ -25,10 +25,8 @@ import {
 import type { JSX, UIEvent } from "react";
 import type { SelectChangeEvent } from "@wso2/oxygen-ui";
 import { SelectMenuLoadMoreRow } from "@components/select-menu-load-more-row/SelectMenuLoadMoreRow";
-import {
-  EMPTY_DROPDOWN_PLACEHOLDER,
-  paginatedSelectMenuListProps,
-} from "@features/shared/constants/dropdownConstants";
+import { EMPTY_DROPDOWN_PLACEHOLDER } from "@constants/common";
+import { paginatedSelectMenuListProps } from "@/utils/common";
 import type { CasesFiltersProps } from "@/features/dashboard/types/casesTable";
 
 /**

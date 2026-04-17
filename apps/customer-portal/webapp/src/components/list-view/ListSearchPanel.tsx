@@ -38,6 +38,7 @@ export interface ListSearchPanelProps {
   onFilterChange: (field: string, value: string) => void;
   onClearFilters: () => void;
   excludeS0?: boolean;
+  restrictSeverityToLow?: boolean;
   isProjectContextLoading?: boolean;
   onLoadMoreDeployments?: () => void;
   hasMoreDeployments?: boolean;
@@ -62,6 +63,7 @@ export default function ListSearchPanel({
   onFilterChange,
   onClearFilters,
   excludeS0 = false,
+  restrictSeverityToLow = false,
   isProjectContextLoading = false,
   onLoadMoreDeployments,
   hasMoreDeployments = false,
@@ -84,6 +86,7 @@ export default function ListSearchPanel({
           deployments={deployments}
           onFilterChange={onFilterChange}
           excludeS0={excludeS0}
+          restrictSeverityToLow={restrictSeverityToLow}
           onLoadMoreDeployments={onLoadMoreDeployments}
           hasMoreDeployments={hasMoreDeployments}
           isFetchingMoreDeployments={isFetchingMoreDeployments}

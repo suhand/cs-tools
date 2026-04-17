@@ -20,7 +20,7 @@ import {
   SuccessBannerProvider,
   useSuccessBanner,
 } from "@context/success-banner/SuccessBannerContext";
-import { ERROR_BANNER_TIMEOUT_MS } from "@features/shared/constants/errorBannerConstants";
+import { ERROR_BANNER_TIMEOUT_MS } from "@constants/common";
 
 vi.mock("@wso2/oxygen-ui", () => ({
   Alert: ({ children, onClose, severity }: any) => (
@@ -41,9 +41,7 @@ const TestConsumer = () => {
       <button onClick={() => showSuccess("Case created successfully")}>
         Trigger Success
       </button>
-      <button onClick={() => showSuccess("Saved")}>
-        Trigger Saved
-      </button>
+      <button onClick={() => showSuccess("Saved")}>Trigger Saved</button>
     </div>
   );
 };
@@ -69,9 +67,7 @@ describe("SuccessBannerContext", () => {
     fireEvent.click(screen.getByText("Trigger Success"));
 
     expect(screen.getByTestId("success-banner")).toBeInTheDocument();
-    expect(
-      screen.getByText("Case created successfully"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Case created successfully")).toBeInTheDocument();
   });
 
   it("should show message passed to showSuccess", () => {

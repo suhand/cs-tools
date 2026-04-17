@@ -286,7 +286,7 @@ describe("CasesList", () => {
     expect(screen.getByText("Test Case 1")).toBeInTheDocument();
   });
 
-  it("should render '--' for null or undefined values", () => {
+  it("should render fallback values for null or undefined fields", () => {
     const dataWithNulls = {
       cases: [
         {
@@ -316,9 +316,10 @@ describe("CasesList", () => {
       />,
     );
 
-    // Check for '--' in place of title, severity, status, assignedEngineer, and date
+    // Check fallback text in place of title, severity, status, and date.
     // Note: title is rendered inside a Typography, date has two display parts
     const dashes = screen.getAllByText("--");
-    expect(dashes.length).toBeGreaterThanOrEqual(4); // title, assignedEngineer, severity, status parts
+    expect(dashes.length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByText("Not available")).toBeInTheDocument();
   });
 });

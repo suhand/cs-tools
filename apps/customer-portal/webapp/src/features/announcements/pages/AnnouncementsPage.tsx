@@ -84,6 +84,7 @@ export default function AnnouncementsPage(): JSX.Element {
   const cases = data?.cases ?? [];
   const totalRecords = data?.totalRecords ?? 0;
   const totalPages = getAnnouncementTotalPages(totalRecords, pageSize);
+  const shownCount = Math.max(0, Math.min(pageSize, totalRecords - offset));
 
   const handlePageChange = (_event: ChangeEvent<unknown>, value: number) => {
     setPage(value);
@@ -142,7 +143,7 @@ export default function AnnouncementsPage(): JSX.Element {
       />
 
       <ListResultsBar
-        shownCount={cases.length}
+        shownCount={shownCount}
         totalCount={totalRecords}
         entityLabel={ANNOUNCEMENTS_LIST_ENTITY_LABEL}
         sortFieldOptions={ANNOUNCEMENTS_SORT_FIELD_OPTIONS}

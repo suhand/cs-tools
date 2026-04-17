@@ -26,7 +26,7 @@ import {
   type JSX,
 } from "react";
 
-import { ERROR_BANNER_TIMEOUT_MS } from "@features/shared/constants/errorBannerConstants";
+import { ERROR_BANNER_TIMEOUT_MS } from "@constants/common";
 
 interface SuccessBannerContextType {
   /** Show the success banner with the given message. */
