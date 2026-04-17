@@ -201,7 +201,7 @@ export default function ProjectDetails(): JSX.Element {
       {/* project page tabs */}
       <TabBar
         tabs={visibleTabs}
-        activeTab={activeTab}
+        activeTab={effectiveTab}
         onTabChange={setActiveTab}
       />
 
