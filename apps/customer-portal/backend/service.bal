@@ -276,6 +276,16 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 };
             }
 
+            if getStatusCode(projectsList) == http:STATUS_BAD_REQUEST {
+                string customError = "Invalid request parameters for searching projects.";
+                log:printWarn(customError, projectsList);
+                return <http:BadRequest>{
+                    body: {
+                        message: customError
+                    }
+                };
+            }
+
             string customError = "Failed to retrieve project list.";
             log:printError(customError, projectsList);
             return <http:InternalServerError>{
@@ -495,6 +505,26 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                 return <http:Unauthorized>{
                     body: {
                         message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+
+            if getStatusCode(deploymentResponse) == http:STATUS_BAD_REQUEST {
+                string customError = "Invalid request parameters for creating deployment for the project.";
+                log:printWarn(customError, deploymentResponse);
+                return <http:BadRequest>{
+                    body: {
+                        message: customError
+                    }
+                };
+            }
+
+            if getStatusCode(deploymentResponse) == http:STATUS_CONFLICT {
+                string customError = "A deployment with the same name already exists for the project.";
+                log:printWarn(customError, deploymentResponse);
+                return <http:BadRequest>{
+                    body: {
+                        message: customError
                     }
                 };
             }
@@ -1189,6 +1219,15 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                     body: {
                         message: "You're not authorized to create a case for the selected project. " +
                         "Please check your access permissions or contact support."
+                    }
+                };
+            }
+            if getStatusCode(createdCaseResponse) == http:STATUS_BAD_REQUEST {
+                string customError = "Invalid request parameters for creating case for the project.";
+                log:printWarn(customError, createdCaseResponse);
+                return <http:BadRequest>{
+                    body: {
+                        message: customError
                     }
                 };
             }
@@ -2050,6 +2089,16 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
                     body: {
                         message: "You're not authorized to comment on the requested case. " +
                         "Please check your access permissions or contact support."
+                    }
+                };
+            }
+
+            if getStatusCode(createdCaseResponse) == http:STATUS_BAD_REQUEST {
+                string customError = "Invalid request parameters for creating comment for the case.";
+                log:printWarn(customError, createdCaseResponse);
+                return <http:BadRequest>{
+                    body: {
+                        message: customError
                     }
                 };
             }
