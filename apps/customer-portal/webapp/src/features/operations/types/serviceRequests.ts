@@ -14,24 +14,48 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import type { MetadataItem, PaginationResponse } from "@features/dashboard/types/common";
+import type { CaseListItem } from "@features/support/types/cases";
+import type { MetadataItem, PaginationResponse } from "@/types/common";
 
-// Item type for a catalog item within a catalog.
+/** Route segment for operations vs support navigation (`/projects/:id/operations/...` vs `.../support/...`). */
+export enum OperationsNavSegment {
+  Operations = "operations",
+  Support = "support",
+}
+
+/** Case list sort field for the service requests page (`useGetProjectCases`). */
+export enum ServiceRequestCaseSortField {
+  CreatedOn = "createdOn",
+  UpdatedOn = "updatedOn",
+  Severity = "severity",
+  State = "state",
+}
+
+export type ServiceRequestsListProps = {
+  serviceRequests: CaseListItem[];
+  isLoading: boolean;
+  hasListRefinement?: boolean;
+  onServiceRequestClick?: (sr: CaseListItem) => void;
+};
+
+// --- Catalogs & create-service-request payload (service request creation flow) ---
+
+/** Item type for a catalog item within a catalog. */
 export type CatalogItem = MetadataItem;
 
-// Model type for a catalog with its items.
+/** Model type for a catalog with its items. */
 export type Catalog = {
   id: string;
   name: string;
   catalogItems: MetadataItem[];
 };
 
-// Response type for catalogs search results.
+/** Response type for catalogs search results. */
 export type CatalogSearchResponse = PaginationResponse & {
   catalogs: Catalog[];
 };
 
-// Item type for a variable definition for a catalog item.
+/** Item type for a variable definition for a catalog item. */
 export type CatalogItemVariable = {
   id: string;
   questionText: string;
@@ -39,24 +63,24 @@ export type CatalogItemVariable = {
   type: string;
 };
 
-// Response type for catalog item variables.
+/** Response type for catalog item variables. */
 export type CatalogItemVariablesResponse = {
   variables: CatalogItemVariable[];
 };
 
-// Item type for a service request variable.
+/** Item type for a service request variable. */
 export type ServiceRequestVariable = {
   id: string;
   value: string;
 };
 
-// Item type for a service request attachment.
+/** Item type for a service request attachment. */
 export type ServiceRequestAttachment = {
   name: string;
   file: string;
 };
 
-// Request type for creating a service request.
+/** Request type for creating a service request. */
 export type CreateServiceRequestPayload = {
   type: "service_request";
   projectId: string;
