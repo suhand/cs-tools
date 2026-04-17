@@ -116,6 +116,13 @@ export default function ProjectDetails(): JSX.Element {
       filterProjectDetailsTabsByPermissions(PROJECT_DETAILS_TABS, permissions),
     [permissions],
   );
+  const effectiveTab = useMemo(() => {
+    const tabIds = visibleTabs.map((tab) => tab.id);
+    if (activeTab && tabIds.includes(activeTab)) {
+      return activeTab;
+    }
+    return ProjectDetailsTabId.OVERVIEW;
+  }, [activeTab, visibleTabs]);
 
   useEffect(() => {
     const tabIds = visibleTabs.map((t) => t.id);
@@ -126,7 +133,7 @@ export default function ProjectDetails(): JSX.Element {
   }, [visibleTabs, activeTab]);
 
   const renderContent = () => {
-    switch (activeTab) {
+    switch (effectiveTab) {
       case ProjectDetailsTabId.OVERVIEW:
         if (!projectId) {
           return (
