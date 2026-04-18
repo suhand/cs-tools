@@ -1444,6 +1444,37 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         return classificationResponse;
     }
 
+    # Get recommendations for a given chat history and conversation context.
+    #
+    # + payload - Recommendation request payload
+    # + return - Recommendation response or an error
+    resource function post conversations/recommendations/search(http:RequestContext ctx,
+            ai_chat_agent:RecommendationRequest payload)
+        returns ai_chat_agent:RecommendationResponse|http:InternalServerError {
+
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        ai_chat_agent:RecommendationResponse|error recommendationResponse =
+            ai_chat_agent:getRecommendation(payload);
+        if recommendationResponse is error {
+            string customError = "Failed to retrieve recommendations.";
+            log:printError(customError, recommendationResponse);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return recommendationResponse;
+    }
+
     # Search conversations for a specific project with filters and pagination.
     #
     # + id - ID of the project

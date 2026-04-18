@@ -804,6 +804,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorPayload'
+  /conversations/recommendations/search:
+    post:
+      summary: Get recommendations for a given chat history and conversation context.
+      operationId: postConversationsRecommendationsSearch
+      requestBody:
+        description: Recommendation request payload
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
+        required: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+        "500":
+          description: InternalServerError
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorPayload'
   /projects/{id}/conversations/search:
     post:
       summary: Search conversations for a specific project with filters and pagination.
@@ -3786,6 +3812,31 @@ components:
           allOf:
           - $ref: '#/components/schemas/ReferenceItem'
       description: Conversation data.
+    ConversationData:
+      required:
+      - chatHistory
+      - envProducts
+      - region
+      - tier
+      type: object
+      properties:
+        chatHistory:
+          type: string
+          description: Chat history as a string
+        envProducts:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Environment products
+        region:
+          type: string
+          description: Region
+        tier:
+          type: string
+          description: Tier
+      description: Conversation data for recommendations.
     ConversationPayload:
       required:
       - message
@@ -4312,6 +4363,22 @@ components:
           description: Whether the contact is a security contact or not
       additionalProperties: false
       description: Payload for updating membership security flag.
+    Message:
+      required:
+      - content
+      - role
+      - timestamp
+      type: object
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+        content:
+          type: string
+          description: Message content
+        timestamp:
+          type: string
+          description: ISO timestamp
+      description: Single chat message for UI rendering.
     MetadataResponse:
       required:
       - featureFlags
@@ -5025,6 +5092,54 @@ components:
           nullable: true
       additionalProperties: false
       description: Recent activity details.
+    RecommendationItem:
+      required:
+      - articleId
+      - score
+      - title
+      type: object
+      properties:
+        title:
+          type: string
+          description: Article title
+        articleId:
+          type: string
+          description: Article ID
+        score:
+          type: number
+          description: Similarity score
+          format: float
+      description: Recommendation item.
+    RecommendationRequest:
+      required:
+      - chatHistory
+      - conversationData
+      type: object
+      properties:
+        chatHistory:
+          type: array
+          description: Chat history
+          items:
+            $ref: '#/components/schemas/Message'
+        conversationData:
+          $ref: '#/components/schemas/ConversationData'
+      additionalProperties: false
+      description: Recommendation request.
+    RecommendationResponse:
+      required:
+      - query
+      type: object
+      properties:
+        query:
+          type: string
+          description: Original query (shortDescription from classification)
+        recommendations:
+          type: array
+          description: Top matching articles
+          items:
+            $ref: '#/components/schemas/RecommendationItem'
+          default: []
+      description: Recommendation response.
     RecommendedUpdateLevel:
       required:
       - availableSecurityUpdatesCount
@@ -5151,6 +5266,11 @@ components:
           description: Created for user email
       additionalProperties: false
       description: Registry token creation payload.
+    Role:
+      type: string
+      enum:
+      - assistant
+      - user
     ServiceRequestVariable:
       required:
       - name
