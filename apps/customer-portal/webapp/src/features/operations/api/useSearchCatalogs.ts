@@ -68,6 +68,6 @@ export function useSearchCatalogs(
       return data;
     },
     enabled: !!deployedProductId && isSignedIn && !isAuthLoading,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 }

@@ -68,6 +68,6 @@ export function useGetCatalogItemVariables(
       return data;
     },
     enabled: !!catalogId && !!itemId && isSignedIn && !isAuthLoading,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 }

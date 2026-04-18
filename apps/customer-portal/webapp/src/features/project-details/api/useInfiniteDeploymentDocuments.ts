@@ -91,7 +91,7 @@ export function useInfiniteDeploymentDocuments(deploymentId: string) {
       return nextOffset < totalRecords ? nextOffset : undefined;
     },
     enabled: !!deploymentId && isSignedIn && !isAuthLoading,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
   });
 }
 
