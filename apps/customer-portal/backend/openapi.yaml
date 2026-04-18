@@ -708,10 +708,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorPayload'
-  /recommendations:
+  /conversations/recommendations/search:
     post:
       summary: Get recommendations for a given chat history and conversation context.
-      operationId: postRecommendations
+      operationId: postConversationsRecommendationsSearch
       requestBody:
         description: Recommendation request payload
         content:
