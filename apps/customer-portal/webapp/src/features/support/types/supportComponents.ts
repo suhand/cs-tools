@@ -380,6 +380,7 @@ export type CaseDetailsTabsProps = {
   callCount?: number;
   hideCallsTab?: boolean;
   hideKnowledgeBaseTab?: boolean;
+  knowledgeBaseCount?: number;
 };
 
 export type CaseDetailsTabPanelsProps = {
@@ -391,6 +392,7 @@ export type CaseDetailsTabPanelsProps = {
   focusMode?: boolean;
   isEngagement?: boolean;
   isServiceRequest?: boolean;
+  onKnowledgeBaseCountChange?: (count: number) => void;
 };
 
 export type CaseDetailsSkeletonProps = {
