@@ -62,6 +62,9 @@ export type {
   CaseTypeObject,
 } from "@features/support/types/supportUiConfig";
 
+export const KB_ARTICLE_VIEW_BASE_URL =
+  "https://support.wso2.com/kb?id=kb_article_view&sys_kb_id=";
+
 // Chat actions for the history list.
 export const ChatAction = {
   VIEW: "view",
