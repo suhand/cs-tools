@@ -93,6 +93,7 @@ export type ProjectDeploymentsListResponse = PaginationResponse & {
 // Item type for a single item from GET /projects/:projectId/deployments.
 export type ProjectDeploymentItem = AuditMetadata & {
   id: string;
+  number?: string | null;
   name: string;
   description: string | null;
   url: string | null;

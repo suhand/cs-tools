@@ -60,6 +60,7 @@ export type ProjectDetails = {
   hasKbReferences?: boolean;
   type: IdLabelRef;
   sfId?: string;
+  hasPdpSubscription?: boolean;
   hasSr: boolean;
   startDate?: string;
   endDate?: string;

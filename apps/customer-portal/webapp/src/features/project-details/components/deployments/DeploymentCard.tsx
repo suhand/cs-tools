@@ -94,7 +94,7 @@ export default function DeploymentCard({
                 {displayValue(name, "Not Available")}
               </Typography>
               <Chip
-                label={deployment.id}
+                label={displayValue(deployment.number, "Not Available")}
                 size="small"
                 variant="outlined"
                 sx={{ height: 20, fontSize: "0.75rem" }}

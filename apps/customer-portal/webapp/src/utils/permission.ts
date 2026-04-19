@@ -97,7 +97,7 @@ export function getProjectPermissions(
 
     case ProjectType.SUBSCRIPTION:
       permissions.hasOperations = false;
-      permissions.hasSR = true;
+      permissions.hasSR = false;
       permissions.hasCR = false;
       permissions.hasDeployments = true;
       permissions.hasQueryHours = true;
