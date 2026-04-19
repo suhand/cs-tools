@@ -23,7 +23,7 @@ const ERR_MSG_FETCHING_PROJECT_DETAILS = "Error retrieving project details!";
 const ERR_MSG_PROJECT_ID_EMPTY = "Project ID cannot be empty!";
 const ERR_MSG_CASE_ID_EMPTY = "Case ID cannot be empty!";
 const ERR_LIMIT_OFFSET_INVALID = "Limit must be between 1 and 50. Offset must be a non-negative integer!";
-const ERR_MSG_UNAUTHORIZED_ACCESS = "You're not authorized to access this service. Please sign in again. " +
+const ERR_MSG_UNAUTHORIZED_ACCESS = "You are not authorized to perform this action. Please try again. " +
     "If the issue continues, contact support.";
 const ERR_MSG_CASES_STATISTICS = "Failed to retrieve project case statistics.";
 const ERR_MSG_CONVERSATION_STATISTICS = "Failed to retrieve project conversation statistics.";
