@@ -28,6 +28,7 @@ import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useLocation, Outlet } from "react-router";
 import IdleTimeoutProvider from "@providers/IdleTimeoutProvider";
 import GlobalNotificationBanner from "@components/notification-banner/GlobalNotificationBanner";
+import TopBanner from "@components/top-banner/TopBanner";
 import Footer from "@components/footer/Footer";
 import Header from "@components/header/Header";
 import SideBar from "@components/side-nav-bar/SideBar";
@@ -143,6 +144,7 @@ export default function AppLayout({ children }: AppLayoutProps): JSX.Element {
 
   return (
     <IdleTimeoutProvider>
+      <TopBanner />
       <GlobalNotificationBanner visible={notificationBannerConfig.visible} />
       <AppShell>
         <AppShell.Navbar>
