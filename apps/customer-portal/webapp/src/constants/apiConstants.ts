@@ -87,7 +87,7 @@ export const CONNECT_HANDSHAKE_TIMEOUT_MS = 25_000;
  * `useAuthApiClient` (`resolveIdTokenWithRetry`). Array length equals the
  * maximum number of token retrieval attempts before surfacing failure.
  */
-export const TOKEN_RETRY_DELAYS_MS = [150, 300, 600, 1000] as const;
+export const TOKEN_RETRY_DELAYS_MS = [150, 300, 600, 1000, 1500, 2000] as const;
 
 /**
  * Asgardeo SPA SDK internal error code when `getIdToken()` runs before the auth
