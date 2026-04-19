@@ -162,11 +162,12 @@ export default function CaseDetailsContent({
     () => (hideKnowledgeBaseTab ? null : buildRecommendationRequestFromCase(data, kbCommentsData?.comments ?? [])),
     [hideKnowledgeBaseTab, data, kbCommentsData],
   );
-  const { data: kbRecData } = useConversationRecommendationsSearch(
+  const { data: kbRecData, isLoading: isKbRecLoading } = useConversationRecommendationsSearch(
     kbPayload,
     !hideKnowledgeBaseTab && !isKbCommentsLoading && !!kbPayload,
   );
   const knowledgeBaseCount = kbRecData ? (kbRecData.recommendations?.length ?? 0) : undefined;
+  const knowledgeBaseCountLoading = !hideKnowledgeBaseTab && (isKbCommentsLoading || (!!kbPayload && isKbRecLoading && !kbRecData));
 
   const visibleTabs = useMemo(
     () => [
@@ -335,6 +336,7 @@ export default function CaseDetailsContent({
           hideCallsTab={hideCallsTab}
           hideKnowledgeBaseTab={hideKnowledgeBaseTab}
           knowledgeBaseCount={knowledgeBaseCount}
+          knowledgeBaseCountLoading={knowledgeBaseCountLoading}
         />
       </Paper>
 

@@ -16,9 +16,9 @@
 
 import type { CaseDetailsTabsProps } from "@features/support/types/supportComponents";
 import { CASE_DETAILS_TABS } from "@features/support/constants/supportConstants";
-import { Box, Button, Tab, Tabs } from "@wso2/oxygen-ui";
+import { Box, Button, Skeleton, Tab, Tabs } from "@wso2/oxygen-ui";
 import { Maximize2, Minimize2 } from "@wso2/oxygen-ui-icons-react";
-import { type JSX } from "react";
+import { type JSX, type ReactNode } from "react";
 
 /**
  * Tab bar for case details: Activity, Details, Attachments, Calls, Knowledge Base.
@@ -36,6 +36,7 @@ export default function CaseDetailsTabs({
   hideCallsTab = false,
   hideKnowledgeBaseTab = false,
   knowledgeBaseCount,
+  knowledgeBaseCountLoading = false,
 }: CaseDetailsTabsProps): JSX.Element {
   const tabs = CASE_DETAILS_TABS.filter((t) => {
     if (hideCallsTab && t.label.startsWith("Calls")) {
@@ -80,13 +81,21 @@ export default function CaseDetailsTabs({
           const isCallsTab = label.startsWith("Calls");
           const isKnowledgeBaseTab = label.startsWith("Knowledge Base");
 
-          let tabLabel = label;
+          let tabLabel: ReactNode = label;
           if (isAttachmentsTab && attachmentCount !== undefined) {
             tabLabel = `Attachments (${attachmentCount})`;
           } else if (isCallsTab && callCount !== undefined) {
             tabLabel = `Calls (${callCount})`;
-          } else if (isKnowledgeBaseTab && knowledgeBaseCount !== undefined) {
-            tabLabel = `Knowledge Base (${knowledgeBaseCount})`;
+          } else if (isKnowledgeBaseTab) {
+            if (knowledgeBaseCountLoading) {
+              tabLabel = (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                  Knowledge Base (<Skeleton variant="text" width={14} sx={{ display: "inline-block" }} />)
+                </Box>
+              );
+            } else if (knowledgeBaseCount !== undefined) {
+              tabLabel = `Knowledge Base (${knowledgeBaseCount})`;
+            }
           }
 
           return (
