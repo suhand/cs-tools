@@ -25,6 +25,9 @@ import { useFloatingNoveraVisibility } from "@context/floating-novera-visibility
 import { useGetCaseAttachments } from "@features/support/api/useGetCaseAttachments";
 import { useGetCallRequests } from "@features/support/api/useGetCallRequests";
 import useGetProjectFilters from "@api/useGetProjectFilters";
+import useGetCaseComments from "@features/support/api/useGetCaseComments";
+import { useConversationRecommendationsSearch } from "@features/support/api/useConversationRecommendationsSearch";
+import { buildRecommendationRequestFromCase } from "@features/support/utils/recommendations";
 import {
   getStatusColor,
   resolveColorFromTheme,
@@ -147,6 +150,23 @@ export default function CaseDetailsContent({
   const hideCallsTab = isSecurityReportAnalysis || !isCallSchedulingAllowed;
   const hideKnowledgeBaseTab =
     isSecurityReportAnalysis || isEngagementRoute || isServiceRequest;
+
+  // Eagerly fetch KB recommendations so the tab count is available on page load.
+  // React Query deduplicates the network call when the KB tab component mounts later.
+  const { data: kbCommentsData, isLoading: isKbCommentsLoading } = useGetCaseComments(
+    hideKnowledgeBaseTab ? "" : resolvedProjectId,
+    hideKnowledgeBaseTab ? "" : caseId,
+    { offset: 0 },
+  );
+  const kbPayload = useMemo(
+    () => (hideKnowledgeBaseTab ? null : buildRecommendationRequestFromCase(data, kbCommentsData?.comments ?? [])),
+    [hideKnowledgeBaseTab, data, kbCommentsData],
+  );
+  const { data: kbRecData } = useConversationRecommendationsSearch(
+    kbPayload,
+    !hideKnowledgeBaseTab && !isKbCommentsLoading && !!kbPayload,
+  );
+  const knowledgeBaseCount = kbRecData ? (kbRecData.recommendations?.length ?? 0) : undefined;
 
   const visibleTabs = useMemo(
     () => [
@@ -314,6 +334,7 @@ export default function CaseDetailsContent({
           callCount={callCount}
           hideCallsTab={hideCallsTab}
           hideKnowledgeBaseTab={hideKnowledgeBaseTab}
+          knowledgeBaseCount={knowledgeBaseCount}
         />
       </Paper>
 
