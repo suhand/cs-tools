@@ -3,7 +3,6 @@
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
-//
 // You may obtain a copy of the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
@@ -63,18 +62,24 @@ export default function CaseKnowledgeBaseRecommendations({
       offset: 0,
     });
 
-  const comments = useMemo(() => commentsData?.comments ?? [], [commentsData?.comments]);
+  const comments = useMemo(
+    () => commentsData?.comments ?? [],
+    [commentsData?.comments],
+  );
 
   const payload = useMemo(
     () => buildRecommendationRequestFromCase(data, comments),
     [data, comments],
   );
 
-  const { data: recData, isLoading: isRecLoading, isError } =
-    useConversationRecommendationsSearch(
-      payload,
-      !isCommentsLoading && !!payload,
-    );
+  const {
+    data: recData,
+    isLoading: isRecLoading,
+    isError,
+  } = useConversationRecommendationsSearch(
+    payload,
+    !isCommentsLoading && !!payload,
+  );
 
   const openArticle = (articleId: string) => {
     window.open(
@@ -88,13 +93,37 @@ export default function CaseKnowledgeBaseRecommendations({
   const isLoading = isCommentsLoading || (payload != null && isRecLoading);
 
   const skeletonCard = (k: number) => (
-    <Paper key={k} variant="outlined" sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}>
-      <Skeleton variant="rounded" width={36} height={36} sx={{ flexShrink: 0 }} />
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+    <Paper
+      key={k}
+      variant="outlined"
+      sx={{ p: 2, display: "flex", alignItems: "center", gap: 2 }}
+    >
+      <Skeleton
+        variant="rounded"
+        width={36}
+        height={36}
+        sx={{ flexShrink: 0 }}
+      />
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1}
+        sx={{ flex: 1, minWidth: 0 }}
+      >
         <Skeleton variant="text" width="55%" height={20} />
-        <Skeleton variant="rounded" width={80} height={22} sx={{ flexShrink: 0 }} />
+        <Skeleton
+          variant="rounded"
+          width={80}
+          height={22}
+          sx={{ flexShrink: 0 }}
+        />
       </Stack>
-      <Skeleton variant="rounded" width={100} height={32} sx={{ flexShrink: 0 }} />
+      <Skeleton
+        variant="rounded"
+        width={100}
+        height={32}
+        sx={{ flexShrink: 0 }}
+      />
     </Paper>
   );
 
@@ -102,21 +131,28 @@ export default function CaseKnowledgeBaseRecommendations({
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {payload == null && !isCommentsLoading ? (
         <Typography variant="body2" color="text.secondary">
-          Add a title or description, or post activity on this case, to request article
-          recommendations.
+          Add a title or description, or post activity on this case, to request
+          article recommendations.
         </Typography>
       ) : isLoading ? (
-        <Stack spacing={2}>
-          {[1, 2, 3].map((k) => skeletonCard(k))}
-        </Stack>
+        <Stack spacing={2}>{[1, 2, 3].map((k) => skeletonCard(k))}</Stack>
       ) : isError ? (
         <Typography variant="body2" color="text.secondary">
           Could not load knowledge base recommendations. Please try again later.
         </Typography>
       ) : items.length === 0 ? (
-        <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ py: 4 }}>
+        <Stack
+          spacing={2}
+          alignItems="center"
+          justifyContent="center"
+          sx={{ py: 4 }}
+        >
           <Box
-            sx={{ width: 160, maxWidth: "100%", "& svg": { width: "100%", height: "auto" } }}
+            sx={{
+              width: 160,
+              maxWidth: "100%",
+              "& svg": { width: "100%", height: "auto" },
+            }}
             aria-hidden
           >
             <EmptyIcon />
@@ -160,7 +196,12 @@ export default function CaseKnowledgeBaseRecommendations({
               >
                 <BookOpen size={18} color={accent} />
               </Box>
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ flex: 1, minWidth: 0 }}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ flex: 1, minWidth: 0 }}
+              >
                 <Typography variant="subtitle2" color="text.primary" noWrap>
                   {item.title}
                 </Typography>
@@ -174,7 +215,10 @@ export default function CaseKnowledgeBaseRecommendations({
                 size="small"
                 variant="outlined"
                 endIcon={<ExternalLink size={14} />}
-                onClick={(e) => { e.stopPropagation(); openArticle(item.articleId); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openArticle(item.articleId);
+                }}
                 sx={{ flexShrink: 0 }}
               >
                 View Article

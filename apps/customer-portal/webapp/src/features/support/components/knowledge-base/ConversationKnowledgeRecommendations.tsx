@@ -3,7 +3,6 @@
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
 // in compliance with the License.
-//
 // You may obtain a copy of the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
@@ -87,10 +86,26 @@ export default function ConversationKnowledgeRecommendations({
       {payload == null || isLoading ? (
         <Stack spacing={1.5}>
           {[1, 2].map((k) => (
-            <Paper key={k} variant="outlined" sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 2 }}>
+            <Paper
+              key={k}
+              variant="outlined"
+              sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  justifyContent: "space-between",
+                  gap: 2,
+                }}
+              >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 0.5 }}>
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    spacing={1}
+                    sx={{ mb: 0.5 }}
+                  >
                     <Skeleton variant="text" width="60%" height={20} />
                     <Skeleton variant="rounded" width={80} height={22} />
                   </Stack>
@@ -122,7 +137,10 @@ export default function ConversationKnowledgeRecommendations({
               role="button"
               tabIndex={0}
               onClick={() => openArticle(item.articleId)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") openArticle(item.articleId); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  openArticle(item.articleId);
+              }}
               sx={{
                 p: 2,
                 display: "flex",
@@ -151,7 +169,11 @@ export default function ConversationKnowledgeRecommendations({
                     flexWrap="wrap"
                     sx={{ mb: 0.5 }}
                   >
-                    <Typography variant="body2" color="text.primary" fontWeight={500}>
+                    <Typography
+                      variant="body2"
+                      color="text.primary"
+                      fontWeight={500}
+                    >
                       {item.title}
                     </Typography>
                     <Chip
@@ -165,7 +187,10 @@ export default function ConversationKnowledgeRecommendations({
                   size="small"
                   variant="outlined"
                   aria-label={`Open article ${item.title}`}
-                  onClick={(e) => { e.stopPropagation(); openArticle(item.articleId); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openArticle(item.articleId);
+                  }}
                   sx={{ flexShrink: 0 }}
                 >
                   <ExternalLink size={16} />
