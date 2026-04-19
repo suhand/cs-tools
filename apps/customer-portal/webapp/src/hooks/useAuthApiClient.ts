@@ -21,7 +21,6 @@ import {
 } from "@constants/apiConstants";
 import { useAsgardeo } from "@asgardeo/react";
 import { useLogger } from "@hooks/useLogger";
-import { useEffect, useRef } from "react";
 
 // Waits for the provided duration.
 function sleep(delayMs: number): Promise<void> {
@@ -32,28 +31,12 @@ function sleep(delayMs: number): Promise<void> {
 
 // Checks whether an error indicates Asgardeo auth state is not ready yet.
 function isAsgardeoUnauthenticatedError(error: unknown): boolean {
-  const maybeCode = (error as { code?: unknown } | null)?.code;
-  if (maybeCode === ASGARDEO_UNAUTHENTICATED_CODE) {
-    return true;
+  if (!(error instanceof Error)) {
+    return false;
   }
 
-  const msg =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : typeof (error as { message?: unknown })?.message === "string"
-          ? (error as { message: string }).message
-          : "";
-
-  const lower = msg.toLowerCase();
-  return (
-    lower.includes("id token") ||
-    lower.includes("not authenticated") ||
-    lower.includes("not signed in") ||
-    lower.includes("no token") ||
-    lower.includes("unauthenticated")
-  );
+  const maybeCode = (error as { code?: unknown }).code;
+  return maybeCode === ASGARDEO_UNAUTHENTICATED_CODE;
 }
 
 function isNonReplayableBody(body: unknown): boolean {
@@ -71,79 +54,30 @@ function isNonReplayableBody(body: unknown): boolean {
 
 // A custom hook that automatically fetches a fresh ID Token from Asgardeo.
 export function useAuthApiClient() {
-  const { getIdToken, isLoading: isAsgardeoLoading } = useAsgardeo();
+  const { getIdToken } = useAsgardeo();
   const logger = useLogger();
-
-  // Keep a ref so the async resolveIdTokenWithRetry closure can read the
-  // live value rather than the stale render-time snapshot.
-  const isAsgardeoLoadingRef = useRef(isAsgardeoLoading);
-  useEffect(() => {
-    isAsgardeoLoadingRef.current = isAsgardeoLoading;
-  }, [isAsgardeoLoading]);
 
   const resolveIdTokenWithRetry = async (): Promise<string> => {
     let lastError: unknown;
-    let authNotReadyCount = 0;
     const delays = TOKEN_RETRY_DELAYS_MS;
-    const startTime = Date.now();
-
-    logger.debug("[authFetch] token-resolve-start", {
-      maxAttempts: delays.length,
-      isAsgardeoLoading: isAsgardeoLoadingRef.current,
-    });
-
     for (let attempt = 0; attempt < delays.length; attempt += 1) {
-      // If Asgardeo is still initializing, skip the token call and wait —
-      // getIdToken() returns empty while isLoading=true even for signed-in users.
-      if (isAsgardeoLoadingRef.current !== false) {
-        authNotReadyCount += 1;
-        logger.warn("[authFetch] token-unavailable", {
-          attempt: attempt + 1,
-          elapsedMs: Date.now() - startTime,
-          reason: "asgardeo-still-loading",
-        });
-        if (attempt < delays.length - 1) {
-          await sleep(delays[attempt]);
-        }
-        continue;
-      }
-
       try {
         const token = await getIdToken();
         if (token) {
-          if (attempt > 0) {
-            logger.info("[authFetch] token-resolved-after-retry", {
-              attempt: attempt + 1,
-              elapsedMs: Date.now() - startTime,
-            });
-          }
           return token;
         }
-        authNotReadyCount += 1;
-        logger.warn("[authFetch] token-unavailable", {
-          attempt: attempt + 1,
-          elapsedMs: Date.now() - startTime,
-          reason: "empty-token",
-        });
+        logger.warn("[authFetch] token-unavailable", { attempt: attempt + 1 });
       } catch (error) {
         lastError = error;
         if (isAsgardeoUnauthenticatedError(error)) {
-          authNotReadyCount += 1;
           logger.warn("[authFetch] token-unavailable", {
             attempt: attempt + 1,
-            elapsedMs: Date.now() - startTime,
             reason: "asgardeo-auth-not-ready",
           });
         } else {
           logger.warn("[authFetch] token-retrieval-error", {
             attempt: attempt + 1,
-            elapsedMs: Date.now() - startTime,
-            errorMessage:
-              error instanceof Error ? error.message : String(error),
-            errorCode:
-              error instanceof Error
-                ? (error as { code?: unknown }).code
-                : undefined,
+            error,
           });
         }
       }
@@ -153,19 +87,6 @@ export function useAuthApiClient() {
       }
     }
 
-    const elapsedMs = Date.now() - startTime;
-    const allRetriesAuthNotReady = authNotReadyCount === delays.length;
-
-    logger.error("[authFetch] token-resolve-exhausted", {
-      totalAttempts: delays.length,
-      elapsedMs,
-      authNotReadyCount,
-      isAsgardeoLoading: isAsgardeoLoadingRef.current,
-      hint: allRetriesAuthNotReady
-        ? "All retries blocked by Asgardeo still initializing — token was never available within the retry window."
-        : "Mixed or unexpected errors during token resolution.",
-    });
-
     if (lastError) {
       if (isAsgardeoUnauthenticatedError(lastError)) {
         throw new Error(AUTH_NOT_READY_ERROR_MESSAGE);
@@ -174,8 +95,7 @@ export function useAuthApiClient() {
         ? lastError
         : new Error("Unable to retrieve ID token");
     }
-    // All retries returned empty token — auth was not ready in time.
-    throw new Error(AUTH_NOT_READY_ERROR_MESSAGE);
+    throw new Error("Unable to retrieve ID token");
   };
 
   /**

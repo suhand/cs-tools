@@ -588,8 +588,9 @@ export default function NoveraChatPage(): JSX.Element {
   );
 
   const handleSolutionWorked = useCallback(() => {
+    if (isSending) return;
     void sendViaWebSocket("This Resolved My Issue");
-  }, [sendViaWebSocket]);
+  }, [isSending, sendViaWebSocket]);
 
   const handleSendMessage = useCallback(async (): Promise<boolean> => {
     const text = htmlToPlainText(inputValueRef.current).trim();

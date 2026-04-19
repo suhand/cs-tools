@@ -173,6 +173,7 @@ export default function ChatMessageBubble({
   const isUser = message.sender === ChatSender.USER;
   const [thumbsState, setThumbsState] = useState<"up" | "down" | null>(null);
   const hasFeedbackSelection = thumbsState !== null;
+  const [solutionWorkedSent, setSolutionWorkedSent] = useState(false);
 
   const displayText = message.isError ? "Something went wrong" : message.text;
 
@@ -472,12 +473,16 @@ export default function ChatMessageBubble({
                 </IconButton>
               </Box>
 
-              {hasSolutionProposed && (
+              {hasSolutionProposed && !solutionWorkedSent && (
                 <Button
                   size="small"
                   variant="outlined"
                   startIcon={<CheckCircle size={14} />}
-                  onClick={onSolutionWorked}
+                  disabled={solutionWorkedSent}
+                  onClick={() => {
+                    setSolutionWorkedSent(true);
+                    onSolutionWorked?.();
+                  }}
                   sx={(theme) => ({
                     textTransform: "none",
                     fontWeight: 500,
