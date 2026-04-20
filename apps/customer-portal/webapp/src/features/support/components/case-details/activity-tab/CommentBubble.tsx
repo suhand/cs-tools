@@ -29,6 +29,7 @@ import {
   replaceInlineImageSources,
   formatCommentDate,
   INLINE_COMMENT_HTML_PURIFY,
+  isNoveraOrBotSender,
 } from "@features/support/utils/support";
 import DOMPurify from "dompurify";
 import ChatMessageCard from "@case-details-activity/ChatMessageCard";
@@ -73,6 +74,7 @@ export default function CommentBubble({
     withoutLabel,
     comment.inlineAttachments,
   );
+  const renderAsMarkdown = isNoveraOrBotSender(comment.createdBy, comment.type);
   const sanitizedHtml = DOMPurify.sanitize(withImages, INLINE_COMMENT_HTML_PURIFY);
   const { resolvedHtml: htmlContent, isLoading: isImagesLoading } =
     useResolvedInlineImageHtml(sanitizedHtml, comment.inlineAttachments);
@@ -170,6 +172,8 @@ export default function CommentBubble({
         ) : (
           <ChatMessageCard
             htmlContent={htmlContent}
+            markdownContent={withoutLabel}
+            renderAsMarkdown={renderAsMarkdown}
             isCurrentUser={isCurrentUser}
             primaryBg={primaryBg}
             onImageClick={onImageClick}

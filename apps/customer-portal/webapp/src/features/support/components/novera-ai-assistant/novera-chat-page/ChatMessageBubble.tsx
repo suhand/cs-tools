@@ -15,18 +15,18 @@
 // under the License.
 
 import type { ChatMessageBubbleProps } from "@features/support/types/supportComponents";
-import { Box, Paper, Typography, IconButton, Button, alpha } from "@wso2/oxygen-ui";
-import { Bot, User, ThumbsUp, ThumbsDown, CheckCircle } from "@wso2/oxygen-ui-icons-react";
+import { Box, Paper, Typography, alpha } from "@wso2/oxygen-ui";
+import { Bot, User } from "@wso2/oxygen-ui-icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { type JSX, useEffect, useRef, useState } from "react";
-import { useDarkMode } from "@utils/useDarkMode";
-import { ChatSender, NoveraActionType } from "@features/support/types/conversations";
+import { type JSX, useEffect, useRef } from "react";
+import { ChatSender } from "@features/support/types/conversations";
 import {
   NOVERA_ANALYZING_PLACEHOLDER_TEXT,
   NOVERA_DISPLAY_NAME,
 } from "@features/support/constants/chatConstants";
 import RecommendationsCard from "@features/support/components/novera-ai-assistant/novera-chat-page/RecommendationsCard";
+import { resolveDisplayTimeZone } from "@utils/dateTime";
 
 /** Tighter line breaks while tokens stream (model often sends blank lines). */
 function collapseStreamLineBreaks(s: string): string {
@@ -210,18 +210,8 @@ const markdownComponents: React.ComponentProps<
  */
 export default function ChatMessageBubble({
   message,
-  onThumbsUp,
-  onThumbsDown,
-  onSolutionWorked,
 }: ChatMessageBubbleProps): JSX.Element {
-  const isDark = useDarkMode();
-  const hasSolutionProposed = message.actions?.some(
-    (a) => a.type === NoveraActionType.SolutionProposed,
-  );
   const isUser = message.sender === ChatSender.USER;
-  const [thumbsState, setThumbsState] = useState<"up" | "down" | null>(null);
-  const hasFeedbackSelection = thumbsState !== null;
-  const [solutionWorkedSent, setSolutionWorkedSent] = useState(false);
 
   const displayText = message.isError ? "Something went wrong" : message.text;
 
@@ -251,8 +241,8 @@ export default function ChatMessageBubble({
       streamContainerRef.current.scrollHeight;
   }, [message.isStreaming, streamBodyText]);
 
-  // Safely format timestamp with fallback for invalid dates
-  let formattedTime = "--";
+  // Safely format timestamp with date and time, fallback for invalid dates
+  let formattedDateTime = "--";
   try {
     const dateObj =
       message.timestamp instanceof Date
@@ -260,14 +250,22 @@ export default function ChatMessageBubble({
         : new Date(message.timestamp);
 
     if (!Number.isNaN(dateObj.getTime())) {
-      formattedTime = dateObj.toLocaleTimeString("en-US", {
+      const timeStr = dateObj.toLocaleTimeString("en-US", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: true,
+        timeZone: resolveDisplayTimeZone(),
       });
+      const dateStr = dateObj.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: resolveDisplayTimeZone(),
+      });
+      formattedDateTime = `${dateStr} ${timeStr}`;
     }
   } catch {
-    // formattedTime remains "--"
+    // formattedDateTime remains "--"
   }
 
   if (isUser) {
@@ -280,6 +278,19 @@ export default function ChatMessageBubble({
           gap: 0.5,
         }}
       >
+        {/* User name display */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            pr: (theme) => `calc(${theme.spacing(4)} + ${theme.spacing(1.5)})`,
+            mb: 0.5,
+          }}
+        >
+          <Typography variant="caption" sx={{ fontWeight: 600, color: "text.primary" }}>
+            {message.createdBy || "You"}
+          </Typography>
+        </Box>
         <Box
           sx={{
             display: "flex",
@@ -323,7 +334,7 @@ export default function ChatMessageBubble({
             <User size={16} />
           </Paper>
         </Box>
-        {/* Timestamp sits under the bubble, aligned to its right edge (not under the icon) */}
+        {/* Date and time sit under the bubble, aligned to its right edge (not under the icon) */}
         <Box
           sx={{
             display: "flex",
@@ -332,7 +343,7 @@ export default function ChatMessageBubble({
           }}
         >
           <Typography variant="caption" color="text.secondary">
-            {formattedTime}
+            {formattedDateTime}
           </Typography>
         </Box>
       </Box>
@@ -473,87 +484,14 @@ export default function ChatMessageBubble({
           </Box>
         )}
 
-        {/* Thumbs up/down, solution-worked button, and time — hide until final response */}
-        {!hideFeedbackRow &&
-          message.showFeedbackActions !== false &&
-          (!message.recommendations ||
-            message.recommendations.length === 0) && (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 3, flexWrap: "wrap" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    if (hasFeedbackSelection) return;
-                    setThumbsState("up");
-                    onThumbsUp?.(message.id);
-                  }}
-                  aria-pressed={thumbsState === "up"}
-                  sx={{
-                    p: 0.5,
-                    color:
-                      thumbsState === "up" ? "success.main" : "text.secondary",
-                    "&:hover": {
-                      color: "success.main",
-                      bgcolor: "success.lighter",
-                    },
-                  }}
-                  aria-label="Like this response"
-                >
-                  <ThumbsUp size={14} />
-                </IconButton>
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    if (hasFeedbackSelection) return;
-                    setThumbsState("down");
-                    onThumbsDown?.(message.id);
-                  }}
-                  aria-pressed={thumbsState === "down"}
-                  sx={{
-                    p: 0.5,
-                    color:
-                      thumbsState === "down" ? "error.main" : "text.secondary",
-                    "&:hover": {
-                      color: "error.main",
-                      bgcolor: "error.lighter",
-                    },
-                  }}
-                  aria-label="Dislike this response"
-                >
-                  <ThumbsDown size={14} />
-                </IconButton>
-              </Box>
-
-              {hasSolutionProposed && !solutionWorkedSent && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<CheckCircle size={14} />}
-                  disabled={solutionWorkedSent}
-                  onClick={() => {
-                    setSolutionWorkedSent(true);
-                    onSolutionWorked?.();
-                  }}
-                  sx={(theme) => ({
-                    textTransform: "none",
-                    fontWeight: 500,
-                    fontSize: "0.75rem",
-                    height: 28,
-                    px: 1.5,
-                    color: isDark ? theme.palette.success.light : theme.palette.success.dark,
-                    borderColor: alpha(theme.palette.success.main, isDark ? 0.7 : 0.4),
-                    bgcolor: alpha(theme.palette.success.main, isDark ? 0.15 : 0.08),
-                  })}
-                >
-                  Solution Worked
-                </Button>
-              )}
-
-              <Typography variant="caption" color="text.secondary">
-                {formattedTime}
-              </Typography>
-            </Box>
-          )}
+        {/* Date and time display — show for final responses */}
+        {!hideFeedbackRow && (
+          <Box sx={{ mt: 1.5 }}>
+            <Typography variant="caption" color="text.secondary">
+              {formattedDateTime}
+            </Typography>
+          </Box>
+        )}
 
       </Box>
 
