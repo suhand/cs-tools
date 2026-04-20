@@ -450,6 +450,7 @@ export type ChatInputProps = {
   isCreateCaseLoading?: boolean;
   resetTrigger?: number;
   forceRichText?: boolean;
+  disabled?: boolean;
 };
 
 export type ChatHeaderProps = {
