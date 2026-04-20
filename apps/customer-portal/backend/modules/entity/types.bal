@@ -406,6 +406,10 @@ public type ReferenceTableItem record {|
     int count?;
     # Abbreviation
     string? abbreviation?;
+    # Release date (for product versions)
+    Date? releasedOn?;
+    # End of life date (for product versions)
+    Date? endOfLifeOn?;
     json...;
 |};
 
@@ -889,10 +893,6 @@ public type DeployedProduct record {|
     int? cores;
     # TPS allocated for the product
     decimal? tps;
-    # Release date of the product
-    string? releasedOn;
-    # End of life date of the product
-    string? endOfLifeOn;
     json...;
 |};
 

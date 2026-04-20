@@ -187,6 +187,10 @@ public type ReferenceItem record {|
     string? number?;
     # Abbreviation
     string? abbreviation?;
+    # Release date (for product versions)
+    entity:Date? releasedOn?;
+    # End of life date (for product versions)
+    entity:Date? endOfLifeOn?;
 |};
 
 # Case metadata information.
@@ -642,10 +646,6 @@ public type DeployedProduct record {|
     int? cores;
     # TPS allocated for the product
     decimal? tps;
-    # Release date of the product
-    string? releasedOn;
-    # End of life date of the product
-    string? endOfLifeOn;
 |};
 
 # Instance search filters.
