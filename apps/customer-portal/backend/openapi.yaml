@@ -2695,12 +2695,10 @@ components:
           type: string
           description: Allowed domain list of the account
           nullable: true
-          default: ""
         classification:
           type: string
           description: Account classification
           nullable: true
-          default: ""
         isPartner:
           type: boolean
           description: Whether the account is a partner or not
@@ -2975,7 +2973,7 @@ components:
       required:
       - chatHistory
       - envProducts
-      - projectId
+      - projectTypeId
       - region
       - tier
       type: object
@@ -2996,9 +2994,9 @@ components:
         tier:
           type: string
           description: Tier
-        projectId:
+        projectTypeId:
           type: string
-          description: Project ID
+          description: Project type ID
       description: Case classification payload.
     CaseClassificationResponse:
       required:

@@ -41,8 +41,8 @@ public type CaseClassificationPayload record {|
     string region;
     # Tier
     string tier;
-    # Project ID
-    string projectId;
+    # Project type ID
+    string projectTypeId;
     json...;
 |};
 
