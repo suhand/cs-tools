@@ -78,9 +78,12 @@ export default function ImageFullscreenModal({
             src={imageSrc}
             alt="Full size"
             sx={{
-              maxWidth: "100%",
+              maxWidth: "90vw",
               maxHeight: "90vh",
+              width: "auto",
+              height: "auto",
               objectFit: "contain",
+              display: "block",
             }}
           />
         )}
