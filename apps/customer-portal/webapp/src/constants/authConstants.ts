@@ -25,3 +25,6 @@ export const IDLE_THROTTLE_MS = 500;
 
 // Duration of the "Resuming session…" loader shown after the user clicks Continue (ms).
 export const CONTINUE_LOADER_MS = 6_000;
+
+// Minimum idle duration (ms) before the Continue loader is shown.
+export const CONTINUE_LOADER_IDLE_THRESHOLD_MS = 20 * 60 * 1000;
