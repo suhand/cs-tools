@@ -24,6 +24,7 @@ import {
   RegistryTokenDisplayStatus,
 } from "@features/settings/types/settings";
 import type { RegistryToken } from "@features/settings/types/registryTokens";
+import { resolveDisplayTimeZone } from "@utils/dateTime";
 
 /**
  * Derives display status from token fields.
@@ -76,6 +77,7 @@ export function formatRegistryTokenTimestamp(ts?: number): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: resolveDisplayTimeZone(),
   });
 }
 
@@ -93,6 +95,7 @@ export function formatRegistryTokenIsoDate(iso?: string | null): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: resolveDisplayTimeZone(),
   });
 }
 

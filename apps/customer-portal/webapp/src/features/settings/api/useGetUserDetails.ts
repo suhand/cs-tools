@@ -20,6 +20,7 @@ import { useAuthApiClient } from "@/hooks/useAuthApiClient";
 import type { UserDetails } from "@features/settings/types/users";
 import { useLogger } from "@hooks/useLogger";
 import { AUTH_NOT_READY_ERROR_MESSAGE } from "@constants/apiConstants";
+import { setUserPreferredTimeZone } from "@utils/dateTime";
 
 /**
  * Hook to get user details.
@@ -70,6 +71,7 @@ const useGetUserDetails = (): UseQueryResult<UserDetails, Error> => {
             : tzRaw != null
               ? String(tzRaw)
               : "";
+        setUserPreferredTimeZone(timeZone);
         return { ...data, timeZone } as UserDetails;
       } catch (error) {
         if (

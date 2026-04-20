@@ -28,6 +28,7 @@ import {
   PRODUCT_SUPPORT_STATUS,
   type ProjectStatusChipColor,
 } from "@features/project-details/constants/projectDetailsConstants";
+import { formatBackendTimestampForDisplay } from "@utils/dateTime";
 
 /**
  * Get the theme color path for a time card state chip (e.g. Approved, Submitted).
@@ -138,12 +139,12 @@ export const formatProjectDate = (dateString: string): string => {
   if (!dateString) {
     return "";
   }
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
+  const formatted = formatBackendTimestampForDisplay(dateString, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+  return formatted ?? "";
 };
 
 /**
@@ -157,26 +158,18 @@ export const formatProjectDateTime = (dateString: string): string => {
   if (!dateString) {
     return "";
   }
-  try {
-    const date = new Date(dateString.replace(" ", "T"));
-    if (isNaN(date.getTime())) {
-      return "";
-    }
-    const dateStr = date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    const timeStr = date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-    return `${dateStr} at ${timeStr}`;
-  } catch (error) {
-    console.error(`Error formatting date string: ${dateString}`, error);
-    return "";
-  }
+  const datePart = formatBackendTimestampForDisplay(dateString, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  const timePart = formatBackendTimestampForDisplay(dateString, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  if (!datePart || !timePart) return "";
+  return `${datePart} at ${timePart}`;
 };
 
 /**
