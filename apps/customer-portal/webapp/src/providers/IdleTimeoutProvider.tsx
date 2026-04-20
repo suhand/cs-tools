@@ -61,6 +61,10 @@ export default function IdleTimeoutProvider({
   });
 
   const handleContinue = () => {
+    if (continueTimerRef.current !== null) {
+      clearTimeout(continueTimerRef.current);
+      continueTimerRef.current = null;
+    }
     setIsContinuing(true);
     continueTimerRef.current = setTimeout(() => {
       setIsContinuing(false);
