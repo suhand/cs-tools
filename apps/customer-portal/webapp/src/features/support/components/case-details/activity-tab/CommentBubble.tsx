@@ -44,6 +44,13 @@ function commentAuthorDisplayName(comment: CaseComment): string {
   return comment.createdBy?.trim() || "Unknown";
 }
 
+function shouldRenderCommentAsMarkdown(comment: CaseComment): boolean {
+  return (
+    comment.type?.toLowerCase() === "bot" ||
+    comment.createdBy?.trim().toLowerCase() === "novera"
+  );
+}
+
 /**
  * Single comment bubble: avatar, display name, date, and ChatMessageCard.
  *
@@ -59,6 +66,7 @@ export default function CommentBubble({
 }: CommentBubbleProps): import("react").JSX.Element {
   const theme = useTheme();
   const rawContent = comment.content ?? "";
+  const renderAsMarkdown = shouldRenderCommentAsMarkdown(comment);
   const isFullCodeWrap = hasSingleCodeWrapper(rawContent);
   const codeBlockCount = rawContent.match(/\[code\]/gi)?.length ?? 0;
   const afterCode = isFullCodeWrap
@@ -165,6 +173,8 @@ export default function CommentBubble({
         </Stack>
         <ChatMessageCard
           htmlContent={htmlContent}
+          markdownContent={renderAsMarkdown ? rawContent : undefined}
+          renderAsMarkdown={renderAsMarkdown}
           isCurrentUser={isCurrentUser}
           primaryBg={primaryBg}
           onImageClick={onImageClick}
