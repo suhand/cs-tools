@@ -109,13 +109,14 @@ export default function ConversationDetailsPage(): JSX.Element {
           timestamp: dateFromApiCreatedOn(msg.createdOn),
           createdBy: createdByDisplayName || msg.createdBy || "Unknown",
           createdOnRaw: msg.createdOn ?? "--",
-          showFeedbackActions: true,
+          showFeedbackActions: false,
         };
       }),
     [messages],
   );
 
-  const conversationStatus = summary?.status ?? undefined;
+  const conversationStatus = summary?.status;
+  const conversationStatusLabel = conversationStatus ?? "--";
   const startedTime = summary?.startedTime ?? "";
   const messageCount = summary?.messages;
   const kbArticles = summary?.kbArticles;
@@ -189,7 +190,7 @@ export default function ConversationDetailsPage(): JSX.Element {
                   Status
                 </Typography>
                 <Typography variant="body2" color="text.primary">
-                  {conversationStatus}
+                  {conversationStatusLabel}
                 </Typography>
               </Box>
             </Box>

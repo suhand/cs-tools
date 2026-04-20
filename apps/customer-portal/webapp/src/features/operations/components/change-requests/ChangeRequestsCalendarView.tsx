@@ -295,7 +295,9 @@ export default function ChangeRequestsCalendarView({
     );
   }
 
-  const monthName = firstDayOfMonth.toLocaleDateString("en-US", {
+  // Use a UTC anchor date to avoid browser-local month drift when formatting in another timezone.
+  const monthHeaderAnchor = new Date(Date.UTC(currentYear, currentMonth, 15, 12, 0, 0));
+  const monthName = monthHeaderAnchor.toLocaleDateString("en-US", {
     month: "long",
     year: "numeric",
     timeZone: displayTimeZone,
