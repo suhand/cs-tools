@@ -619,6 +619,7 @@ export default function CreateServiceRequestPage(): JSX.Element {
           }}
           hasMoreProducts={!!deploymentProductsQuery.hasNextPage}
           isFetchingMoreProducts={deploymentProductsQuery.isFetchingNextPage}
+          projectTypeLabel={projectDetails?.type?.label}
         />
 
         {!!productId && (

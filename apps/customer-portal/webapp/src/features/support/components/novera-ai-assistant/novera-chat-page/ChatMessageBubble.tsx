@@ -260,6 +260,7 @@ export default function ChatMessageBubble({
                   px: 2,
                   py: 2,
                   pt: 2.25,
+                  mt: 1.5,
                 })}
                 aria-busy={message.isStreaming ? true : undefined}
               >

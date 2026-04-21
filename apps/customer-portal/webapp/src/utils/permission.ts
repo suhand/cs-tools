@@ -229,6 +229,18 @@ export function shouldRestrictToPrimaryProductionDeployments(
 }
 
 /**
+ * Whether the project is a cloud support project (Cloud Support, Cloud Subscription, or Cloud Evaluation).
+ *
+ * @param projectTypeLabel - Value from project.type.label.
+ * @returns True when the project is a cloud support type.
+ */
+export function isCloudSupportProject(
+  projectTypeLabel: string | null | undefined,
+): boolean {
+  return projectTypeLabel === ProjectType.CLOUD_SUPPORT;
+}
+
+/**
  * Filters a deployment list to only primary production entries when the
  * project type requires it; otherwise returns the list unchanged.
  *

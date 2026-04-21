@@ -59,7 +59,6 @@ import { ConversationListRowAction } from "@features/support/types/conversations
 import { resolveConversationListRowAction } from "@features/support/utils/conversationsList";
 import { NOVERA_DISPLAY_NAME } from "@features/support/constants/chatConstants";
 import MarkdownIt from "markdown-it";
-import styles from "./conversations.module.css";
 
 const md = new MarkdownIt({ linkify: true, breaks: true });
 
@@ -131,7 +130,7 @@ function ConversationMsgBubble({
         spacing={0.75}
         sx={{
           width: "100%",
-          maxWidth: 800,
+          maxWidth: isBot ? "100%" : 800,
           minWidth: 0,
           alignItems: isRight ? "flex-end" : "flex-start",
         }}
@@ -338,7 +337,7 @@ export default function ConversationDetailsPage(): JSX.Element {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Flag size={16} />
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary">
                   Status
                 </Typography>
                 <Typography variant="body2" color="text.primary">
@@ -350,7 +349,7 @@ export default function ConversationDetailsPage(): JSX.Element {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Clock size={16} />
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary">
                   Started
                 </Typography>
                 <Typography variant="body2" color="text.primary">
@@ -362,7 +361,7 @@ export default function ConversationDetailsPage(): JSX.Element {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <MessageSquare size={16} />
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary">
                   Messages
                 </Typography>
                 <Typography variant="body2" color="text.primary">
@@ -374,7 +373,7 @@ export default function ConversationDetailsPage(): JSX.Element {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <FileText size={16} />
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary">
                   KB Articles
                 </Typography>
                 <Typography variant="body2" color="text.primary">
@@ -386,7 +385,7 @@ export default function ConversationDetailsPage(): JSX.Element {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Hash size={16} />
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary">
                   Chat Number
                 </Typography>
                 <Typography variant="body2" color="text.primary">

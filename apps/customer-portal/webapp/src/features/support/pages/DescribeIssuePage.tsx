@@ -20,19 +20,18 @@ import {
   Card,
   CardContent,
   Stack,
+  TextField,
   Typography,
 } from "@wso2/oxygen-ui";
 import { ArrowLeft, Send } from "@wso2/oxygen-ui-icons-react";
 import { useState, useRef, useCallback, useMemo, type JSX } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
-import Editor from "@components/rich-text-editor/Editor";
 import { usePostProjectDeploymentsSearchAll } from "@api/usePostProjectDeploymentsSearch";
 import useGetProjectDetails from "@api/useGetProjectDetails";
 import { useAllDeploymentProducts } from "@features/support/hooks/useAllDeploymentProducts";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import { buildEnvProducts } from "@features/support/utils/caseCreation";
 import { filterDeploymentsForCaseCreation } from "@utils/permission";
-import { htmlToPlainText } from "@features/support/utils/richTextEditor";
 import type { ChatNavState } from "@features/support/types/conversations";
 
 const ISSUE_PLACEHOLDER =
@@ -72,7 +71,6 @@ export default function DescribeIssuePage(): JSX.Element {
     [productsByDeploymentId, projectDeployments],
   );
 
-  const isSubmitting = false;
   const submittingRef = useRef(false);
 
   const handleBack = useCallback(() => {
@@ -86,7 +84,7 @@ export default function DescribeIssuePage(): JSX.Element {
     }
   }, [navigate, location.key, projectId]);
 
-  const plainText = useMemo(() => htmlToPlainText(value), [value]);
+  const plainText = value;
 
   const handleSubmit = useCallback(async () => {
     if (!plainText.trim() || !projectId) return;
@@ -173,12 +171,11 @@ export default function DescribeIssuePage(): JSX.Element {
             sx={{
               flex: 1,
               minHeight: 0,
-              overflowY: "auto",
-              overflowX: "hidden",
-              WebkitOverflowScrolling: "touch",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <Stack spacing={3} sx={{ pb: 0.5 }}>
+            <Stack spacing={3} sx={{ pb: 0.5, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
               <Box>
                 <Typography variant="h5" sx={{ mb: 1 }} component="h1">
                   What can we help you with?
@@ -201,18 +198,23 @@ export default function DescribeIssuePage(): JSX.Element {
                 >
                   Describe your issue
                 </Typography>
-                <Editor
+                <TextField
                   id="describe-issue-editor"
                   value={value}
-                  onChange={setValue}
+                  onChange={(e) => setValue(e.target.value)}
                   placeholder={ISSUE_PLACEHOLDER}
-                  minHeight={240}
-                  maxHeight="none"
-                  showToolbar
-                  toolbarVariant="describeIssue"
-                  onSubmitKeyDown={handleSubmit}
-                  disabled={isSubmitting}
-                  showKeyboardHint
+                  multiline
+                  rows={10}
+                  fullWidth
+                  variant="outlined"
+                  sx={{ flex: 1, "& textarea": { overflowY: "auto", resize: "none" } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !isSubmitDisabled) {
+                      if (e.nativeEvent.isComposing) return;
+                      e.preventDefault();
+                      void handleSubmit();
+                    }
+                  }}
                 />
                 <Typography
                   variant="caption"
