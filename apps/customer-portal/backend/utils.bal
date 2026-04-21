@@ -1034,3 +1034,28 @@ public isolated function mapInstanceUsages(entity:InstanceUsageResponse response
         endDate: response.endDate
     };
 }
+
+# Map time cards search response grouped by cases to the desired structure.
+#
+# + response - Time cards search response grouped by cases from the entity service
+# + return - Mapped time cards search response grouped by cases
+public isolated function mapTimeCardSearchResponseGroupedByCases(entity:CaseTimeCardsSearchResponse response)
+    returns types:CaseTimeCardsSearchResponse {
+
+    types:CaseTimeCard[] caseTimeCards = from entity:CaseTimeCardSummary caseTimeCard in response.cases
+        let entity:ReferenceTableItem? project = caseTimeCard.case.project
+        select {
+            case: {
+                id: caseTimeCard.case.id,
+                number: caseTimeCard.case.number,
+                name: caseTimeCard.case.name,
+                updatedOn: caseTimeCard.case.updatedOn,
+                project: project != () ? {id: project.id, label: project.name} : ()
+            },
+            totalTime: caseTimeCard.totalTime,
+            totalCount: caseTimeCard.totalCount,
+            billable: caseTimeCard.billable,
+            nonBillable: caseTimeCard.nonBillable
+        };
+    return {caseTimeCards, totalRecords: response.totalRecords, 'limit: response.'limit, offset: response.offset};
+}

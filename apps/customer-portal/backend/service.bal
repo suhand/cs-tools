@@ -3821,6 +3821,72 @@ service http:InterceptableService / on new http:Listener(9090, listenerConf) {
         };
     }
 
+    # Search time cards grouped by cases based on provided filters.
+    #
+    # + id - ID of the project
+    # + payload - Time card search payload containing filters and pagination info
+    # + return - List of time cards grouped by cases matching the criteria or an error
+    resource function post projects/[entity:IdString id]/cases/time\-cards/search(http:RequestContext ctx,
+            types:TimeCardSearchPayload payload)
+        returns http:Ok|http:BadRequest|http:Unauthorized|http:Forbidden|http:InternalServerError {
+        
+        authorization:UserInfoPayload|error userInfo = ctx.getWithType(authorization:HEADER_USER_INFO);
+        if userInfo is error {
+            return <http:InternalServerError>{
+                body: {
+                    message: ERR_MSG_USER_INFO_HEADER_NOT_FOUND
+                }
+            };
+        }
+
+        entity:CaseTimeCardsSearchResponse|error response = entity:searchTimeCardsGroupedByCases(userInfo.idToken,
+                {
+                    filters: {
+                        projectIds: [id],
+                        startDate: payload.filters?.startDate,
+                        endDate: payload.filters?.endDate,
+                        states: payload.filters?.states
+                    },
+                    pagination: payload.pagination
+                });
+        if response is error {
+            if getStatusCode(response) == http:STATUS_BAD_REQUEST {
+                return <http:BadRequest>{
+                    body: {
+                        message: "Invalid request parameters for searching time cards grouped by cases."
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_UNAUTHORIZED {
+                log:printWarn(string `User: ${userInfo.userId} is not authorized to access time card information!`);
+                return <http:Unauthorized>{
+                    body: {
+                        message: ERR_MSG_UNAUTHORIZED_ACCESS
+                    }
+                };
+            }
+            if getStatusCode(response) == http:STATUS_FORBIDDEN {
+                log:printWarn(string `Access to time card information is forbidden for user: ${userInfo.userId}`);
+                return <http:Forbidden>{
+                    body: {
+                        message: "Access to time card information is forbidden for the user!"
+                    }
+                };
+            }
+
+            string customError = "Failed to search time cards grouped by cases.";
+            log:printError(customError, response);
+            return <http:InternalServerError>{
+                body: {
+                    message: customError
+                }
+            };
+        }
+        return <http:Ok>{
+            body: mapTimeCardSearchResponseGroupedByCases(response)
+        };
+    }
+
     # Get time card statistics for a project based on provided date range.
     #
     # + id - ID of the project
