@@ -39,12 +39,14 @@ import { formatBackendTimestampForDisplay } from "@utils/dateTime";
  * @param filters - Filter field values from the UI.
  * @param searchTerm - Raw search string.
  * @param sortOrder - List sort direction.
+ * @param sortField - List sort field.
  * @returns Search request body without pagination (offset/limit passed separately).
  */
 export function buildAnnouncementCaseSearchRequest(
   filters: AnnouncementFilterValues,
   searchTerm: string,
   sortOrder: SortOrder,
+  sortField: AnnouncementSortField = AnnouncementSortField.CreatedOn,
 ): Omit<CaseSearchRequest, "pagination"> {
   return {
     filters: {
@@ -53,7 +55,7 @@ export function buildAnnouncementCaseSearchRequest(
       searchQuery: searchTerm.trim() || undefined,
     },
     sortBy: {
-      field: AnnouncementSortField.CreatedOn,
+      field: sortField,
       order: sortOrder,
     },
   };
