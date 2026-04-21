@@ -415,6 +415,17 @@ public isolated function searchTimeCards(string idToken, TimeCardSearchPayload p
     return csEntityClient->/time\-cards/search.post(payload, generateHeaders(idToken));
 }
 
+# Search case time cards grouped by case.
+#
+# + idToken - ID token for authorization
+# + payload - Payload containing search criteria for case time cards
+# + return - Response containing matching case time cards grouped by case or error
+public isolated function searchTimeCardsGroupedByCases(string idToken, TimeCardSearchPayload payload)
+    returns CaseTimeCardsSearchResponse|error {
+
+    return csEntityClient->/cases/time\-cards/search.post(payload, generateHeaders(idToken));
+}
+
 # Search conversations of a project.
 #
 # + idToken - ID token for authorization

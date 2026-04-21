@@ -2058,6 +2058,36 @@ paths:
           description: InternalServerError
         "403":
           description: Forbidden
+  /projects/{id}/cases/time-cards/search:
+    post:
+      operationId: postProjectsIdCasesTimeCardsSearch
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/IdString'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimeCardSearchPayload'
+        required: true
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: BadRequest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorPayload'
+        "401":
+          description: Unauthorized
+        "500":
+          description: InternalServerError
+        "403":
+          description: Forbidden
   /projects/{id}/stats/time-cards:
     get:
       summary: Get time card statistics for a project based on provided date range.

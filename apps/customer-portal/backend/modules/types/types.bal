@@ -1087,7 +1087,6 @@ public type ProductVersion record {|
     string? earliestPossibleSupportEolDate;
     # Product information
     ReferenceItem? product;
-    json...;
 |};
 
 # Product versions response.
@@ -1123,7 +1122,41 @@ public type TimeCard record {|
         # Case number
         string number;
     |}? case;
-    json...;
+|};
+
+# Time card grouped by case.
+public type CaseTimeCard record {|
+    # Case information
+    record {|
+        # ID of the case
+        entity:IdString id;
+        # Case number
+        string number;
+        # Case name/summary
+        string name;
+        # Last updated date and time
+        string updatedOn;
+        # Associated project information
+        ReferenceItem? project;
+        json...;
+    |} 'case;
+    # Total time logged for this case
+    decimal totalTime;
+    # Total count of time cards
+    int totalCount;
+    # Billable time information
+    entity:CaseTimeCardBillingInfo billable;
+    # Non-billable time information
+    entity:CaseTimeCardBillingInfo nonBillable;
+|};
+
+# Cases time cards search response.
+public type CaseTimeCardsSearchResponse record {|
+    # List of case time card summaries
+    CaseTimeCard[] caseTimeCards;
+    # Total records count
+    int totalRecords;
+    *entity:Pagination;
 |};
 
 # Time cards response.

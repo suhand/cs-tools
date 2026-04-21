@@ -1770,6 +1770,51 @@ public type TimeCardsResponse record {|
     *Pagination;
 |};
 
+# Billing summary for time cards (billable or non-billable).
+public type CaseTimeCardBillingInfo record {|
+    # Total time
+    decimal totalTime;
+    # Count of time cards
+    int count;
+    json...;
+|};
+
+# Time card summary grouped by case.
+public type CaseTimeCardSummary record {|
+    # Case information
+    record {|
+        # System ID of the case
+        IdString id;
+        # Case number
+        string number;
+        # Case name/summary
+        string name;
+        # Last updated date and time
+        string updatedOn;
+        # Associated project information
+        ReferenceTableItem? project;
+        json...;
+    |} 'case;
+    # Total time logged for this case
+    decimal totalTime;
+    # Total count of time cards
+    int totalCount;
+    # Billable time information
+    CaseTimeCardBillingInfo billable;
+    # Non-billable time information
+    CaseTimeCardBillingInfo nonBillable;
+    json...;
+|};
+
+# Cases time cards search response.
+public type CaseTimeCardsSearchResponse record {|
+    # List of case time card summaries
+    CaseTimeCardSummary[] cases;
+    # Total records count
+    int totalRecords;
+    *Pagination;
+|};
+
 # Conversation data.
 public type Conversation record {|
     # ID of the chat
