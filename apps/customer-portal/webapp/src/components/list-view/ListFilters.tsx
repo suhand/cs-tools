@@ -50,6 +50,7 @@ export interface ListFiltersProps {
   excludeS0?: boolean;
   restrictSeverityToLow?: boolean;
   hideSeverityFilter?: boolean;
+  hideDeploymentFilter?: boolean;
   onLoadMoreDeployments?: () => void;
   hasMoreDeployments?: boolean;
   isFetchingMoreDeployments?: boolean;
