@@ -70,6 +70,8 @@ export default function ListResultsBar({
     sortOrder !== undefined &&
     onSortOrderChange !== undefined;
 
+  const isOrdinalSort = sortField === "severity" || sortField === "state";
+
   return (
     <Box
       sx={{
@@ -116,10 +118,10 @@ export default function ListResultsBar({
                   }
                 >
                   <MenuItem value={SortOrder.DESC}>
-                    <Typography variant="body2">Newest first</Typography>
+                    <Typography variant="body2">{isOrdinalSort ? "Descending" : "Newest first"}</Typography>
                   </MenuItem>
                   <MenuItem value={SortOrder.ASC}>
-                    <Typography variant="body2">Oldest first</Typography>
+                    <Typography variant="body2">{isOrdinalSort ? "Ascending" : "Oldest first"}</Typography>
                   </MenuItem>
                 </Select>
               </FormControl>
