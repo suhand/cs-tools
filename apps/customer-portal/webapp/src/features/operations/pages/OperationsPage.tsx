@@ -22,7 +22,7 @@ import ListStatGrid from "@components/list-view/ListStatGrid";
 import SupportOverviewCard from "@features/support/components/support-overview-cards/SupportOverviewCard";
 import { SupportOverviewIconVariant } from "@features/support/types/supportOverview";
 import OutstandingCasesList from "@features/support/components/support-overview-cards/OutstandingCasesList";
-import OutstandingChangeRequestsList from "@features/operations/components/change-requests/OutstandingChangeRequestsList";
+import ChangeRequestsOverviewSection from "@features/operations/components/change-requests/ChangeRequestsOverviewSection";
 import {
   OPERATIONS_STAT_CONFIGS,
   OPERATIONS_OVERVIEW_LIST_LIMIT,
@@ -244,8 +244,9 @@ export default function OperationsPage(): JSX.Element {
       </Box>
       {!permissionsReady ? (
         <Grid container spacing={3}>
-          <Grid size={loadingOverviewGridSize}>
+          <Grid size={loadingOverviewGridSize} sx={{ display: "flex", minWidth: 0 }}>
             <SupportOverviewCard
+              sx={{ flex: 1, width: "100%", minWidth: 0 }}
               title={OPERATIONS_HUB_CARD_TITLE_SR}
               subtitle={srOverviewSubtitle}
               icon={FileText}
@@ -255,15 +256,16 @@ export default function OperationsPage(): JSX.Element {
               <OutstandingCasesList cases={[]} isLoading />
             </SupportOverviewCard>
           </Grid>
-          <Grid size={loadingOverviewGridSize}>
+          <Grid size={loadingOverviewGridSize} sx={{ display: "flex", minWidth: 0, alignSelf: "flex-start" }}>
             <SupportOverviewCard
+              sx={{ width: "100%", minWidth: 0, height: "auto" }}
               title={OPERATIONS_HUB_CARD_TITLE_CR}
               subtitle={crOverviewSubtitle}
               icon={FileText}
               iconVariant={SupportOverviewIconVariant.Blue}
               footerButtons={[]}
             >
-              <OutstandingChangeRequestsList changeRequests={[]} isLoading />
+              <ChangeRequestsOverviewSection changeRequests={[]} isLoading />
             </SupportOverviewCard>
           </Grid>
         </Grid>
@@ -271,8 +273,9 @@ export default function OperationsPage(): JSX.Element {
         <>
           <Grid container spacing={3}>
             {isServiceRequestEnabled && (
-              <Grid size={overviewGridSize}>
+              <Grid size={overviewGridSize} sx={{ display: "flex", minWidth: 0 }}>
                 <SupportOverviewCard
+                  sx={{ flex: 1, width: "100%", minWidth: 0 }}
                   title={OPERATIONS_HUB_CARD_TITLE_SR}
                   subtitle={srOverviewSubtitle}
                   icon={FileText}
@@ -325,25 +328,17 @@ export default function OperationsPage(): JSX.Element {
               </Grid>
             )}
             {isChangeRequestEnabled && (
-              <Grid size={overviewGridSize}>
+              <Grid size={overviewGridSize} sx={{ display: "flex", minWidth: 0, alignSelf: "flex-start" }}>
                 <SupportOverviewCard
+                  sx={{ width: "100%", minWidth: 0, height: "auto" }}
                   title={OPERATIONS_HUB_CARD_TITLE_CR}
                   subtitle={crOverviewSubtitle}
                   icon={FileText}
                   iconVariant={SupportOverviewIconVariant.Blue}
-                  footerButtons={[
-                    {
-                      label: OPERATIONS_HUB_FOOTER_VIEW_ALL_CR,
-                      onClick: () =>
-                        navigate(
-                          `/projects/${projectId}/operations/change-requests`,
-                          { state: { returnTo: operationsPath } },
-                        ),
-                    },
-                  ]}
+                  footerButtons={[]}
                   isError={isCrError}
                 >
-                  <OutstandingChangeRequestsList
+                  <ChangeRequestsOverviewSection
                     changeRequests={changeRequests}
                     isLoading={isCrLoading}
                     onItemClick={
@@ -351,6 +346,15 @@ export default function OperationsPage(): JSX.Element {
                         ? (cr) =>
                             navigate(
                               `/projects/${projectId}/operations/change-requests/${cr.id}`,
+                              { state: { returnTo: operationsPath } },
+                            )
+                        : undefined
+                    }
+                    onViewAll={
+                      projectId
+                        ? () =>
+                            navigate(
+                              `/projects/${projectId}/operations/change-requests`,
                               { state: { returnTo: operationsPath } },
                             )
                         : undefined

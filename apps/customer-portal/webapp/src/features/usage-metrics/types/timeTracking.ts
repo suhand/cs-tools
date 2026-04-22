@@ -79,3 +79,32 @@ export type TimeCardSearchFilters = {
 export type TimeCardSearchRequest = SearchRequestBase & {
   filters?: TimeCardSearchFilters;
 };
+
+// Case summary nested inside a CaseTimeCard.
+export type CaseTimeCardCaseRef = {
+  id: string;
+  number: string;
+  name: string;
+  updatedOn: string;
+  project: { id: string; label: string };
+};
+
+// Billable / non-billable breakdown in a CaseTimeCard.
+export type CaseTimeCardBucket = {
+  totalTime: number;
+  count: number;
+};
+
+// Item type for a case time card from projects/:projectId/cases/time-cards/search.
+export type CaseTimeCard = {
+  case: CaseTimeCardCaseRef;
+  totalTime: number;
+  totalCount: number;
+  billable: CaseTimeCardBucket;
+  nonBillable: CaseTimeCardBucket;
+};
+
+// Response type for case time cards search results.
+export type CaseTimeCardSearchResponse = PaginationResponse & {
+  caseTimeCards: CaseTimeCard[];
+};

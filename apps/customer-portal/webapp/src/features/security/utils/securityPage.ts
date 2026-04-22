@@ -34,7 +34,7 @@ export function parseSecurityTabQueryParam(
     case SecurityTabId.VULNERABILITIES:
       return tabParam;
     default:
-      return SecurityTabId.COMPONENTS;
+      return SecurityTabId.VULNERABILITIES;
   }
 }
 

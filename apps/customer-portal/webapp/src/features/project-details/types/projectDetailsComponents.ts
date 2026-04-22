@@ -23,7 +23,7 @@ import type {
   SelectedDeploymentProduct,
 } from "@features/project-details/types/deployments";
 import type { ProductUpdate } from "@features/project-details/types/products";
-import type { TimeCard } from "@features/usage-metrics/types/timeTracking";
+import type { CaseTimeCard } from "@features/usage-metrics/types/timeTracking";
 import type { Contact } from "@features/project-details/types/projectDetails";
 
 export type ProjectInformationCardProps = {
@@ -280,7 +280,7 @@ export type ProjectTimeTrackingProps = {
 };
 
 export type TimeTrackingCardProps = {
-  card: TimeCard;
+  card: CaseTimeCard;
 };
 
 export type TimeCardsDateFilterProps = {

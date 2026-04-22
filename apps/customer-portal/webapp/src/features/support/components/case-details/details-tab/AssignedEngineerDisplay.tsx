@@ -34,9 +34,9 @@ export default function AssignedEngineerDisplay({
     <Stack direction="row" alignItems="center" spacing={1.5}>
       <Avatar
         sx={{
-          width: 24,
-          height: 24,
-          fontSize: "0.75rem",
+          width: 32,
+          height: 32,
+          fontSize: "0.7rem",
           bgcolor: colors.blue[100],
           color: colors.blue[700],
         }}

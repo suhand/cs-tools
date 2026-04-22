@@ -15,7 +15,6 @@
 // under the License.
 
 import {
-  Briefcase,
   CircleAlert,
   CircleCheck,
   Clock,
@@ -49,12 +48,6 @@ export const ENGAGEMENTS_STAT_LABEL_ON_HOLD = "On Hold";
 /** Stat card layout for {@link EngagementsStatCards} (icons + keys + labels). */
 export const ENGAGEMENTS_STAT_CARDS_CONFIG: SupportStatConfig<EngagementsStatKey>[] =
   [
-    {
-      icon: Briefcase,
-      iconColor: "primary",
-      key: "total",
-      label: ENGAGEMENTS_STAT_LABEL_TOTAL,
-    },
     {
       icon: Clock,
       iconColor: "info",

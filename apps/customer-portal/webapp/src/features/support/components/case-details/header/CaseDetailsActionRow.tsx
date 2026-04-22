@@ -19,14 +19,16 @@ import {
   Box,
   Button,
   CircularProgress,
+  Divider,
   Paper,
   Stack,
+  Tooltip,
   Typography,
   alpha,
   useTheme,
   type Theme,
 } from "@wso2/oxygen-ui";
-import { CirclePlay } from "@wso2/oxygen-ui-icons-react";
+import { CirclePlay, User } from "@wso2/oxygen-ui-icons-react";
 import { type JSX, useState } from "react";
 import {
   CASE_STATUS_ACTIONS,
@@ -38,6 +40,7 @@ import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
 import {
   ACTION_TO_CASE_STATE_LABEL,
+  getAssignedEngineerLabel,
   getAvailableCaseActions,
   isWithinOpenRelatedCaseWindow,
   toPresentContinuousActionLabel,
@@ -107,11 +110,10 @@ export default function CaseDetailsActionRow({
   hideAssignedEngineer = false,
   restrictToCloseOnly = false,
 }: CaseDetailsActionRowProps): JSX.Element {
-  void assignedEngineer;
   void engineerInitials;
-  void hideAssignedEngineer;
   void isLoading;
   const theme = useTheme();
+  const engineerLabel = getAssignedEngineerLabel(assignedEngineer);
   const { data: filterMetadata } = useGetProjectFilters(projectId);
   const caseStates = filterMetadata?.caseStates;
 
@@ -161,6 +163,31 @@ export default function CaseDetailsActionRow({
         }}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
+          {!hideAssignedEngineer && engineerLabel && (
+            <>
+              <Tooltip title={`Assigned to ${engineerLabel}`}>
+                <Stack direction="row" spacing={0.75} alignItems="center">
+                  <User size={12} color={theme.palette.text.secondary} />
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: "0.7rem",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      maxWidth: 180,
+                    }}
+                  >
+                    Assigned to: {engineerLabel}
+                  </Typography>
+                </Stack>
+              </Tooltip>
+              {!showOnlyEngineer && (
+                <Divider orientation="vertical" flexItem sx={{ my: 0.5 }} />
+              )}
+            </>
+          )}
           {!showOnlyEngineer && (
             <Stack direction="row" spacing={1.5} alignItems="center">
               <CirclePlay size={12} color={theme.palette.primary.main} />
@@ -169,7 +196,7 @@ export default function CaseDetailsActionRow({
                 color="text.secondary"
                 sx={{ fontSize: "0.7rem" }}
               >
-                Manage State
+                Manage Case Status
               </Typography>
             </Stack>
           )}

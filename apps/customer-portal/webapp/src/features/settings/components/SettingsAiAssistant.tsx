@@ -38,12 +38,8 @@ import {
   SETTINGS_AI_BEST_PRACTICES_ITEMS,
   SETTINGS_AI_BEST_PRACTICES_TITLE,
   SETTINGS_AI_CAPABILITIES_SECTION_TITLE,
-  SETTINGS_AI_DISABLED_CAPABILITIES_LABEL,
-  SETTINGS_AI_ENABLED_CAPABILITIES_LABEL,
   SETTINGS_AI_HEADER_BODY,
   SETTINGS_AI_HEADER_TITLE,
-  SETTINGS_AI_KB_DESCRIPTION,
-  SETTINGS_AI_KB_LABEL,
   SETTINGS_AI_NOVERA_DESCRIPTION,
   SETTINGS_AI_NOVERA_LABEL,
   SETTINGS_AI_PATCH_ERROR,
@@ -75,26 +71,16 @@ export default function SettingsAiAssistant({
     useGetProjectDetails(projectId);
   const patchProject = usePatchProject(projectId);
   const [noveraOverride, setNoveraOverride] = useState<boolean | null>(null);
-  const [kbOverride, setKbOverride] = useState<boolean | null>(null);
 
-  const { projectHasAgent, projectHasKbReferences } = useMemo(() => {
+  const { projectHasAgent } = useMemo(() => {
     const detailsAvailable = !!projectDetails;
     const agent = detailsAvailable
       ? (projectDetails.hasAgent ?? projectDetails.account?.hasAgent)
       : undefined;
-    const kb = detailsAvailable
-      ? (projectDetails.hasKbReferences ?? projectDetails.account?.hasKbReferences)
-      : undefined;
-    return {
-      projectHasAgent: agent,
-      projectHasKbReferences: kb,
-    };
+    return { projectHasAgent: agent };
   }, [projectDetails]);
 
   const noveraEnabled = noveraOverride ?? projectHasAgent ?? false;
-  const kbReferencesEnabled =
-    noveraEnabled &&
-    (kbOverride ?? projectHasKbReferences ?? false);
 
   useEffect(() => {
     if (projectHasAgent !== undefined) {
@@ -109,7 +95,6 @@ export default function SettingsAiAssistant({
         ?.flatMap((page) => page.projects ?? [])
         ?.find((p) => p.id === projectId);
       setNoveraOverride(null);
-      setKbOverride(null);
       if (refreshedProject?.hasAgent !== undefined) {
         setNoveraChatEnabled(refreshedProject.hasAgent);
       } else if (projectDetails?.hasAgent !== undefined) {
@@ -136,9 +121,6 @@ export default function SettingsAiAssistant({
       const rollbackNovera = noveraEnabled;
       setNoveraOverride(checked);
       setNoveraChatEnabled(checked);
-      if (!checked) {
-        setKbOverride(false);
-      }
       patchProject.mutate(checked ? { hasAgent: true } : { hasAgent: false }, {
         onSuccess: () => {
           void notifyPatchSuccess(AiAssistantPatchSuccessKind.NOVERA);
@@ -146,39 +128,12 @@ export default function SettingsAiAssistant({
         onError: (err) => {
           handlePatchError(err);
           setNoveraOverride(null);
-          setKbOverride(null);
           setNoveraChatEnabled(rollbackNovera);
         },
       });
     },
     [noveraEnabled, patchProject, notifyPatchSuccess, handlePatchError],
   );
-
-  const handleKbToggle = useCallback(
-    (checked: boolean) => {
-      if (!noveraEnabled) {
-        return;
-      }
-      setKbOverride(checked);
-      patchProject.mutate(
-        { hasKbReferences: checked },
-        {
-          onSuccess: () => {
-            void notifyPatchSuccess(AiAssistantPatchSuccessKind.KB);
-          },
-          onError: (err) => {
-            handlePatchError(err);
-            setKbOverride(null);
-          },
-        },
-      );
-    },
-    [noveraEnabled, patchProject, notifyPatchSuccess, handlePatchError],
-  );
-
-  const enabledCount =
-    (noveraEnabled ? 1 : 0) + (noveraEnabled && kbReferencesEnabled ? 1 : 0);
-  const disabledCount = 2 - enabledCount;
 
   const disabledForSwitches =
     !canEdit || isProjectDetailsLoading || patchProject.isPending;
@@ -214,37 +169,9 @@ export default function SettingsAiAssistant({
             <Typography variant="h6" color="text.primary" sx={{ mb: 0.5 }}>
               {SETTINGS_AI_HEADER_TITLE}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography variant="body2" color="text.secondary">
               {SETTINGS_AI_HEADER_BODY}
             </Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    bgcolor: "success.main",
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {SETTINGS_AI_ENABLED_CAPABILITIES_LABEL(enabledCount)}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    bgcolor: "action.disabled",
-                  }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {SETTINGS_AI_DISABLED_CAPABILITIES_LABEL(disabledCount)}
-                </Typography>
-              </Box>
-            </Box>
           </Box>
         </Box>
       </Paper>
@@ -313,66 +240,6 @@ export default function SettingsAiAssistant({
               />
             </Box>
           </Paper>
-
-          <Box
-            sx={{
-              pl: 2.5,
-              ml: 1.5,
-              borderLeft: "2px solid",
-              borderColor: "divider",
-            }}
-          >
-            <Paper sx={{ p: 2.5 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ flex: 1 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      mb: 1,
-                    }}
-                  >
-                    <Bot size={20} color={colors.orange[600]} />
-                    <Typography variant="body1" id="kb-suggestions-label">
-                      {SETTINGS_AI_KB_LABEL}
-                    </Typography>
-                    <Chip
-                      label={kbReferencesEnabled ? "Active" : "Inactive"}
-                      size="small"
-                      color={kbReferencesEnabled ? "success" : "default"}
-                      variant="outlined"
-                      sx={{ height: 20, fontSize: "0.7rem" }}
-                    />
-                  </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    {SETTINGS_AI_KB_DESCRIPTION}
-                  </Typography>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={kbReferencesEnabled}
-                      disabled={!noveraEnabled || disabledForSwitches}
-                      onChange={(_, checked) => handleKbToggle(checked)}
-                      color="warning"
-                      inputProps={{
-                        "aria-labelledby": "kb-suggestions-label",
-                      }}
-                    />
-                  }
-                  label=""
-                />
-              </Box>
-            </Paper>
-          </Box>
         </Box>
       </Box>
 

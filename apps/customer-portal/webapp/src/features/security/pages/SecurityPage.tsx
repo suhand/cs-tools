@@ -75,7 +75,7 @@ const SecurityPage = (): JSX.Element => {
     if (hasRawActive) {
       return rawActiveTab;
     }
-    return tabs[0]?.id ?? SecurityTabId.COMPONENTS;
+    return tabs[0]?.id ?? SecurityTabId.VULNERABILITIES;
   }, [rawActiveTab, tabs]);
 
   const renderTabContent = () => {

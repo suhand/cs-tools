@@ -2,8 +2,7 @@
 //
 // WSO2 LLC. licenses this file to you under the Apache License,
 // Version 2.0 (the "License"); you may not use this file except
-// in compliance with the License.
-// You may obtain a copy of the License at
+// in compliance with the License. You may obtain a copy of the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
 //
@@ -22,8 +21,7 @@ import {
   type JSX,
   type ChangeEvent,
 } from "react";
-import useSearchProjectTimeCards from "@features/usage-metrics/api/useSearchProjectTimeCards";
-import useGetProjectFilters from "@api/useGetProjectFilters";
+import useSearchProjectCaseTimeCards from "@features/usage-metrics/api/useSearchProjectCaseTimeCards";
 import ServiceHoursStatCards from "@time-tracking/ServiceHoursStatCards";
 import TimeCardsDateFilter from "@time-tracking/TimeCardsDateFilter";
 import TimeTrackingCard from "@time-tracking/TimeTrackingCard";
@@ -32,13 +30,10 @@ import TimeTrackingErrorState from "@time-tracking/TimeTrackingErrorState";
 import EmptyState from "@components/empty-state/EmptyState";
 
 import type { ProjectTimeTrackingProps } from "@features/project-details/types/projectDetailsComponents";
-import {
-  findApprovedTimeCardStateId,
-  paginateList,
-} from "@features/project-details/utils/timeTrackingPage";
+import { paginateList } from "@features/project-details/utils/timeTrackingPage";
 
 /**
- * ProjectTimeTracking component manages the display of time tracking statistics, date filter, and time cards.
+ * ProjectTimeTracking manages the display of time tracking statistics, date filter, and case time cards.
  *
  * @param {ProjectTimeTrackingProps} props - Component props.
  * @returns {JSX.Element} The rendered component.
@@ -51,21 +46,8 @@ export default function ProjectTimeTracking({
 }: ProjectTimeTrackingProps): JSX.Element {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [approvedStateId, setApprovedStateId] = useState<string | undefined>(
-    undefined,
-  );
   const [page, setPage] = useState(1);
   const pageSize = 10;
-
-  const { data: filters, isLoading: isFiltersLoading } =
-    useGetProjectFilters(projectId);
-
-  useEffect(() => {
-    const nextId = findApprovedTimeCardStateId(filters?.timeCardStates);
-    if (nextId !== approvedStateId) {
-      Promise.resolve().then(() => setApprovedStateId(nextId));
-    }
-  }, [filters, approvedStateId]);
 
   const {
     data,
@@ -73,12 +55,12 @@ export default function ProjectTimeTracking({
     isError: isTimeCardsError,
     hasNextPage,
     fetchNextPage,
-  } = useSearchProjectTimeCards({
+  } = useSearchProjectCaseTimeCards({
     projectId,
     startDate,
     endDate,
-    states: approvedStateId ? [approvedStateId] : undefined,
-    enabled: !isFiltersLoading && Boolean(approvedStateId),
+    states: ["Approved"],
+    enabled: !!projectId,
   });
 
   // Auto-fetch all remaining pages in background
@@ -91,17 +73,15 @@ export default function ProjectTimeTracking({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
-  }, [projectId, startDate, endDate, approvedStateId]);
+  }, [projectId, startDate, endDate]);
 
-  // Flatten all pages into a single array
   const allTimeCards = useMemo(
-    () => data?.pages.flatMap((page) => page.timeCards) ?? [],
+    () => data?.pages.flatMap((page) => page.caseTimeCards) ?? [],
     [data],
   );
 
   const totalItems = data?.pages?.[0]?.totalRecords ?? allTimeCards.length;
 
-  // Client-side pagination
   const paginatedTimeCards = useMemo(
     () => paginateList(allTimeCards, page, pageSize),
     [allTimeCards, page, pageSize],
@@ -139,7 +119,6 @@ export default function ProjectTimeTracking({
         />
       </Box>
 
-      {/* Results count */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="body2" color="text.secondary">
           Showing {paginatedTimeCards.length} of {totalItems} time cards
@@ -163,14 +142,13 @@ export default function ProjectTimeTracking({
               </Grid>
             ) : (
               paginatedTimeCards.map((card) => (
-                <Grid key={card.id} size={12}>
+                <Grid key={card.case.id} size={12}>
                   <TimeTrackingCard card={card} />
                 </Grid>
               ))
             )}
           </Grid>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
               <Pagination

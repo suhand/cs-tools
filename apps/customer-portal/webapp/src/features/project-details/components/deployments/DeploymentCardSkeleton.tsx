@@ -16,40 +16,54 @@
 
 import {
   Box,
-  Card,
-  CardContent,
   Divider,
+  Paper,
   Skeleton,
   alpha,
 } from "@wso2/oxygen-ui";
 import type { JSX } from "react";
 
 /**
- * Skeleton loader for the DeploymentCard component.
- * Mimics the flat deployment card layout (no accordion).
+ * Skeleton loader for the DeploymentCard accordion component.
  *
  * @returns {JSX.Element} The DeploymentCardSkeleton component.
  */
 export default function DeploymentCardSkeleton(): JSX.Element {
   return (
-    <Card>
-      <CardContent sx={{ p: 3, display: "flex", flexDirection: "column", gap: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 3, flex: 1 }}>
-          <Box sx={{ flex: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 0.5 }}>
-              <Skeleton variant="text" width={150} height={32} />
-              <Skeleton variant="rounded" width={80} height={24} />
-              <Skeleton variant="rounded" width={24} height={24} />
-            </Box>
-            <Skeleton variant="text" width={200} height={20} />
-          </Box>
+    <Paper elevation={1} sx={{ borderRadius: 1, overflow: "hidden" }}>
+      {/* Accordion summary skeleton */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 1.5,
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flex: 1 }}>
+          <Skeleton variant="text" width={160} height={32} />
+          <Skeleton variant="rounded" width={80} height={20} />
+          <Skeleton variant="rounded" width={70} height={20} />
         </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Skeleton variant="rounded" width={32} height={32} />
+          <Skeleton variant="rounded" width={32} height={32} />
+          <Skeleton variant="circular" width={20} height={20} />
+        </Box>
+      </Box>
 
+      {/* Accordion details skeleton */}
+      <Box sx={{ px: 3, pb: 3, display: "flex", flexDirection: "column", gap: 3 }}>
         <Divider />
-        <Skeleton variant="text" width="80%" height={20} />
-        <Skeleton variant="text" width="60%" height={20} />
+        <Box>
+          <Skeleton variant="text" width="80%" height={20} />
+          <Skeleton variant="text" width="60%" height={20} />
+        </Box>
         <Divider />
 
+        {/* Products section */}
         <Box>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -86,6 +100,8 @@ export default function DeploymentCardSkeleton(): JSX.Element {
         </Box>
 
         <Divider />
+
+        {/* Documents section */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {[1, 2].map((i) => (
             <Box
@@ -108,7 +124,6 @@ export default function DeploymentCardSkeleton(): JSX.Element {
                   <Box sx={{ display: "flex", gap: 1 }}>
                     <Skeleton variant="text" width={50} height={16} />
                     <Skeleton variant="text" width={90} height={16} />
-                    <Skeleton variant="text" width={60} height={16} />
                   </Box>
                 </Box>
               </Box>
@@ -125,7 +140,7 @@ export default function DeploymentCardSkeleton(): JSX.Element {
           <Skeleton variant="text" width={140} height={20} />
           <Skeleton variant="text" width={100} height={20} />
         </Box>
-      </CardContent>
-    </Card>
+      </Box>
+    </Paper>
   );
 }

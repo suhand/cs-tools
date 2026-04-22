@@ -46,7 +46,7 @@ export default function EngagementsStatCards({
       stats={flattened}
       isError={isError}
       entityName={ENGAGEMENTS_STAT_GRID_ENTITY_NAME}
-      itemSize={{ xs: 12, sm: 6, md: 3 }}
+      itemSize={{ xs: 12, sm: 4, md: 4 }}
     />
   );
 }

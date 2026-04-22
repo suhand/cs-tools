@@ -61,14 +61,14 @@ export const CASE_TYPE_CHIP_DISPLAY_LABEL: Record<
 export const DASHBOARD_STATS: StatConfigItem[] = [
   {
     id: "totalCases",
-    label: "Total Interactions",
+    label: "Action Required",
     icon: Clock,
     iconColor: "primary",
     tooltipText: "Total number of cases reported for this project",
   },
   {
     id: "openCases",
-    label: "Active Interactions",
+    label: "Outstanding Interactions",
     icon: AlertCircle,
     iconColor: "warning",
     tooltipText: "Currently active and unresolved cases",
