@@ -542,14 +542,6 @@ export default function CaseDetailsDetailsPanel({
                   />
                 </Box>
               )}
-              {!isEngagement && !isServiceRequest && (
-                <Box>
-                  <Typography {...labelSx}>CS Manager</Typography>
-                  <Typography {...valueSx}>
-                    {formatValue(data?.csManager)}
-                  </Typography>
-                </Box>
-              )}
             </>
           )}
         </Box>

@@ -21,6 +21,7 @@ import {
   calculateProjectStats,
   getProjectPermissions,
   getProjectSeverityPolicy,
+  shouldHideOnboardingData,
   shouldForceSeverityS4,
 } from "@utils/permission";
 
@@ -182,5 +183,28 @@ describe("calculateProjectStats", () => {
     const result = calculateProjectStats(perms, 5, 0);
     expect(result.serviceRequests).toBe(5);
     expect(result.total).toBe(5);
+  });
+});
+
+describe("shouldHideOnboardingData", () => {
+  it("returns true when onboarding status is Not-Applicable", () => {
+    expect(shouldHideOnboardingData("Not-Applicable")).toBe(true);
+  });
+
+  it("returns true for null, undefined, and empty-string aliases", () => {
+    expect(shouldHideOnboardingData(undefined)).toBe(false);
+    expect(shouldHideOnboardingData(null)).toBe(false);
+    expect(shouldHideOnboardingData("")).toBe(false);
+  });
+
+  it("returns true for normalized Not Applicable variants", () => {
+    expect(shouldHideOnboardingData(" Not Applicable ")).toBe(true);
+    expect(shouldHideOnboardingData("NOT-APPLICABLE")).toBe(true);
+    expect(shouldHideOnboardingData("not_applicable")).toBe(true);
+    expect(shouldHideOnboardingData("N/A")).toBe(true);
+  });
+
+  it("returns false for active onboarding values", () => {
+    expect(shouldHideOnboardingData("In Progress")).toBe(false);
   });
 });

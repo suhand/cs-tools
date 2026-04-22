@@ -44,6 +44,7 @@ const CATASTROPHIC_SEVERITY_TAG = "(P0)";
 const LOW_SEVERITY_TAG = "(P4)";
 const CATASTROPHIC_SEVERITY_ID = "14";
 const LOW_SEVERITY_ID = "13";
+const NOT_APPLICABLE_ONBOARDING_STATUS = "not-applicable";
 
 /**
  * Restrictive defaults for unknown or unlisted project types.
@@ -135,9 +136,14 @@ export function shouldForceSeverityS4(
   _projectTypeLabel: string | null | undefined,
   options?: GetProjectPermissionsOptions,
 ): boolean {
-  const acceptedSeverities = options?.projectFeatures?.acceptedSeverityValues ?? [];
+  const acceptedSeverities =
+    options?.projectFeatures?.acceptedSeverityValues ?? [];
   if (acceptedSeverities.length !== 1) return false;
-  return hasSeverityMatch(acceptedSeverities[0], LOW_SEVERITY_ID, LOW_SEVERITY_TAG);
+  return hasSeverityMatch(
+    acceptedSeverities[0],
+    LOW_SEVERITY_ID,
+    LOW_SEVERITY_TAG,
+  );
 }
 
 /**
@@ -209,6 +215,19 @@ export function isCloudSupportProject(
   projectTypeLabel: string | null | undefined,
 ): boolean {
   return projectTypeLabel === ProjectType.CLOUD_SUPPORT;
+}
+
+/**
+ * Whether onboarding-specific UI should be hidden for the project.
+ *
+ * @param onboardingStatus - Project onboarding status value from API.
+ * @returns True when onboarding status is "Not-Applicable".
+ */
+export function shouldHideOnboardingData(
+  onboardingStatus: string | null | undefined,
+): boolean {
+  const normalized = (onboardingStatus ?? "").trim().toLowerCase();
+  return normalized === NOT_APPLICABLE_ONBOARDING_STATUS;
 }
 
 /**
