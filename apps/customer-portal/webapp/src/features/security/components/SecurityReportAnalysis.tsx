@@ -28,6 +28,7 @@ import { CaseType } from "@features/support/constants/supportConstants";
 import useGetProjectCases from "@api/useGetProjectCases";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import { SortOrder } from "@/types/common";
 import SecurityReportAnalysisSkeleton from "@features/security/components/SecurityReportAnalysisSkeleton";
 import TabBar from "@components/tab-bar/TabBar";
@@ -74,9 +75,10 @@ const SecurityReportAnalysis = (): JSX.Element => {
   const { projectId } = useParams<{ projectId: string }>();
   const { data: projectDetails, isLoading: isProjectLoading } =
     useGetProjectDetails(projectId || "");
+  const { data: projectFeatures } = useGetProjectFeatures(projectId || "");
   const canCreateSecurityReport = getProjectPermissions(
     projectDetails?.type?.label,
-    { hasPdpSubscription: projectDetails?.hasPdpSubscription },
+    { projectFeatures },
   ).hasSecurityReportAnalysis;
 
   const [viewMode, setViewMode] = useState<SecurityReportViewMode>(

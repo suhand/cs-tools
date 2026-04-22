@@ -18,6 +18,7 @@ import { useCallback, useMemo, type JSX } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { Box } from "@wso2/oxygen-ui";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import SecurityStats from "@features/security/components/SecurityStats";
 import TabBar from "@components/tab-bar/TabBar";
 import ProductVulnerabilitiesTable from "@features/security/components/ProductVulnerabilitiesTable";
@@ -32,11 +33,12 @@ const SecurityPage = (): JSX.Element => {
   const { projectId } = useParams<{ projectId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { data: projectDetails } = useGetProjectDetails(projectId || "");
+  const { data: projectFeatures } = useGetProjectFeatures(projectId || "");
 
   const tabParam = searchParams.get("tab");
   const rawActiveTab = parseSecurityTabQueryParam(tabParam);
   const permissions = getProjectPermissions(projectDetails?.type?.label, {
-    hasPdpSubscription: projectDetails?.hasPdpSubscription,
+    projectFeatures,
   });
 
   const handleTabChange = useCallback(

@@ -144,6 +144,27 @@ export type ProjectStatsResponse = {
   recentActivity: ProjectRecentActivity;
 };
 
+// Item type for accepted severity values returned by project feature access API.
+export type ProjectFeatureSeverityValue = {
+  id: string;
+  label: string;
+};
+
+// Response type for project-specific feature and permission flags.
+export type ProjectFeatures = {
+  acceptedSeverityValues: ProjectFeatureSeverityValue[];
+  hasServiceRequestWriteAccess: boolean;
+  hasServiceRequestReadAccess: boolean;
+  hasSraWriteAccess: boolean;
+  hasSraReadAccess: boolean;
+  hasChangeRequestReadAccess: boolean;
+  hasEngagementsReadAccess: boolean;
+  hasUpdatesReadAccess: boolean;
+  hasTimeLogsReadAccess: boolean;
+  hasDeploymentWriteAccess: boolean;
+  hasDeploymentReadAccess: boolean;
+};
+
 // Request type for patching a project.
 export type PatchProjectRequest = {
   hasAgent?: boolean;
