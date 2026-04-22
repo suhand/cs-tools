@@ -175,7 +175,16 @@ export default function DescribeIssuePage(): JSX.Element {
               flexDirection: "column",
             }}
           >
-            <Stack spacing={3} sx={{ pb: 0.5, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <Stack
+              spacing={3}
+              sx={{
+                pb: 0.5,
+                flex: 1,
+                minHeight: 0,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               <Box>
                 <Typography variant="h5" sx={{ mb: 1 }} component="h1">
                   What can we help you with?
@@ -188,26 +197,19 @@ export default function DescribeIssuePage(): JSX.Element {
               </Box>
 
               <Box sx={{ minWidth: 0 }}>
-                <Typography
-                  variant="body2"
-                  fontWeight={500}
-                  color="text.primary"
-                  component="label"
-                  htmlFor="describe-issue-editor"
-                  sx={{ display: "block", mb: 1 }}
-                >
-                  Describe your issue
-                </Typography>
                 <TextField
                   id="describe-issue-editor"
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
                   placeholder={ISSUE_PLACEHOLDER}
                   multiline
-                  rows={10}
+                  rows={15}
                   fullWidth
                   variant="outlined"
-                  sx={{ flex: 1, "& textarea": { overflowY: "auto", resize: "none" } }}
+                  sx={{
+                    flex: 1,
+                    "& textarea": { overflowY: "auto", resize: "none" },
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey && !isSubmitDisabled) {
                       if (e.nativeEvent.isComposing) return;

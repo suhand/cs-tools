@@ -15,52 +15,57 @@
 // under the License.
 
 import { type JSX } from "react";
-import { Box, Stack, Typography } from "@wso2/oxygen-ui";
+import { Box, Link, Stack, Typography } from "@wso2/oxygen-ui";
+import illustration from "@assets/error/portal-access-required.svg";
 
-/**
- * Shows a dedicated portal-access message when `/users/me` is unauthorized.
- *
- * @returns {JSX.Element} Centered portal access required state.
- */
 export default function PortalAccessRequiredPage(): JSX.Element {
   return (
     <Box
       sx={{
-        minHeight: "100%",
         display: "flex",
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
+        mt: 10,
         px: 3,
       }}
     >
-      <Stack
-        spacing={2}
-        alignItems="center"
-        sx={{ maxWidth: 760, textAlign: "center", px: { xs: 1, sm: 3 } }}
-      >
-        <Typography variant="h2">Portal Access Required</Typography>
-        <Typography variant="h5" color="text.secondary">
-          You've signed in successfully, but your account does not have access to the
-          customer portal.
+      <Stack spacing={2} alignItems="center">
+        <Typography variant="h4" fontWeight={600} textAlign="center">
+          Portal Access Required
         </Typography>
-        <Typography variant="body1" color="text.secondary">
-          To gain access, please contact your account manager or reach out to{" "}
+
+        <Stack spacing={4} alignItems="center" sx={{ maxWidth: 640 }}>
           <Box
-            component="a"
-            href="mailto:support@wso2.com"
+            component="img"
+            src={illustration}
+            alt="Access denied illustration"
             sx={{
-              color: "primary.main",
-              textDecoration: "none",
-              "&:hover": {
-                textDecoration: "underline",
-              },
+              width: "100%",
+              maxWidth: 480,
+              height: "auto",
             }}
+          />
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            textAlign="center"
+            sx={{ lineHeight: 1.75 }}
           >
-            support@wso2.com
-          </Box>
-        </Typography>
+            You've signed in successfully, but your account does not have access
+            to the customer portal. To gain access, please contact your account
+            manager or reach out to{" "}
+            <Link
+              href="mailto:support@wso2.com"
+              underline="hover"
+              sx={{ fontWeight: 500 }}
+            >
+              support@wso2.com
+            </Link>
+            .
+          </Typography>
+        </Stack>
       </Stack>
     </Box>
   );
 }
-
