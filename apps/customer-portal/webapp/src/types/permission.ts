@@ -14,6 +14,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+/** Project closure state values returned by the API. */
+export enum ProjectClosureState {
+  SUSPENDED = "Suspended",
+  RESTRICTED = "Restricted",
+}
+
 /** API project type labels used for permission and visibility rules. */
 export enum ProjectType {
   MANAGED_CLOUD_SUBSCRIPTION = "Managed Cloud Subscription",
