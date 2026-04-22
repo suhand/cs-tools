@@ -33,6 +33,7 @@ import { Box, Button, Stack, Typography } from "@wso2/oxygen-ui";
 import { ArrowLeft, Plus } from "@wso2/oxygen-ui-icons-react";
 import { useGetProjectCasesStats } from "@features/dashboard/api/useGetProjectCasesStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { usePostProjectDeploymentsSearchInfinite } from "@api/usePostProjectDeploymentsSearch";
@@ -106,23 +107,24 @@ export default function ServiceRequestsPage(): JSX.Element {
   const { data: project, isLoading: isProjectLoading } = useGetProjectDetails(
     projectId || "",
   );
+  const { data: projectFeatures } = useGetProjectFeatures(projectId || "");
   const projectDetailsReady = !isProjectLoading && project !== undefined;
 
   const permissions = useMemo(() => {
     if (!projectDetailsReady || !project) {
-      return getProjectPermissions(undefined);
+      return getProjectPermissions(undefined, { projectFeatures: null });
     }
     return getProjectPermissions(project.type?.label, {
-      hasPdpSubscription: project.hasPdpSubscription,
+      projectFeatures,
     });
-  }, [projectDetailsReady, project]);
+  }, [projectDetailsReady, project, projectFeatures]);
 
   const severityPolicy = useMemo(
     () =>
       projectDetailsReady && project
-        ? getProjectSeverityPolicy(project.type?.label)
+        ? getProjectSeverityPolicy(project.type?.label, { projectFeatures })
         : { excludeS0: false, restrictSeverityToLow: false },
-    [projectDetailsReady, project],
+    [projectDetailsReady, project, projectFeatures],
   );
   const { excludeS0, restrictSeverityToLow } = severityPolicy;
 

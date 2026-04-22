@@ -26,6 +26,7 @@ import OutstandingCasesList from "@features/support/components/support-overview-
 import ChatHistoryList from "@features/support/components/support-overview-cards/ChatHistoryList";
 import { useGetProjectSupportStats } from "@features/support/api/useGetProjectSupportStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { useSearchConversations } from "@features/support/api/useSearchConversations";
 import { useLogger } from "@hooks/useLogger";
@@ -51,9 +52,14 @@ export default function SupportPage(): JSX.Element {
   const supportPath = `/projects/${projectId}/support`;
 
   const { data: project } = useGetProjectDetails(projectId || "");
-  const includeS0InSupportMetrics = getProjectPermissions(
-    project?.type?.label,
-  ).includeS0InSupportMetrics;
+  const { data: projectFeatures, isLoading: isProjectFeaturesLoading } =
+    useGetProjectFeatures(projectId || "");
+  const includeS0InSupportMetrics =
+    !isProjectFeaturesLoading && projectFeatures
+      ? getProjectPermissions(project?.type?.label, {
+          projectFeatures,
+        }).includeS0InSupportMetrics
+      : undefined;
 
   const {
     data: stats,
@@ -98,7 +104,7 @@ export default function SupportPage(): JSX.Element {
   const openCases = allFetchedCases.filter(
     (c) => !isClosedLikeCaseStatus(c.status?.label),
   );
-  const openCasesFiltered = !includeS0InSupportMetrics
+  const openCasesFiltered = includeS0InSupportMetrics === false
     ? openCases.filter((c) => !isS0Case(c))
     : openCases;
   const cases = openCasesFiltered.slice(0, SUPPORT_OVERVIEW_CASES_LIMIT);
@@ -117,6 +123,9 @@ export default function SupportPage(): JSX.Element {
   }));
 
   useEffect(() => {
+    if (includeS0InSupportMetrics === undefined) {
+      return;
+    }
     if (
       !isCasesLoading &&
       !isFetchingNextPage &&
@@ -125,7 +134,14 @@ export default function SupportPage(): JSX.Element {
     ) {
       void fetchNextPage();
     }
-  }, [isCasesLoading, isFetchingNextPage, hasNextPage, openCasesFiltered.length, fetchNextPage]);
+  }, [
+    includeS0InSupportMetrics,
+    isCasesLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    openCasesFiltered.length,
+    fetchNextPage,
+  ]);
 
   const isActuallyLoading = isAuthLoading || isLoading || (!stats && !isError);
 

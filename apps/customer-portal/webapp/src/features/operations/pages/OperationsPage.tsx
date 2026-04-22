@@ -30,6 +30,7 @@ import {
   type OperationsStatKey,
 } from "@features/support/constants/supportConstants";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import useGetProjectCases from "@api/useGetProjectCases";
 import useGetChangeRequests from "@features/operations/api/useGetChangeRequests";
 import { useGetProjectCasesStats } from "@features/dashboard/api/useGetProjectCasesStats";
@@ -67,6 +68,8 @@ export default function OperationsPage(): JSX.Element {
     isLoading: isProjectLoading,
     isError: isProjectDetailsError,
   } = useGetProjectDetails(projectId || "");
+  const { data: projectFeatures, isLoading: isProjectFeaturesLoading } =
+    useGetProjectFeatures(projectId || "");
 
   const projectFetchSettled = !isProjectLoading;
   const projectLoadFailed =
@@ -74,11 +77,15 @@ export default function OperationsPage(): JSX.Element {
     projectFetchSettled &&
     (isProjectDetailsError || project === undefined);
   const permissionsReady =
-    projectFetchSettled && !!project && !isProjectDetailsError;
+    projectFetchSettled &&
+    !isProjectFeaturesLoading &&
+    projectFeatures !== undefined &&
+    !!project &&
+    !isProjectDetailsError;
 
   const projectTypeLabel = permissionsReady ? project?.type?.label : undefined;
   const permissions = getProjectPermissions(projectTypeLabel, {
-    hasPdpSubscription: project?.hasPdpSubscription,
+    projectFeatures,
   });
 
   const isServiceRequestEnabled = permissions.hasSR;

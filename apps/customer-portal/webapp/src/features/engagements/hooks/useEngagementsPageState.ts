@@ -18,6 +18,7 @@ import { useNavigate, useParams } from "react-router";
 import { useState, useMemo, useEffect, type ChangeEvent } from "react";
 import { useGetProjectCasesStats } from "@features/dashboard/api/useGetProjectCasesStats";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectCases from "@api/useGetProjectCases";
 import { useLoader } from "@context/linear-loader/LoaderContext";
@@ -62,9 +63,13 @@ export function useEngagementsPageState() {
   const { data: project, isLoading: isProjectLoading } = useGetProjectDetails(
     projectId || "",
   );
+  const { data: projectFeatures, isLoading: isProjectFeaturesLoading } =
+    useGetProjectFeatures(projectId || "");
   const projectReady = !isProjectLoading && project !== undefined;
-  const severityPolicy = projectReady
-    ? getProjectSeverityPolicy(project?.type?.label)
+  const areFeaturePermissionsReady =
+    projectReady && !isProjectFeaturesLoading && projectFeatures !== undefined;
+  const severityPolicy = areFeaturePermissionsReady
+    ? getProjectSeverityPolicy(project?.type?.label, { projectFeatures })
     : { excludeS0: false, restrictSeverityToLow: false };
   const { excludeS0, restrictSeverityToLow } = severityPolicy;
 

@@ -28,6 +28,7 @@ import { CaseType } from "@features/support/constants/supportConstants";
 import useGetProjectCases from "@api/useGetProjectCases";
 import useGetProjectFilters from "@api/useGetProjectFilters";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import { SortOrder } from "@/types/common";
 import SecurityReportAnalysisSkeleton from "@features/security/components/SecurityReportAnalysisSkeleton";
 import TabBar from "@components/tab-bar/TabBar";
@@ -74,10 +75,14 @@ const SecurityReportAnalysis = (): JSX.Element => {
   const { projectId } = useParams<{ projectId: string }>();
   const { data: projectDetails, isLoading: isProjectLoading } =
     useGetProjectDetails(projectId || "");
-  const canCreateSecurityReport = getProjectPermissions(
-    projectDetails?.type?.label,
-    { hasPdpSubscription: projectDetails?.hasPdpSubscription },
-  ).hasSecurityReportAnalysis;
+  const { data: projectFeatures, isLoading: isProjectFeaturesLoading } =
+    useGetProjectFeatures(projectId || "");
+  const areFeaturePermissionsReady =
+    !isProjectLoading && !isProjectFeaturesLoading && !!projectFeatures;
+  const canCreateSecurityReport = areFeaturePermissionsReady
+    ? getProjectPermissions(projectDetails?.type?.label, { projectFeatures })
+        .hasSecurityReportAnalysis
+    : false;
 
   const [viewMode, setViewMode] = useState<SecurityReportViewMode>(
     SecurityReportViewMode.ALL,
@@ -124,7 +129,10 @@ const SecurityReportAnalysis = (): JSX.Element => {
   const { data, isLoading, hasNextPage, fetchNextPage } = useGetProjectCases(
     projectId || "",
     caseSearchRequest,
-    { enabled: !!projectId && canCreateSecurityReport },
+    {
+      enabled:
+        !!projectId && areFeaturePermissionsReady && canCreateSecurityReport,
+    },
   );
 
   useEffect(() => {
@@ -191,7 +199,7 @@ const SecurityReportAnalysis = (): JSX.Element => {
     [],
   );
 
-  if (!isProjectLoading && projectDetails && !canCreateSecurityReport) {
+  if (areFeaturePermissionsReady && projectDetails && !canCreateSecurityReport) {
     return (
       <Paper
         sx={{

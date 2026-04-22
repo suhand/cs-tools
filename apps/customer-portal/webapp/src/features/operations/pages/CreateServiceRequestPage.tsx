@@ -42,6 +42,7 @@ import { useSearchCatalogs } from "@features/operations/api/useSearchCatalogs";
 import { useGetCatalogItemVariables } from "@features/operations/api/useGetCatalogItemVariables";
 import { usePostCase } from "@features/operations/api/usePostCase";
 import useGetProjectDetails from "@api/useGetProjectDetails";
+import useGetProjectFeatures from "@api/useGetProjectFeatures";
 import { useLoader } from "@context/linear-loader/LoaderContext";
 import { useErrorBanner } from "@context/error-banner/ErrorBannerContext";
 import { useSuccessBanner } from "@context/success-banner/SuccessBannerContext";
@@ -188,19 +189,21 @@ export default function CreateServiceRequestPage(): JSX.Element {
 
   const { data: projectDetails, isLoading: isProjectLoading } =
     useGetProjectDetails(projectId || "");
+  const { data: projectFeatures, isLoading: isFeaturesLoading } =
+    useGetProjectFeatures(projectId || "");
   const srPermissions = useMemo(
     () =>
       getProjectPermissions(projectDetails?.type?.label, {
-        hasPdpSubscription: projectDetails?.hasPdpSubscription,
+        projectFeatures,
       }),
-    [projectDetails?.type?.label, projectDetails?.hasPdpSubscription],
+    [projectDetails?.type?.label, projectFeatures],
   );
   const hasSR = srPermissions.hasSR;
   const deploymentsQuery = usePostProjectDeploymentsSearchInfinite(
     projectId || "",
     {
       pageSize: 10,
-      enabled: !!projectId && !isProjectLoading && hasSR,
+      enabled: !!projectId && !isProjectLoading && !isFeaturesLoading && hasSR,
     },
   );
   const allProjectDeployments = useMemo(
@@ -552,7 +555,12 @@ export default function CreateServiceRequestPage(): JSX.Element {
     isCreatePending: isCreatePending || isNavigatingAfterCreate,
   });
 
-  if (!isProjectLoading && projectDetails && !srPermissions.hasSR) {
+  if (
+    !isProjectLoading &&
+    !isFeaturesLoading &&
+    projectDetails &&
+    !srPermissions.hasSR
+  ) {
     return (
       <Box sx={{ width: "100%", pt: 0, position: "relative", p: 3 }}>
         <CaseCreationHeader
