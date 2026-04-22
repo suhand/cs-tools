@@ -74,6 +74,7 @@ import {
 import { SecurityTabId } from "@features/security/types/security";
 import {
   filterDeploymentsForCaseCreation,
+  getProductCategoriesForCaseCreation,
   getProjectSeverityPolicy,
   shouldRestrictToPrimaryProductionDeployments,
 } from "@utils/permission";
@@ -88,6 +89,7 @@ import type {
   ChatMessageForClassification,
   RelatedCaseState,
 } from "@features/support/types/createCasePage";
+import { ChatSender, type Message } from "@features/support/types/conversations";
 
 const DEFAULT_CASE_TITLE = "Support case";
 const DEFAULT_CASE_DESCRIPTION = "Please describe your issue here.";
@@ -194,7 +196,11 @@ export default function CreateCasePage(): JSX.Element {
     selectedDeploymentMatch?.id ?? relatedCase?.deploymentId ?? "";
   const deploymentProductsQuery = usePostDeploymentProductsSearchInfinite(
     selectedDeploymentId,
-    { pageSize: 10, enabled: !!selectedDeploymentId },
+    {
+      pageSize: 10,
+      enabled: !!selectedDeploymentId,
+      request: { filters: { productCategories: getProductCategoriesForCaseCreation() } },
+    },
   );
   const deploymentProductsLoading = deploymentProductsQuery.isLoading;
   const deploymentProductsError = deploymentProductsQuery.isError;
@@ -260,6 +266,7 @@ export default function CreateCasePage(): JSX.Element {
 
   const STORAGE_KEY = `case_classification_data_${projectId}`;
   const CONVERSATION_ID_STORAGE_KEY = `case_conversation_id_${projectId}`;
+  const CHAT_MESSAGES_STORAGE_KEY = `case_chat_messages_${projectId}`;
 
   const [classificationResponse, setClassificationResponse] = useState<
     | {
@@ -288,6 +295,27 @@ export default function CreateCasePage(): JSX.Element {
     }
   });
 
+  const [chatMessages, setChatMessages] = useState<Message[]>(() => {
+    const stateMessages = (locationState as { messages?: Message[] } | null)?.messages;
+    if (stateMessages?.length) {
+      return stateMessages;
+    }
+    try {
+      const stored = sessionStorage.getItem(CHAT_MESSAGES_STORAGE_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored) as ChatMessageForClassification[];
+      return parsed.map((message, index) => ({
+        id: `restored-${index}`,
+        text: message.text,
+        sender:
+          message.sender === ChatSender.BOT ? ChatSender.BOT : ChatSender.USER,
+        timestamp: new Date(),
+      }));
+    } catch {
+      return [];
+    }
+  });
+
   useEffect(() => {
     if (locationState?.classificationResponse) {
       try {
@@ -304,6 +332,18 @@ export default function CreateCasePage(): JSX.Element {
       setClassificationResponse(locationState.classificationResponse);
     }
   }, [locationState?.classificationResponse, STORAGE_KEY, logger]);
+
+  useEffect(() => {
+    const stateMessages = (locationState as { messages?: Message[] } | null)?.messages;
+    if (stateMessages?.length) {
+      setChatMessages(stateMessages);
+      try {
+        sessionStorage.setItem(CHAT_MESSAGES_STORAGE_KEY, JSON.stringify(stateMessages));
+      } catch {
+        // ignore storage write errors
+      }
+    }
+  }, [locationState, CHAT_MESSAGES_STORAGE_KEY]);
 
   // Persist conversationId to survive page refresh
   const [conversationId, setConversationId] = useState<string | undefined>(
@@ -637,6 +677,14 @@ export default function CreateCasePage(): JSX.Element {
   ]);
 
   const handleBack = () => {
+    if (projectId && conversationId) {
+      navigate(`/projects/${projectId}/support/chat/${conversationId}`, {
+        state: {
+          messages: chatMessages,
+        },
+      });
+      return;
+    }
     if (window.history.length > 1) {
       navigate(ROUTE_PREVIOUS_PAGE);
     } else if (projectId) {
