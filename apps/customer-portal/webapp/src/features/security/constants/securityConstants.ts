@@ -34,12 +34,6 @@ export const VULNERABILITY_STATUS_IDS: Record<string, number> = {
  */
 export const SECURITY_STAT_CONFIGS: SupportStatConfig<SecurityStatKey>[] = [
   {
-    icon: CircleAlert,
-    iconColor: "error",
-    key: SecurityStatKey.totalVulnerabilities,
-    label: "Total Vulnerabilities",
-  },
-  {
     icon: Shield,
     iconColor: "warning",
     key: SecurityStatKey.activeSecurityReports,
@@ -51,20 +45,26 @@ export const SECURITY_STAT_CONFIGS: SupportStatConfig<SecurityStatKey>[] = [
     key: SecurityStatKey.resolvedSecurityReports,
     label: "Resolved Security Reports (Last 30d)",
   },
+  {
+    icon: CircleAlert,
+    iconColor: "error",
+    key: SecurityStatKey.totalVulnerabilities,
+    label: "Total Vulnerabilities",
+  },
 ];
 
 export const SECURITY_STATS_ENTITY_NAME = "security";
 
 export const SECURITY_PAGE_TABS = [
   {
-    id: SecurityTabId.COMPONENTS,
-    label: "Component Analysis",
-    icon: Package,
-  },
-  {
     id: SecurityTabId.VULNERABILITIES,
     label: "Security Report Analysis",
     icon: Siren,
+  },
+  {
+    id: SecurityTabId.COMPONENTS,
+    label: "Component Analysis",
+    icon: Package,
   },
 ] as const;
 

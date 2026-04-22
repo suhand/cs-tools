@@ -23,11 +23,11 @@ import AddDeploymentModal from "@features/project-details/components/deployments
 import DeploymentCard from "@features/project-details/components/deployments/DeploymentCard";
 import DeploymentCardSkeleton from "@features/project-details/components/deployments/DeploymentCardSkeleton";
 import DeploymentHeader from "@features/project-details/components/deployments/DeploymentHeader";
+import ListPagination from "@components/list-view/ListPagination";
 import {
   Box,
   Button,
   Grid,
-  Pagination,
   Skeleton,
   Typography,
 } from "@wso2/oxygen-ui";
@@ -53,7 +53,8 @@ export default function ProjectDeployments({
   projectId,
 }: ProjectDeploymentsProps): JSX.Element {
   const navigate = useNavigate();
-  const PAGE_SIZE = 10;
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const PAGE_SIZE = rowsPerPage;
   const [page, setPage] = useState(1);
 
   const { data: projectDetails } = useGetProjectDetails(projectId);
@@ -227,7 +228,7 @@ export default function ProjectDeployments({
   );
 
   const renderContent = () => {
-    if (showLoading || isPendingPageFetch) {
+    if (showLoading) {
       return (
         <>
           {deploymentsToolbar(0, true)}
@@ -281,28 +282,35 @@ export default function ProjectDeployments({
       <>
         {deploymentsToolbar(currentDeployments.length, false)}
         <Grid container spacing={3}>
-          {currentDeployments.map((deployment) => (
-            <Grid key={deployment.id} size={12}>
-              <DeploymentCard
-                deployment={deployment}
-                selectedProduct={selectedProduct}
-                onToggleProductSelect={handleToggleProductSelect}
-              />
-            </Grid>
-          ))}
+          {isPendingPageFetch
+            ? [1, 2, 3].map((i) => (
+                <Grid key={i} size={12}>
+                  <DeploymentCardSkeleton />
+                </Grid>
+              ))
+            : currentDeployments.map((deployment) => (
+                <Grid key={deployment.id} size={12}>
+                  <DeploymentCard
+                    deployment={deployment}
+                    selectedProduct={selectedProduct}
+                    onToggleProductSelect={handleToggleProductSelect}
+                  />
+                </Grid>
+              ))}
         </Grid>
 
-        {totalPages > 1 && (
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-            <Pagination
-              count={totalPages}
-              page={clampedPage}
-              onChange={(_, value) => setPage(value)}
-              color="primary"
-              variant="outlined"
-              shape="rounded"
-            />
-          </Box>
+        {totalRecords != null && (
+          <ListPagination
+            totalRecords={totalRecords}
+            page={clampedPage}
+            rowsPerPage={rowsPerPage}
+            onPageChange={(_, value) => setPage(value)}
+            onRowsPerPageChange={(newSize) => {
+              setRowsPerPage(newSize);
+              setPage(1);
+            }}
+            rowsPerPageOptions={[5, 10, 25]}
+          />
         )}
       </>
     );
