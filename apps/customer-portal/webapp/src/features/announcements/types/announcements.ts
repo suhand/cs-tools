@@ -81,6 +81,7 @@ export type AnnouncementDetailsPanelProps = {
   data: CaseDetails | undefined;
   isLoading: boolean;
   isError: boolean;
+  error?: unknown;
   onBack: () => void;
   projectId?: string;
   caseId?: string;

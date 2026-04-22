@@ -31,12 +31,11 @@ import {
   getStatusColor,
   resolveColorFromTheme,
 } from "@features/support/utils/support";
-import ErrorIndicator from "@components/error-indicator/ErrorIndicator";
+import ApiErrorState from "@components/error/ApiErrorState";
 import type { AnnouncementDetailsPanelProps } from "@features/announcements/types/announcements";
 import {
   ANNOUNCEMENT_DETAILS_BODY_EMPTY,
   ANNOUNCEMENT_DETAILS_DESCRIPTION_HEADING,
-  ANNOUNCEMENT_DETAILS_ERROR_ENTITY_NAME,
   ANNOUNCEMENT_DETAILS_ERROR_MESSAGE,
   ANNOUNCEMENTS_BACK_LABEL,
 } from "@features/announcements/constants/announcementsConstants";
@@ -56,6 +55,7 @@ export default function AnnouncementDetailsPanel({
   data,
   isLoading,
   isError,
+  error,
   onBack,
   projectId = "",
   caseId = "",
@@ -99,15 +99,10 @@ export default function AnnouncementDetailsPanel({
         >
           {ANNOUNCEMENTS_BACK_LABEL}
         </Button>
-        <Paper variant="outlined" sx={{ p: 4, textAlign: "center" }}>
-          <ErrorIndicator
-            entityName={ANNOUNCEMENT_DETAILS_ERROR_ENTITY_NAME}
-            size="medium"
-          />
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            {ANNOUNCEMENT_DETAILS_ERROR_MESSAGE}
-          </Typography>
-        </Paper>
+        <ApiErrorState
+          error={error}
+          fallbackMessage={ANNOUNCEMENT_DETAILS_ERROR_MESSAGE}
+        />
       </Box>
     );
   }

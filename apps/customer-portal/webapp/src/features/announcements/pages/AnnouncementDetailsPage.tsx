@@ -37,7 +37,7 @@ export default function AnnouncementDetailsPage(): JSX.Element {
   const { showLoader, hideLoader } = useLoader();
   const { showError } = useErrorBanner();
 
-  const { data, isLoading, isError } = useGetCaseDetails(
+  const { data, isLoading, isError, error } = useGetCaseDetails(
     projectId || "",
     caseId || "",
   );
@@ -79,6 +79,7 @@ export default function AnnouncementDetailsPage(): JSX.Element {
       data={data}
       isLoading={showSkeletons}
       isError={isError}
+      error={error}
       caseId={caseId || ""}
       projectId={projectId || ""}
       onBack={handleBack}
