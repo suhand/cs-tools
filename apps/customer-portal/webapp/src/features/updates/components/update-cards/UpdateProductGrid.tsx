@@ -90,20 +90,31 @@ export function UpdateProductGrid({
             >
               <UpdateProductCard
                 item={item}
-                onViewPendingUpdates={
+                onInstalledClick={
                   projectId
                     ? () => {
                         const params = new URLSearchParams({
                           productName: item.productName,
                           productBaseVersion: item.productBaseVersion,
                           startingUpdateLevel: String(item.startingUpdateLevel),
-                          endingUpdateLevel: String(
-                            item.recommendedUpdateLevel,
-                          ),
+                          endingUpdateLevel: String(item.endingUpdateLevel),
+                          mode: "installed",
                         });
-                        navigate(
-                          `/projects/${projectId}/updates/pending?${params}`,
-                        );
+                        navigate(`/projects/${projectId}/updates/pending?${params}`);
+                      }
+                    : undefined
+                }
+                onPendingClick={
+                  projectId
+                    ? () => {
+                        const params = new URLSearchParams({
+                          productName: item.productName,
+                          productBaseVersion: item.productBaseVersion,
+                          startingUpdateLevel: String(item.endingUpdateLevel),
+                          endingUpdateLevel: String(item.recommendedUpdateLevel),
+                          mode: "pending",
+                        });
+                        navigate(`/projects/${projectId}/updates/pending?${params}`);
                       }
                     : undefined
                 }
