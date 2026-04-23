@@ -36,7 +36,7 @@ export function UpdateCardLevels({
           <Typography variant="caption" color="text.secondary" display="block">
             Current Level
           </Typography>
-          <Typography variant="h6" color="info.main" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold">
             U{currentUpdateLevel}
           </Typography>
         </Box>
@@ -52,7 +52,7 @@ export function UpdateCardLevels({
           <Typography variant="caption" color="text.secondary" display="block">
             Pending Levels
           </Typography>
-          <Typography variant="h6" color="warning.main" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold">
             {pendingLevels}
           </Typography>
         </Box>
